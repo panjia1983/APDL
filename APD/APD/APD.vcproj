@@ -266,10 +266,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\hash.h"
-				>
-			</File>
-			<File
 				RelativePath=".\math_utility.h"
 				>
 			</File>
