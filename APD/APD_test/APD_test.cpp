@@ -4,6 +4,7 @@
 #include <APD/contact_space_learning.h>
 #include <APD/decision_boundary_distance.h>
 #include <APD/decision_boundary_sampler.h>
+#include <APD/decision_boundary_evaluate.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <APD/mesh_io.h>
 #include <iostream>
@@ -1101,24 +1102,198 @@ namespace APDL
 			}
 
 			return;
+		}
+
+	}
+
+	void test_svm_boundary_sampler()
+	{
+		{
+			std::ifstream room_file("rooms_star.dat");
+
+			if(!room_file.is_open())
+			{
+				std::cerr << "Failed to open the input file." << std::endl;
+				return;
+			}
+
+			Minkowski_Cspace_2D::Polygon_2 P, Q;
+
+			room_file >> P >> Q;
+			room_file.close();
+
+			Polygon p1 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(P);
+			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
+
+			ContactSpaceR2 contactspace(p1, p2, 2);
+			for(int i = 0; i < 1000; ++i)
+				contactspace.random_sample();
+
+			std::ofstream out("space_test_2d.txt");
+			asciiWriter(out, contactspace);
+
+			SVMLearner learner;
+			learner.setC(10);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+			SpatialTreeEParam param;
+
+			if(1) // not scaled
+			{
+				param.max_depth = 10;
+				param.initial_depth = 3;
+				param.stop_abs_diff = 0.2;
+				param.stop_related_diff = 0.1;
+				param.epsilon = 0;
+				param.result_eps = 0;
+			}
+			else // scaled
+			{
+				learner.setUseScaler(true);
+				learner.setGamma(0.5 * contactspace.getScaler().getScale() * 10);
+
+				param.max_depth = 10;
+				param.initial_depth = 5;
+				param.stop_abs_diff = 1e-4;
+				param.stop_related_diff = 0.02;
+				param.epsilon = 0.002;
+				param.result_eps = 1e-3;
+			}
+		
+
+			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.save("model.txt");
+
+			std::vector<PredictResult> results = learner.predict(contactspace.data);
+
+			int error_num = 0;
+			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			{
+				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+				if(results[i].label != contactspace.data[i].col) error_num++;
+			}
+			std::cout << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
 
 
-			//std::vector<DataVector> samples;
-			////sample_decision_boundary_interpolation(learner, samples);
-			//sample_decision_boundary_hierarchial_tree<SVMDistanceToDecisionBoundary_OptimizationGradient>(learner, samples);
-			//
+			std::vector<DataVector> samples1, samples2, samples3;
+			std::vector<DataVector> samples1_kcentriods, samples2_kcentriods, samples3_kcentriods;
+			SVMEvaluator evaluator(learner);
+			
+			sample_decision_boundary_interpolation(learner, samples1);
+			samples1_kcentriods = sampleSelectionKCentroids(samples1, 100);
+			for(std::size_t i = 0; i < samples1_kcentriods.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples1_kcentriods[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
+			
+			sample_decision_boundary_hierarchial_tree<SVMDistanceToDecisionBoundary_OptimizationGradient>(learner, samples2);
+			samples2_kcentriods = sampleSelectionKCentroids(samples2, 100);
+			for(std::size_t i = 0; i < samples2_kcentriods.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples2_kcentriods[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
 
-			//std::cout << samples.size() << std::endl;
+			sample_decision_boundary_hierarchial_tree_E<SVMEvaluator>(param, learner, samples3);
+			samples3_kcentriods = sampleSelectionKCentroids(samples3, 100);
 
-			//SVMDistanceToDecisionBoundary_Bruteforce distancer1(learner);
-			//SVMDistanceToDecisionBoundary_OptimizationGradient distancer2(learner);
-			//for(std::size_t i = 0; i < samples.size(); ++i)
-			//	std::cout << "(" << distancer1.distance(samples[i]) << " " << distancer2.distance(samples[i]) << ") ";
-			//std::cout << std::endl;
+			for(std::size_t i = 0; i < samples3_kcentriods.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples3_kcentriods[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
 		}
 
 	}
 	
+	void test_conlitron_boundary_sampler()
+	{
+		{
+			std::ifstream room_file("rooms_star.dat");
+
+			if(!room_file.is_open())
+			{
+				std::cerr << "Failed to open the input file." << std::endl;
+				return;
+			}
+
+			Minkowski_Cspace_2D::Polygon_2 P, Q;
+
+			room_file >> P >> Q;
+			room_file.close();
+
+			Polygon p1 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(P);
+			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
+
+			ContactSpaceR2 contactspace(p1, p2, 2);
+			for(int i = 0; i < 1000; ++i)
+				contactspace.random_sample();
+
+			std::ofstream out("space_test_2d.txt");
+			asciiWriter(out, contactspace);
+
+			DataVector w(2);
+			w[0] = 1; w[1] = 1;
+			MulticonlitronLearner learner(w, 0.01);
+			learner.setScaler(contactspace.getScaler());
+			learner.learn(contactspace.data, 2);
+			SpatialTreeEParam param;
+
+			param.max_depth = 10;
+			param.initial_depth = 3;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;	
+			param.result_eps = 0;
+
+			std::vector<PredictResult> results = learner.predict(contactspace.data);
+
+			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			{
+				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+			}
+			std::cout << std::endl;
+
+			std::vector<DataVector> samples1;
+			sample_decision_boundary_hierarchial_tree_E<MulticonlitronEvaluator>(param, learner, samples1);
+			std::cout << samples1.size() << std::endl;
+
+			std::vector<DataVector> samples1_kcentriods = sampleSelectionKCentroids(samples1, 100);
+			MulticonlitronEvaluator evaluator(learner);
+			for(std::size_t i = 0; i < samples1_kcentriods.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples1_kcentriods[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
+
+			std::vector<DataVector> samples1_kmeans = sampleSelectionKMeans(samples1, 100);
+			for(std::size_t i = 0; i < samples1_kmeans.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples1_kmeans[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
+
+			std::vector<DataVector> samples2;
+			sample_decision_boundary_interpolation(learner, samples2);
+			std::cout << samples2.size() << std::endl;
+
+			std::vector<DataVector> samples2_kcentriods = sampleSelectionKCentroids(samples2, 100);
+			for(std::size_t i = 0; i < samples2_kcentriods.size(); ++i)
+			{
+				double value = evaluator.evaluate(samples2_kcentriods[i]);
+				std::cout << value << " ";
+			}
+			std::cout << std::endl;
+		}
+
+	}
 }
 
 void main()
@@ -1133,7 +1308,7 @@ void main()
 	
 	// APDL::test_ContactSpace();
 	
-	APDL::test_svm_learner();
+	// APDL::test_svm_learner();
 
 	// APDL::test_svm_learner_2d_rotation();
 
@@ -1145,12 +1320,16 @@ void main()
 
 	// APDL::test_distance_to_decision_boundary_svm();
 
-	APDL::test_distance_to_decision_boundary_conlitron();
+	// APDL::test_distance_to_decision_boundary_conlitron();
 
 	// APDL::test_conlitron_learner_2d_rotation();
 
 	// APDL::test_conlitron_learner_2d();
 
 	// APDL::test_conlitron_learner_2d_rotation();
+
+	APDL::test_svm_boundary_sampler();
+
+	// APDL::test_conlitron_boundary_sampler();
 }
 

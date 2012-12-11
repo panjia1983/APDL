@@ -283,6 +283,8 @@ namespace APDL
 		MulticonlitronLearner(const DataVector& weight, double epsilon_) : distancer(weight), epsilon(epsilon_)
 		{
 			feature_dim = weight.dim();
+			scaler = NULL;
+
 		}
 
 		HyperPlane CDMA(const std::vector<DataVector>& X, const std::vector<DataVector>& Y, double epsilon = 0.01) const;
@@ -317,6 +319,12 @@ namespace APDL
 			}
 
 			model = SMA(X, Y);
+		}
+
+		void setScaler(const Scaler& scaler_)
+		{
+			if(scaler) delete scaler;
+			scaler = new Scaler(scaler_.v_min, scaler_.v_max, scaler_.active_dim);
 		}
 
 		void saveVisualizeData(const std::string& file_name, const Scaler& scaler, std::size_t grid_n) const
@@ -370,6 +378,8 @@ namespace APDL
 		std::size_t feature_dim;
 
 		double epsilon;
+
+		Scaler* scaler;
 	};
 
 	class AdaBoostLearner

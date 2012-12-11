@@ -91,6 +91,33 @@ namespace APDL
 			return res;
 		}
 
+		DataVector& operator += (const DataVector& other)
+		{
+			for(std::size_t i = 0; i < data.size(); ++i)
+			{
+				data[i] += other[i];
+			}
+			return *this;
+		}
+
+		DataVector& operator -= (const DataVector& other)
+		{
+			for(std::size_t i = 0; i < data.size(); ++i)
+			{
+				data[i] -= other[i];
+			}
+			return *this;
+		}
+
+		DataVector& operator *= (double t)
+		{
+			for(std::size_t i = 0; i < data.size(); ++i)
+			{
+				data[i] *= t;
+			}
+			return *this;
+		}
+
 		void setZero()
 		{
 			for(std::size_t i = 0; i < data.size(); ++i)
