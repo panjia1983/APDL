@@ -14,6 +14,7 @@
 #include <limits>
 #include "data_vector.h"
 #include "math_utility.h"
+#include "distance_proxy.h"
 
 namespace APDL
 {

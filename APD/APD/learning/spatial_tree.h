@@ -5,6 +5,26 @@
 
 namespace APDL
 {
+	struct SpatialTreeParam
+	{
+		std::size_t max_depth;
+		std::size_t initial_depth;
+		double stop_abs_diff;
+		double stop_related_diff;
+		double epsilon;
+		double result_eps;
+
+		SpatialTreeParam()
+		{
+			max_depth = 10;
+			initial_depth = 3;
+			stop_abs_diff = 0;
+			stop_related_diff = 0.1;
+			epsilon = 0;
+			result_eps = 0;
+		}
+	};
+
 	struct SpatialTreeNode
 	{
 		SpatialTreeNode(std::size_t dim_) : dim(dim_), center(dim_), scale(dim_)
@@ -90,9 +110,15 @@ namespace APDL
 	class SpatialTree
 	{
 	public:
-		SpatialTree(const DataVector& lower, const DataVector& upper, const Learner& learner_) : oracle(learner_)
+		SpatialTree(const DataVector& lower, const DataVector& upper, const SpatialTreeParam& param, const Learner& learner_) : oracle(learner_)
 		{
 			dim = learner_.feature_dim;
+			max_depth = param.max_depth;
+			initial_depth = param.initial_depth;
+			stop_abs_diff_percentage = param.stop_abs_diff;
+			stop_related_diff_percentage = param.stop_related_diff;
+			epsilon = param.epsilon;
+			result_eps = param.result_eps;
 
 			root = new SpatialTreeNode(dim);
 			root->center = 0.5 * (upper + lower);
@@ -125,37 +151,30 @@ namespace APDL
 			delete [] root->children;
 		}
 
-		void collectBoundarySamples(double on_decision_threshold, std::vector<DataVector>& samples) const
+		void collectBoundarySamples(std::vector<DataVector>& samples) const
 		{
-			collectRecurse(root, on_decision_threshold, samples);
+			collectRecurse(root, samples);
 		}
 
-		void collectRecurse(SpatialTreeNode* root, double on_decision_threshold, std::vector<DataVector>& samples) const
+		void collectRecurse(SpatialTreeNode* root, std::vector<DataVector>& samples) const
 		{
 			if(root->num_of_children > 0)
 			{
 				for(std::size_t i = 0; i < root->num_of_children; ++i)
-					collectRecurse(root->children[i], on_decision_threshold, samples);
+					collectRecurse(root->children[i], samples);
 			}
 			else
 			{
-				if(root->dist_to_decision_boundary < on_decision_threshold)
-				{
+				if(root->dist_to_decision_boundary < result_eps)
 					samples.push_back(root->center);
-				}
 			}
 		}
 
 		void buildRecurse(SpatialTreeNode* root, std::size_t depth)
 		{
 			root->dist_to_decision_boundary = oracle.distance(root->center);
-			//std::cout << depth << " ";
-			//for(std::size_t i = 0; i < dim; ++i)
-			//	std::cout << root->center[i] << " ";
-			//for(std::size_t i = 0; i < dim; ++i)
-			//	std::cout << root->scale[i] << " ";
-			//std::cout << root->dist_to_decision_boundary << std::endl;
-			if(root->dist_to_decision_boundary > root->getRadius() || depth > 15)
+
+			if((root->dist_to_decision_boundary > root->getRadius() && depth > initial_depth) || depth > max_depth)
 			{
 				return;
 			}
@@ -240,6 +259,13 @@ namespace APDL
 				v >>= 1;
 			}
 		}
+
+		std::size_t max_depth;
+		std::size_t initial_depth;
+		double stop_abs_diff_percentage;
+		double stop_related_diff_percentage;
+		double epsilon;
+		double result_eps;
 	};
 
 
@@ -270,7 +296,7 @@ namespace APDL
 			}
 			else
 			{
-				num_of_children = 1 << dim;
+				num_of_children = (1 << dim);
 				children = new SpatialTreeNodeE* [num_of_children];
 			}
 		}
@@ -381,30 +407,22 @@ namespace APDL
 			delete [] root->children;
 		}
 
-		void collectBoundarySamples(double on_decision_threshold, std::vector<DataVector>& samples) const
+		void collectBoundarySamples(std::vector<DataVector>& samples) const
 		{
-			collectRecurse(root, on_decision_threshold, 0, samples);
+			collectRecurse(root, 0, samples);
 		}
 
-		void collectRecurse(SpatialTreeNodeE* root, double on_decision_threshold, std::size_t depth, std::vector<DataVector>& samples) const
+		void collectRecurse(SpatialTreeNodeE* root, std::size_t depth, std::vector<DataVector>& samples) const
 		{
 			if(root->num_of_children > 0) 
 			{
 				for(std::size_t i = 0; i < root->num_of_children; ++i)
-					collectRecurse(root->children[i], on_decision_threshold, depth + 1, samples);
+					collectRecurse(root->children[i], depth + 1, samples);
 			}
 			else
 			{
-				//std::cout << depth << " " << oracle.evaluate(root->center) << std::endl;
 				if(!root->homogeneous || abs(root->value) < result_eps)
-				{
 					samples.push_back(root->center);
-					//for(std::size_t i = 0; i < root->center.dim(); ++i)
-					//	std::cout << root->center[i] << " ";
-					//std::cout << std::endl;
-					//std::cout << depth << " " << oracle.evaluate(root->center) << std::endl;
-				}
-				
 			}
 		}
 
@@ -413,16 +431,11 @@ namespace APDL
 			bool homogeneous = true;
 			double center_v = oracle.evaluate(root->center);
 			root->value = center_v;
-			//for(std::size_t i = 0; i < root->scale.dim(); ++i)
-			//	std::cout << root->scale[i] << " ";
-			//std::cout << std::endl;
-			//std::cout << center_v << " ";
-			double max_diff = 0;
 
 			bool sign  = (center_v > 0);
 			
 			bool* bin = new bool[dim];
-			std::size_t num_of_corners = 1 << dim;
+			std::size_t num_of_corners = (1 << dim);
 			for(std::size_t i = 0; i < num_of_corners; ++i)
 			{
 				intToBin(i, bin);
@@ -434,8 +447,6 @@ namespace APDL
 				}
 
 				double corner_v = oracle.evaluate(corner);
-
-				// std::cout << corner_v << " ";
 
 				bool corner_sign;
 				if(sign)
@@ -450,21 +461,14 @@ namespace APDL
 				}
 
 				if(corner_sign != sign) { homogeneous = false; break; }
-				double diff = abs(corner_v - center_v);
-				if(diff > max_diff) max_diff = diff;
 			}
-
-			// std::cout << std::endl;
 
 
 			delete [] bin;
 
 			root->homogeneous = homogeneous;
 
-			bool small_error = (max_diff < stop_related_diff_percentage * abs(center_v) ) || (max_diff < stop_abs_diff_percentage);
-
-
-			if((homogeneous && small_error && depth > initial_depth) || depth > max_depth)
+			if((homogeneous && depth > initial_depth) || depth > max_depth)
 			{
 				return;
 			}
@@ -525,7 +529,6 @@ namespace APDL
 					delete [] bin;
 				}
 
-			
 				for(std::size_t i = 0; i < root->num_of_children; ++i)
 					buildRecurse(root->children[i], depth + 1);
 			}

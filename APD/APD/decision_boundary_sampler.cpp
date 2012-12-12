@@ -10,18 +10,18 @@ namespace APDL
 		std::list<std::size_t> non_selected;
 		std::list<std::size_t> selected;
 		selected.push_back(0);
-		for(std::size_t i = 1; i < n; ++i) non_selected.push_back(i);
+		for(std::size_t i = 1; i < samples.size(); ++i) non_selected.push_back(i);
 
 		for(std::size_t i = 1; i < n; ++i)
 		{
-			std::list<std::size_t>::iterator min_it;
-			double min_dist = (std::numeric_limits<double>::max)();
+			std::list<std::size_t>::iterator max_it;
+			double max_dist = -1;
 
 			for(std::list<std::size_t>::iterator j_it = non_selected.begin(); j_it != non_selected.end(); ++j_it)
 			{
 				std::size_t id_non_selected = *j_it;
 
-				double max_dist_to_selected = 0;
+				double min_dist_to_selected = (std::numeric_limits<double>::max)();
 
 				for(std::list<std::size_t>::iterator k_it = selected.begin(); k_it != selected.end(); ++k_it)
 				{
@@ -34,14 +34,14 @@ namespace APDL
 						dist += v * v;
 					}
 
-					if(dist > max_dist_to_selected) max_dist_to_selected = dist;
+					if(dist < min_dist_to_selected) min_dist_to_selected = dist;
 				}
 
-				if(max_dist_to_selected < min_dist) { min_dist = max_dist_to_selected; min_it = j_it; }
+				if(min_dist_to_selected > max_dist) { max_dist = min_dist_to_selected; max_it = j_it; }
 			}
 
-			selected.push_back(*min_it);
-			non_selected.erase(min_it);
+			selected.push_back(*max_it);
+			non_selected.erase(max_it);
 		}
 
 		std::vector<DataVector> res;
@@ -173,7 +173,8 @@ namespace APDL
 	}
 
 	void sample_decision_boundary_interpolation2(const SVMLearner& learner,
-												std::vector<DataVector>& samples)
+												std::vector<DataVector>& samples,
+												std::size_t search_num)
 	{
 		const struct svm_model* model = learner.model;
 		std::size_t dim = learner.feature_dim;
@@ -186,30 +187,64 @@ namespace APDL
 		start[1] = start[0] + number[0];
 		number[1] = model->nSV[1];
 
+		if(number[1] < number[0])
+		{
+			std::size_t tmp = number[1];
+			number[1] = number[0];
+			number[0] = tmp;
+
+			tmp = start[1];
+			start[1] = start[0];
+			start[0] = tmp;
+		}
+
 		svm_node* midpoint = new svm_node[dim + 1];
-		for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i;
+		for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i + 1;
 		midpoint[dim].index = -1;
 
 		DataVector p(dim);
-		
+
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[dim * number[1]], number[1], dim);
+		std::size_t id = 0;
+		for(std::size_t i = start[1]; i < start[1] + number[1]; ++i)
+		{
+			for(std::size_t j = 0; j < dim; ++j)
+				dataset[id][j] = model->SV[i][j].value;
+			id++;
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim], 1, dim);
 		for(std::size_t i = start[0]; i < start[0] + number[0]; ++i)
 		{
-			for(std::size_t j = start[1]; j < start[1] + number[1]; ++j)
+			svm_node* x = model->SV[i];
+			for(std::size_t j = 0; j < dim; ++j)
+				queryset[0][j] = x[j].value;
+
+			std::vector<std::vector<int> > indices;
+			std::vector<std::vector<double> > dists;
+
+			index->knnSearch(queryset, indices, dists, search_num, flann::SearchParams());
+
+			for(std::size_t j = 0; j < indices[0].size(); ++j)
 			{
-				svm_node* x = model->SV[i];
-				svm_node* y = model->SV[j];
-				
+				svm_node* y = model->SV[start[1] + indices[0][j]];
+
 				feature_space_midpoint(model, x, y, midpoint);
 
 				double f_value = svm_predict_values_twoclass(model, midpoint);
+				if(std::abs(f_value) > 1) continue;
 
 				for(std::size_t k = 0; k < dim; ++k)
 					p[k] = midpoint[k].value;
 
-				if(abs(f_value) < 1)
-					samples.push_back(p);
+				samples.push_back(p);
 			}
 		}
+
+		delete index;
 
 		delete [] midpoint;
 	}
@@ -241,7 +276,7 @@ namespace APDL
 		}
 
 		svm_node* midpoint = new svm_node[dim + 1];
-		for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i;
+		for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i + 1;
 		midpoint[dim].index = -1;
 
 		DataVector p(dim);
@@ -342,5 +377,30 @@ namespace APDL
 		}
 
 		delete index;
+	}
+
+
+	std::vector<DataVector> filter(SVMEvaluator& eval, std::vector<DataVector>& samples, double threshold)
+	{
+		std::vector<DataVector> res;
+		for(std::size_t i = 0; i < samples.size(); ++i)
+		{
+			if(abs(eval.evaluate(samples[i])) < threshold)
+				res.push_back(samples[i]);
+		}
+
+		return res;
+	}
+
+	std::vector<DataVector> filter(MulticonlitronEvaluator& eval, std::vector<DataVector>& samples, double threshold)
+	{
+		std::vector<DataVector> res;
+		for(std::size_t i = 0; i < samples.size(); ++i)
+		{
+			if(abs(eval.evaluate(samples[i])) < threshold)
+				res.push_back(samples[i]);
+		}
+
+		return res;
 	}
 }

@@ -31,8 +31,11 @@ namespace APDL
 		{
 			if(data.size() > data_.size())
 			{
-				for(std::size_t i = 0; i < data_.size(); ++i)
+				std::size_t i = 0;
+				for(i = 0; i < data_.size(); ++i)
 					data[i] = data_[i];
+				for(; i < data.size(); ++i)
+					data[i] = 0;
 			}
 			else
 			{

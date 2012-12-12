@@ -2761,7 +2761,7 @@ double dist_to_decision_boundary(const struct svm_model* model, const struct svm
 	user_model = model;
 	user_x_node = new svm_node[n + 1];
 	for(int i = 0; i < n; ++i)
-		user_x_node[i].index = i;
+		user_x_node[i].index = i + 1;
 	user_x_node[n].index = -1;
 
 	user_data = new double[n];
@@ -2911,7 +2911,7 @@ double dist_to_decision_boundary_with_gradient(const struct svm_model* model, co
 	user_model = model;
 	user_x_node = new svm_node[n + 1];
 	for(int i = 0; i < n; ++i)
-		user_x_node[i].index = i;
+		user_x_node[i].index = i + 1;
 	user_x_node[n].index = -1;
 
 	user_data = new double[n];
@@ -3056,7 +3056,7 @@ double dist_to_decision_boundary_constrain_free(const struct svm_model* model, d
 	user_model = model;
 	user_x_node = new svm_node[n + 1];
 	for(int i = 0; i < n; ++i)
-		user_x_node[i].index = i;
+		user_x_node[i].index = i + 1;
 	user_x_node[n].index = -1;
 
 	user_fixed_node = x_node;
@@ -3202,7 +3202,7 @@ void feature_space_midpoint(const struct svm_model* model, const struct svm_node
 	user_model = model;
 	user_x_node = new svm_node[n + 1];
 	for(int i = 0; i < n; ++i)
-		user_x_node[i].index = i;
+		user_x_node[i].index = i + 1;
 	user_x_node[n].index = -1;
 
 	user_fixed_node1 = x_node;
@@ -3241,6 +3241,7 @@ void feature_space_midpoint(const struct svm_model* model, const struct svm_node
 
 double svm_predict_values_twoclass(const struct svm_model* model, const struct svm_node* x)
 {
+	
 	assert(model->param.svm_type == C_SVC || model->param.svm_type == NU_SVC);
 	int i;
 	int nr_class = model->nr_class;

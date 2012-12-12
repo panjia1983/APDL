@@ -12,7 +12,7 @@ namespace APDL
 		{
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			ratio = 1.0 / sqrt(learner.hyperw_normsqr);
@@ -27,9 +27,9 @@ namespace APDL
 		{
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
 				node[i].value = v[i];
-			return svm_predict_values_twoclass(learner.model, node) * ratio;
-		}
 
+			return svm_predict_values_twoclass(learner.model, node);
+		}
 
 		const SVMLearner& learner;
 

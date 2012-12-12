@@ -23,7 +23,7 @@ namespace APDL
 		std::vector<std::size_t> id(dim);
 		struct svm_node* node = new svm_node[dim + 1];
 		for(std::size_t i = 0; i < dim; ++i)
-			node[i].index = i;
+			node[i].index = i + 1;
 		node[dim].index = -1;
 
 		std::vector<std::pair<std::size_t, double> > cached_results(max_i);

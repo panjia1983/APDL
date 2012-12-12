@@ -274,10 +274,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\metric_learning.h"
-				>
-			</File>
-			<File
 				RelativePath=".\minkowski_cspace.h"
 				>
 			</File>

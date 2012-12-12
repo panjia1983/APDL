@@ -34,7 +34,7 @@ namespace APDL
 		{
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			inv_hyperw = 1 / sqrt(learner.hyperw_normsqr);
@@ -63,12 +63,12 @@ namespace APDL
 		{
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			closest_node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i;
+				closest_node[i].index = i + 1;
 			closest_node[learner.feature_dim].index = -1;
 
 			upper_bound = NULL;
@@ -129,12 +129,12 @@ namespace APDL
 		{
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			closest_node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i;
+				closest_node[i].index = i + 1;
 			closest_node[learner.feature_dim].index = -1;
 
 			upper_bound = NULL;
@@ -191,12 +191,12 @@ namespace APDL
 		{
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			closest_node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i;
+				closest_node[i].index = i + 1;
 			closest_node[learner.feature_dim].index = -1;
 
 			upper_bound = NULL;
@@ -271,12 +271,12 @@ namespace APDL
 
 			node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i;
+				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
 
 			closest_node = new svm_node[learner.feature_dim + 1];
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i;
+				closest_node[i].index = i + 1;
 			closest_node[learner.feature_dim].index = -1;
 		}
 

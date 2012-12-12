@@ -199,6 +199,59 @@ namespace APDL
 		}
 
 		HyperPlane getLinearModel() const;
+
+
+		void saveVisualizeData(const std::string& file_name, const Scaler& scaler, std::size_t grid_n) const
+		{
+			std::size_t dim = feature_dim;
+			std::ofstream os(file_name.c_str());
+
+			DataVector upper = scaler.v_max;
+			DataVector lower = scaler.v_min;
+
+			DataVector scale = (upper - lower) * (1.0 / grid_n);
+			upper = upper + scale * 10;
+			lower = lower - scale * 10;
+
+			grid_n += 20;
+
+			std::size_t n = 1;
+			for(std::size_t i = 0; i < dim; ++i)
+				n *= grid_n;
+
+			std::size_t* ids = new std::size_t[dim];
+
+			svm_node* v = new svm_node[dim + 1];
+			for(std::size_t i = 0; i < dim; ++i) v[i].index = i + 1;
+			v[dim].index = -1;
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				std::size_t i_ = i;
+				for(std::size_t j = 0; j < dim; ++j)
+				{
+					ids[j] = i_ % grid_n;
+					i_ = i_ / grid_n;
+				}
+
+				for(std::size_t j = 0; j < dim; ++j)
+					v[j].value = (upper[j] - lower[j]) * ids[j] / (double)grid_n + lower[j];
+
+				double eval = svm_predict_values_twoclass(model, v);
+
+				//for(std::size_t j = 0; j < dim; ++j)
+				//	os << v[j].value << " ";
+				// os << eval << endl;
+
+				os << eval << " ";
+				if((i % grid_n) == (grid_n - 1))
+					os << std::endl;
+			}
+
+			os.close();
+
+			delete [] v;
+		}
 		
 		svm_parameter param;
 		
@@ -368,7 +421,7 @@ namespace APDL
 				os << eval << std::endl;	
 			}
 
-			os.end;
+			os.close();
 		}
 
 		DistanceProxyRN distancer;

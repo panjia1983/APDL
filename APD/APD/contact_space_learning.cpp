@@ -379,7 +379,7 @@ after_separable_test:
 	//	sample_decision_boundary_interpolation(model, active_dim, sqrt(hyperw_normsqr), samples);
 
 	//	svm_node* sample = new svm_node[active_dim + 1];
-	//	for(std::size_t i = 0; i < active_dim; ++i) sample[i].index = i;
+	//	for(std::size_t i = 0; i < active_dim; ++i) sample[i].index = i + 1;
 	//	sample[active_dim].index = -1;
 
 	//	std::cout << samples.size() << std::endl;

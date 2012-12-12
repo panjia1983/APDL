@@ -68,6 +68,39 @@ namespace APDL
 		}
 		return os;
 	}
+
+	template<typename Collider>
+	bool checkStatus(const Collider& collider, std::size_t dim, const DataVector& query)
+	{
+		std::size_t in_dim = query.dim();
+
+		DataVector v(dim);
+		if(in_dim < dim)
+		{
+			for(std::size_t j = 0; j < in_dim; ++j)
+				v[j] = query[j];
+			for(std::size_t j = in_dim; j < dim; ++j)
+				v[j] = 0;
+		}
+		else
+		{
+			for(std::size_t j = 0; j < dim; ++j)
+				v[j] = query[j];
+		}
+
+		return collider.isCollide(v);
+	}
+
+	template<typename Collider>
+	std::vector<bool> checkStatus(const Collider& collider, std::size_t dim, const std::vector<DataVector>& queries)
+	{
+		std::vector<bool> statuses(queries.size());
+
+		for(std::size_t i = 0; i < queries.size(); ++i)
+			statuses[i] = checkStatus(collider, dim, queries[i]);
+
+		return statuses;
+	}
 	
 	class ContactSpaceR2
 	{
