@@ -2610,7 +2610,7 @@ const struct svm_model* user_model;
 struct svm_node* user_x_node;
 double* exp_values;
 
-int distanceF_G( integer    *Status, integer *n,    doublereal x[],
+int distanceF_G(integer    *Status, integer *n,    doublereal x[],
 				integer    *needF,  integer *neF,  doublereal F[],
 				integer    *needG,  integer *neG,  doublereal G[],
 				char       *cu,     integer *lencu,
@@ -2689,7 +2689,7 @@ int distanceF(integer    *Status, integer *n,    doublereal x[],
 	return 0;
 }
 
-double dist_to_decision_boundary(const struct svm_model* model, const struct svm_node* x_node, double* upper, double* lower, struct svm_node* x_res)
+double dist_to_decision_boundary(const struct svm_model* model, const struct svm_node* x_node, double* init_guess_x, double* upper, double* lower, struct svm_node* x_res)
 {
 	snoptProblem prob(0);
 
@@ -2744,7 +2744,9 @@ double dist_to_decision_boundary(const struct svm_model* model, const struct svm
 	Fupp[0] = 1e20; Fupp[1] = 0;
 
 	for(int i = 0; i < n; ++i)
-		x[i] = 0;
+	{
+		x[i] = init_guess_x ? init_guess_x[i] : 0;
+	}
 
 	// load the data for problem
 	// prob.setPrintFile("distance0.out");
@@ -2812,7 +2814,7 @@ double dist_to_decision_boundary(const struct svm_model* model, const struct svm
 }
 
 
-double dist_to_decision_boundary_with_gradient(const struct svm_model* model, const struct svm_node* x_node, double* upper, double* lower, struct svm_node* x_res)
+double dist_to_decision_boundary_with_gradient(const struct svm_model* model, const struct svm_node* x_node, double* init_guess_x, double* upper, double* lower, struct svm_node* x_res)
 {
 	snoptProblem prob(0);
 
@@ -2867,7 +2869,9 @@ double dist_to_decision_boundary_with_gradient(const struct svm_model* model, co
 	Fupp[0] = 1e20; Fupp[1] = 1e-20;
 
 	for(int i = 0; i < n; ++i)
-		x[i] = 0;
+	{
+		x[i] = init_guess_x ? init_guess_x[i] : 0;
+	}
 
 	prob.setProblemSize(n, neF);
 	prob.setObjective(ObjRow, ObjAdd);
@@ -2983,7 +2987,7 @@ int distanceF_free(integer    *Status, integer *n,    doublereal x[],
 }
 
 
-double dist_to_decision_boundary_constrain_free(const struct svm_model* model, double w_norm, const struct svm_node* x_node, double* upper, double* lower, struct svm_node* x_res)
+double dist_to_decision_boundary_constrain_free(const struct svm_model* model, double w_norm, const struct svm_node* x_node, double* init_guess_x, double* upper, double* lower, struct svm_node* x_res)
 {
 	snoptProblem prob(0);
 
@@ -3038,7 +3042,9 @@ double dist_to_decision_boundary_constrain_free(const struct svm_model* model, d
 	Fupp[0] = 1e20;
 
 	for(int i = 0; i < n; ++i)
-		x[i] = 0;
+	{
+		x[i] = init_guess_x ? init_guess_x[i] : 0;
+	}
 
 	// load the data for problem
 	// prob.setPrintFile("distance0.out");
@@ -3106,6 +3112,41 @@ double dist_to_decision_boundary_constrain_free(const struct svm_model* model, d
 
 const struct svm_node* user_fixed_node1;
 const struct svm_node* user_fixed_node2;
+
+int midpointF_free_G(integer    *Status, integer *n,    doublereal x[],
+					 integer    *needF,  integer *neF,  doublereal F[],
+					 integer    *needG,  integer *neG,  doublereal G[],
+					 char       *cu,     integer *lencu,
+					 integer    iu[],    integer *leniu,
+					 doublereal ru[],    integer *lenru )
+{
+	int l = user_model->l;
+	double *coef = user_model->sv_coef[0];
+
+	for(int i = 0; i < *n; ++i)
+		user_x_node[i].value = x[i];
+
+	double term1 = Kernel::k_function(user_fixed_node1, user_x_node, user_model->param);
+	double term2 = Kernel::k_function(user_fixed_node2, user_x_node, user_model->param);
+
+	if(*needF > 0)
+	{
+		F[0] =  -term1 - term2;
+	}
+		
+	if(*needG > 0)
+	{
+		*neG = 0;
+		for(int i = 0; i < *n; ++i)
+		{
+			G[*neG] = 2 * user_model->param.gamma * (term1 * (x[i] - user_fixed_node1[i].value) + term2 * (x[i] - user_fixed_node2[i].value));
+			*neG = *neG + 1;
+		}
+	}
+
+
+	return 0;
+}
 
 int midpointF_free(integer    *Status, integer *n,    doublereal x[],
 				   integer    *needF,  integer *neF,  doublereal F[],
@@ -3211,6 +3252,139 @@ void feature_space_midpoint(const struct svm_model* model, const struct svm_node
 	// snopta will compute the Jacobian by finite differences
 	prob.computeJac();
 	prob.setIntParameter("Derivative option", 0);
+
+	integer Cold = 0, Basis = 1, Warm  = 2;
+	prob.solve(Cold);
+
+	for(int i = 0; i < n; ++i)
+		midpoint[i].value = x[i];
+
+	delete [] iAfun; 
+	delete [] jAvar;
+	delete [] A;
+	delete [] iGfun;
+	delete [] jGvar;
+	delete [] x;
+	delete [] xlow;
+	delete [] xupp;
+	delete [] xmul;
+	delete [] xstate;
+	delete [] F;
+	delete [] Flow;
+	delete [] Fupp;
+	delete [] Fmul;
+	delete [] Fstate;
+	delete [] xnames;
+	delete [] Fnames;
+
+	delete [] user_x_node; user_x_node = NULL;
+}
+
+void feature_space_midpoint_with_gradient(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper, double* lower)
+{
+	snoptProblem prob(0);
+
+	integer n;
+	{
+		int n_ = 0;
+		const struct svm_node* x_node_ = x_node;
+		while(x_node_->index != -1) { n_++; x_node_++; }
+		n = n_;
+	}
+
+	integer neF = 1;
+	integer lenA = 10;
+
+	integer* iAfun = new integer[lenA];
+	integer* jAvar = new integer[lenA];
+	doublereal* A = new doublereal[lenA];
+
+	integer lenG = 2 * n;
+	integer* iGfun = new integer[lenG];
+	integer* jGvar = new integer[lenG];
+
+	doublereal* x = new doublereal[n];
+	doublereal* xlow = new doublereal[n];
+	doublereal* xupp = new doublereal[n];
+	doublereal* xmul = new doublereal[n];
+	integer* xstate = new integer[n];
+
+	doublereal* F = new doublereal[neF];
+	doublereal* Flow = new doublereal[neF];
+	doublereal* Fupp = new doublereal[neF];
+	doublereal* Fmul = new doublereal[neF];
+	integer* Fstate = new integer[neF];
+
+	integer nxnames = 1;
+	integer nFnames = 1;
+	char* xnames = new char[nxnames*8];
+	char* Fnames = new char[nFnames*8];
+
+	integer ObjRow = 0;
+	doublereal ObjAdd = 0;
+
+	// set the upper and lower bounds
+	for(int i = 0; i < n; ++i)
+	{
+		xlow[i] = lower ? lower[i] : -1e20;
+		xupp[i] = upper ? upper[i] : 1e20;
+		xstate[i] = 0;
+	}
+
+	Flow[0] = -1e20;
+	Fupp[0] = 0;
+
+	for(int i = 0; i < n; ++i)
+	{
+		x[i] = (x_node[i].value + y_node[i].value) * 0.5;
+		// x[i] = 0;
+	}
+
+	// load the data for problem
+	// prob.setPrintFile("distance0.out");
+	prob.setProblemSize(n, neF);
+	prob.setObjective(ObjRow, ObjAdd);
+	prob.setA(lenA, iAfun, jAvar, A);
+	prob.setG(lenG, iGfun, jGvar);
+	prob.setX(x, xlow, xupp, xmul, xstate);
+	prob.setF(F, Flow, Fupp, Fmul, Fstate);
+	prob.setXNames(xnames, nxnames);
+	prob.setFNames(Fnames, nFnames);
+
+	integer neA, neG;
+	for(int i = 0; i < neF; ++i)
+		Fmul[i] = 0;
+
+	neG = 0;
+	for(int i = 0; i < n; ++i)
+	{
+		iGfun[neG] = 0;
+		jGvar[neG] = i;
+		neG++;
+	}
+
+	neA = 0;
+
+	prob.setNeA(neA);
+	prob.setNeG(neG);
+	prob.setUserFun(midpointF_free_G);
+	prob.setProbName("midpoint");
+
+	prob.setIntParameter("Major Iteration limit", 250);
+
+	user_model = model;
+	user_x_node = new svm_node[n + 1];
+	for(int i = 0; i < n; ++i)
+		user_x_node[i].index = i + 1;
+	user_x_node[n].index = -1;
+
+	user_fixed_node1 = x_node;
+	user_fixed_node2 = y_node;
+
+	// snopta will compute the Jacobian by finite differences
+	prob.setIntParameter("Derivative option", 0);
+	prob.computeJac();
+
 
 	integer Cold = 0, Basis = 1, Warm  = 2;
 	prob.solve(Cold);

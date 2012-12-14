@@ -168,81 +168,174 @@ namespace APDL
 
 	double SVMDistanceToDecisionBoundary_Projection::distance(const DataVector& v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 		
+		double d;
 		if(!use_bound)
-			return dist_to_decision_boundary_constrain_free(learner.model, hyperw, node);
+			d = dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, initial_guess);
 		else
-			return dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, upper_bound, lower_bound);
+			d = dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, initial_guess, upper_bound, lower_bound);
+
+		delete [] initial_guess;
+		return d;
 	}
 
 	double SVMDistanceToDecisionBoundary_Projection::distance(const DataVector& v, DataVector& closest_v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 		double d;
 
 		if(!use_bound)
-			dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, NULL, NULL, closest_node);
+			dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, NULL, NULL, NULL, closest_node);
 		else 
-			dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, upper_bound, lower_bound, closest_node);
+			dist_to_decision_boundary_constrain_free(learner.model, hyperw, node, NULL, upper_bound, lower_bound, closest_node);
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			closest_v[i] = closest_node[i].value;
+
+		delete [] initial_guess;
 
 		return d;
 	}
 
 	double SVMDistanceToDecisionBoundary_Optimization::distance(const DataVector& v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 
+		double d; 
 		if(!use_bound)
-			return dist_to_decision_boundary(learner.model, node);
+			d = dist_to_decision_boundary(learner.model, node, initial_guess);
 		else
-			return dist_to_decision_boundary(learner.model, node, upper_bound, lower_bound);
+			d = dist_to_decision_boundary(learner.model, node, initial_guess, upper_bound, lower_bound);
+
+		delete [] initial_guess;
+
+		return d;
 	}
 
 	double SVMDistanceToDecisionBoundary_Optimization::distance(const DataVector& v, DataVector& closest_v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 		double d;
 		
 		if(!use_bound)
-			dist_to_decision_boundary(learner.model, node, NULL, NULL, closest_node);
+			d = dist_to_decision_boundary(learner.model, node, initial_guess, NULL, NULL, closest_node);
 		else 
-			dist_to_decision_boundary(learner.model, node, upper_bound, lower_bound, closest_node);
+			d = dist_to_decision_boundary(learner.model, node, initial_guess, upper_bound, lower_bound, closest_node);
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			closest_v[i] = closest_node[i].value;
+
+		delete [] initial_guess;
 
 		return d;
 	}
 
 	double SVMDistanceToDecisionBoundary_OptimizationGradient::distance(const DataVector& v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 
+		double d;
 		if(!use_bound)
-			return dist_to_decision_boundary_with_gradient(learner.model, node);
+			d = dist_to_decision_boundary_with_gradient(learner.model, node, initial_guess);
 		else
-			return dist_to_decision_boundary_with_gradient(learner.model, node, upper_bound, lower_bound);
+			d = dist_to_decision_boundary_with_gradient(learner.model, node, initial_guess, upper_bound, lower_bound);
+
+
+		delete [] initial_guess;
+		return d;
 	}
 
 	double SVMDistanceToDecisionBoundary_OptimizationGradient::distance(const DataVector& v, DataVector& closest_v) const
 	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[learner.feature_dim], 1, learner.feature_dim);
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		double* initial_guess = new double[learner.feature_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+			initial_guess[i] = learner.model->SV[indices[0][0]][i].value;
+
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			node[i].value = v[i];
 		double d;
 		
 		if(!use_bound)
-			dist_to_decision_boundary_with_gradient(learner.model, node, NULL, NULL, closest_node);
+			d = dist_to_decision_boundary_with_gradient(learner.model, node, initial_guess, NULL, NULL, closest_node);
 		else 
-			dist_to_decision_boundary_with_gradient(learner.model, node, upper_bound, lower_bound, closest_node);
+			d = dist_to_decision_boundary_with_gradient(learner.model, node, initial_guess, upper_bound, lower_bound, closest_node);
 		for(std::size_t i = 0; i < learner.feature_dim; ++i)
 			closest_v[i] = closest_node[i].value;
+
+		delete [] initial_guess;
 
 		return d;
 	}

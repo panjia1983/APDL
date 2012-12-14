@@ -252,7 +252,11 @@ namespace APDL
 
 			delete [] v;
 		}
-		
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectors() const;
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
+
 		svm_parameter param;
 		
 		svm_problem problem;
@@ -267,6 +271,8 @@ namespace APDL
 
 		bool use_scaler;
 	};
+
+	
 
 	class MulticonlitronLearner
 	{
@@ -423,6 +429,10 @@ namespace APDL
 
 			os.close();
 		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectors() const;
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
+		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
 		DistanceProxyRN distancer;
 

@@ -94,12 +94,15 @@ double svm_predict_probability(const struct svm_model *model, const struct svm_n
 
 double svm_predict_values_twoclass(const struct svm_model* model, const struct svm_node* x);
 double svm_hyper_w_normsqr_twoclass(const struct svm_model* model);
-double dist_to_decision_boundary(const struct svm_model* model, const struct svm_node* x, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
-double dist_to_decision_boundary_with_gradient(const struct svm_model* model, const struct svm_node* x, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
-double dist_to_decision_boundary_constrain_free(const struct svm_model* model, double w_norm, const struct svm_node* x, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
 
+
+double dist_to_decision_boundary(const struct svm_model* model, const struct svm_node* x, double* init_guess_x = NULL, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
+double dist_to_decision_boundary_with_gradient(const struct svm_model* model, const struct svm_node* x, double* init_guess_x = NULL, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
+double dist_to_decision_boundary_constrain_free(const struct svm_model* model, double w_norm, const struct svm_node* x, double* init_guess_x = NULL, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
+
+// initial guess is 0.5 * (x + y)
 void feature_space_midpoint(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);
-
+void feature_space_midpoint_with_gradient(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);
 
 
 

@@ -176,9 +176,101 @@ namespace APDL
 												std::vector<DataVector>& samples,
 												std::size_t search_num)
 	{
+		//const struct svm_model* model = learner.model;
+		//std::size_t dim = learner.feature_dim;
+		//double inv_w_norm = sqrt(learner.hyperw_normsqr);
+
+		//double* upper = new double[dim];
+		//double* lower = new double[dim];
+		//for(std::size_t i = 0; i < dim; ++i)
+		//{
+		//	upper[i] = learner.scaler->v_min[i];
+		//	lower[i] = learner.scaler->v_max[i];
+		//}
+
+		//std::size_t start[2];
+		//std::size_t number[2];
+		//start[0] = 0;
+		//number[0] = model->nSV[0];
+		//start[1] = start[0] + number[0];
+		//number[1] = model->nSV[1];
+
+		//if(number[1] < number[0])
+		//{
+		//	std::size_t tmp = number[1];
+		//	number[1] = number[0];
+		//	number[0] = tmp;
+
+		//	tmp = start[1];
+		//	start[1] = start[0];
+		//	start[0] = tmp;
+		//}
+
+		//svm_node* midpoint = new svm_node[dim + 1];
+		//for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i + 1;
+		//midpoint[dim].index = -1;
+
+		//DataVector p(dim);
+
+		//
+
+		//flann::Matrix<double> dataset = flann::Matrix<double>(new double[dim * number[1]], number[1], dim);
+		//std::size_t id = 0;
+		//for(std::size_t i = start[1]; i < start[1] + number[1]; ++i)
+		//{
+		//	for(std::size_t j = 0; j < dim; ++j)
+		//		dataset[id][j] = model->SV[i][j].value;
+		//	id++;
+		//}
+
+		//flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		//index->buildIndex();
+
+		//flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim], 1, dim);
+		//for(std::size_t i = start[0]; i < start[0] + number[0]; ++i)
+		//{
+		//	svm_node* x = model->SV[i];
+		//	for(std::size_t j = 0; j < dim; ++j)
+		//		queryset[0][j] = x[j].value;
+
+		//	std::vector<std::vector<int> > indices;
+		//	std::vector<std::vector<double> > dists;
+
+		//	index->knnSearch(queryset, indices, dists, search_num, flann::SearchParams());
+
+		//	for(std::size_t j = 0; j < indices[0].size(); ++j)
+		//	{
+		//		svm_node* y = model->SV[start[1] + indices[0][j]];
+
+		//		feature_space_midpoint_with_gradient(model, x, y, midpoint, upper, lower);
+
+		//		double f_value = svm_predict_values_twoclass(model, midpoint);
+		//		if(std::abs(f_value) > 1) continue;
+
+		//		for(std::size_t k = 0; k < dim; ++k)
+		//			p[k] = midpoint[k].value;
+
+		//		samples.push_back(p);
+		//	}
+		//}
+
+		//delete index;
+		//delete [] midpoint;
+		//delete [] upper;
+		//delete [] lower;
+
+
 		const struct svm_model* model = learner.model;
 		std::size_t dim = learner.feature_dim;
 		double inv_w_norm = sqrt(learner.hyperw_normsqr);
+
+		double* upper = new double[dim];
+		double* lower = new double[dim];
+		for(std::size_t i = 0; i < dim; ++i)
+		{
+			upper[i] = learner.scaler->v_min[i];
+			lower[i] = learner.scaler->v_max[i];
+		}
 
 		std::size_t start[2];
 		std::size_t number[2];
@@ -204,17 +296,12 @@ namespace APDL
 
 		DataVector p(dim);
 
-		flann::Matrix<double> dataset = flann::Matrix<double>(new double[dim * number[1]], number[1], dim);
-		std::size_t id = 0;
-		for(std::size_t i = start[1]; i < start[1] + number[1]; ++i)
-		{
-			for(std::size_t j = 0; j < dim; ++j)
-				dataset[id][j] = model->SV[i][j].value;
-			id++;
-		}
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = NULL;
+		if(number[1] < number[0]) 
+			index = learner.constructIndexOfSupportVectorsClass0();
+		else 
+			index = learner.constructIndexOfSupportVectorsClass1();
 
-		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
-		index->buildIndex();
 
 		flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim], 1, dim);
 		for(std::size_t i = start[0]; i < start[0] + number[0]; ++i)
@@ -232,7 +319,7 @@ namespace APDL
 			{
 				svm_node* y = model->SV[start[1] + indices[0][j]];
 
-				feature_space_midpoint(model, x, y, midpoint);
+				feature_space_midpoint_with_gradient(model, x, y, midpoint, upper, lower);
 
 				double f_value = svm_predict_values_twoclass(model, midpoint);
 				if(std::abs(f_value) > 1) continue;
@@ -245,17 +332,94 @@ namespace APDL
 		}
 
 		delete index;
-
 		delete [] midpoint;
+		delete [] upper;
+		delete [] lower;
 	}
 
 	void sample_decision_boundary_interpolation(const SVMLearner& learner,
 												std::vector<DataVector>& samples,
 												std::size_t search_num)
 	{
+		//const struct svm_model* model = learner.model;
+		//std::size_t dim = learner.feature_dim;
+		//double inv_w_norm = sqrt(learner.hyperw_normsqr);
+
+		//std::size_t start[2];
+		//std::size_t number[2];
+		//start[0] = 0;
+		//number[0] = model->nSV[0];
+		//start[1] = start[0] + number[0];
+		//number[1] = model->nSV[1];
+
+		//if(number[1] < number[0])
+		//{
+		//	std::size_t tmp = number[1];
+		//	number[1] = number[0];
+		//	number[0] = tmp;
+
+		//	tmp = start[1];
+		//	start[1] = start[0];
+		//	start[0] = tmp;
+		//}
+
+		//svm_node* midpoint = new svm_node[dim + 1];
+		//for(std::size_t i = 0; i < dim; ++i) midpoint[i].index = i + 1;
+		//midpoint[dim].index = -1;
+
+		//DataVector p(dim);
+		//
+		//flann::Matrix<double> dataset = flann::Matrix<double>(new double[dim * number[1]], number[1], dim);
+		//std::size_t id = 0;
+		//for(std::size_t i = start[1]; i < start[1] + number[1]; ++i)
+		//{
+		//	for(std::size_t j = 0; j < dim; ++j)
+		//		dataset[id][j] = model->SV[i][j].value;
+		//	id++;
+		//}
+
+		//flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		//index->buildIndex();
+
+		//flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim], 1, dim);
+		//for(std::size_t i = start[0]; i < start[0] + number[0]; ++i)
+		//{
+		//	svm_node* x = model->SV[i];
+		//	for(std::size_t j = 0; j < dim; ++j)
+		//		queryset[0][j] = x[j].value;
+
+		//	std::vector<std::vector<int> > indices;
+		//	std::vector<std::vector<double> > dists;
+
+		//	index->knnSearch(queryset, indices, dists, search_num, flann::SearchParams());
+
+		//	for(std::size_t j = 0; j < indices[0].size(); ++j)
+		//	{
+		//		svm_node* y = model->SV[start[1] + indices[0][j]];
+
+		//		// feature_space_midpoint(model, x, y, midpoint);
+
+		//		for(std::size_t k = 0; k < dim; ++k)
+		//			midpoint[k].value = 0.5 * (x[k].value + y[k].value);
+
+		//		double f_value = svm_predict_values_twoclass(model, midpoint);
+		//		if(std::abs(f_value) > 1) continue;
+
+		//		for(std::size_t k = 0; k < dim; ++k)
+		//			p[k] = midpoint[k].value;
+
+		//		samples.push_back(p);
+		//	}
+		//}
+
+		//delete index;
+
+		//delete [] midpoint;
+
+
+
 		const struct svm_model* model = learner.model;
 		std::size_t dim = learner.feature_dim;
-		double inv_w_norm = sqrt(learner.hyperw_normsqr);
 
 		std::size_t start[2];
 		std::size_t number[2];
@@ -280,18 +444,12 @@ namespace APDL
 		midpoint[dim].index = -1;
 
 		DataVector p(dim);
-		
-		flann::Matrix<double> dataset = flann::Matrix<double>(new double[dim * number[1]], number[1], dim);
-		std::size_t id = 0;
-		for(std::size_t i = start[1]; i < start[1] + number[1]; ++i)
-		{
-			for(std::size_t j = 0; j < dim; ++j)
-				dataset[id][j] = model->SV[i][j].value;
-			id++;
-		}
 
-		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
-		index->buildIndex();
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = NULL;
+		if(number[1] < number[0]) 
+			index = learner.constructIndexOfSupportVectorsClass0();
+		else 
+			index = learner.constructIndexOfSupportVectorsClass1();
 
 		flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim], 1, dim);
 		for(std::size_t i = start[0]; i < start[0] + number[0]; ++i)

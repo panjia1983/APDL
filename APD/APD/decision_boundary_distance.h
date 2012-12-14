@@ -96,6 +96,8 @@ namespace APDL
 			}
 
 			hyperw = sqrt(learner.hyperw_normsqr);
+
+			index = learner.constructIndexOfSupportVectors();
 		}
 
 		~SVMDistanceToDecisionBoundary_Projection()
@@ -104,6 +106,7 @@ namespace APDL
 			delete [] closest_node;
 			delete [] upper_bound;
 			delete [] lower_bound;
+			delete index;
 		}
 
 		double distance(const DataVector& v) const;
@@ -116,6 +119,8 @@ namespace APDL
 
 		mutable svm_node* node;
 		mutable struct svm_node* closest_node;
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index;
 
 		double* upper_bound;
 		double* lower_bound;
@@ -160,6 +165,8 @@ namespace APDL
 					}
 				}
 			}
+
+			index = learner.constructIndexOfSupportVectors();
 		}
 
 		~SVMDistanceToDecisionBoundary_Optimization()
@@ -168,6 +175,7 @@ namespace APDL
 			delete [] closest_node;
 			delete [] upper_bound;
 			delete [] lower_bound;
+			delete index;
 		}
 
 		double distance(const DataVector& v) const;
@@ -181,6 +189,8 @@ namespace APDL
 		double* lower_bound;
 
 		const SVMLearner& learner;
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index;
 
 		bool use_bound;
 	};
@@ -222,6 +232,8 @@ namespace APDL
 					}
 				}
 			}
+
+			index = learner.constructIndexOfSupportVectors();
 		}
 
 		~SVMDistanceToDecisionBoundary_OptimizationGradient()
@@ -230,6 +242,7 @@ namespace APDL
 			delete [] closest_node;
 			delete [] upper_bound;
 			delete [] lower_bound;
+			delete index;
 		}
 
 		double distance(const DataVector& v) const;
@@ -243,6 +256,8 @@ namespace APDL
 		double* lower_bound;
 
 		const SVMLearner& learner;
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index;
 
 		bool use_bound;
 	};

@@ -301,6 +301,72 @@ after_separable_test:
 		return res;
 	}
 
+	flann::Index<FLANN_WRAPPER::DistanceRN>* MulticonlitronLearner::constructIndexOfSupportVectors() const
+	{
+		std::size_t data_num = 2 * model.numOfHyperPlanes();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		std::size_t id = 0;
+		for(std::size_t i = 0; i < model.size(); ++i)
+		{
+			for(std::size_t j = 0; j < model[i].size(); ++j)
+			{
+				for(std::size_t k = 0; k < feature_dim; ++k)
+					dataset[id][k] = model[i][j].supp1[k];
+				id++;
+				for(std::size_t k = 0; k < feature_dim; ++k)
+					dataset[id][k] = model[i][j].supp2[k];
+				id++;
+			}
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	flann::Index<FLANN_WRAPPER::DistanceRN>* MulticonlitronLearner::constructIndexOfSupportVectorsClass0() const
+	{
+		std::size_t data_num = model.numOfHyperPlanes();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		std::size_t id = 0;
+		for(std::size_t i = 0; i < model.size(); ++i)
+		{
+			for(std::size_t j = 0; j < model[i].size(); ++j)
+			{
+				for(std::size_t k = 0; k < feature_dim; ++k)
+					dataset[id][k] = model[i][j].supp1[k];
+				id++;
+			}
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	flann::Index<FLANN_WRAPPER::DistanceRN>* MulticonlitronLearner::constructIndexOfSupportVectorsClass1() const
+	{
+		std::size_t data_num = model.numOfHyperPlanes();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		std::size_t id = 0;
+		for(std::size_t i = 0; i < model.size(); ++i)
+		{
+			for(std::size_t j = 0; j < model[i].size(); ++j)
+			{
+				for(std::size_t k = 0; k < feature_dim; ++k)
+					dataset[id][k] = model[i][j].supp2[k];
+				id++;
+			}
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
 	//std::vector<PredictResult> SVMLearner::predict2(const std::vector<ContactSpaceSampleData>& queries, std::size_t active_dim) const
 	//{
 	//	std::vector<PredictResult> predict_results;
@@ -556,4 +622,56 @@ after_separable_test:
 		return HyperPlane(w, b);
 	}
 
+
+	flann::Index<FLANN_WRAPPER::DistanceRN>* SVMLearner::constructIndexOfSupportVectors() const
+	{
+		size_t num_supp = model->l;
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * num_supp], num_supp, feature_dim);
+		for(std::size_t i = 0; i < num_supp; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				dataset[i][j] = model->SV[i][j].value;
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	flann::Index<FLANN_WRAPPER::DistanceRN>* SVMLearner::constructIndexOfSupportVectorsClass0() const
+	{
+		size_t num_supp = model->nSV[0];
+		// size_t start = 0;
+
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * num_supp], num_supp, feature_dim);
+		for(std::size_t i = 0; i < num_supp; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				dataset[i][j] = model->SV[i][j].value;
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;	
+	}
+	
+	flann::Index<FLANN_WRAPPER::DistanceRN>* SVMLearner::constructIndexOfSupportVectorsClass1() const
+	{
+		size_t num_supp = model->nSV[1];
+		size_t start = model->nSV[0];
+
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * num_supp], num_supp, feature_dim);
+		for(std::size_t i = 0; i < num_supp; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				dataset[i][j] = model->SV[i+start][j].value;
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;	
+	}
 }
