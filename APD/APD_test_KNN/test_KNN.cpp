@@ -23,12 +23,11 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 
 			flann::Index<ContactSpaceR2::DistanceType>* index = NULL;
 
-			generateIndex<ContactSpaceR2::DistanceType>(contactspace.data, 
+			generateIndex<ContactSpaceR2::DistanceType>(contactspace_samples, 
 				contactspace.active_data_dim(), 
 				index,
 				flann::KDTreeIndexParams());
@@ -36,7 +35,7 @@ namespace APDL
 		    std::vector<std::vector<int> > indices;
 		    std::vector<std::vector<double> > dists;
 
-			knnSearch<ContactSpaceR2::DistanceType>(contactspace.data, 
+			knnSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -47,7 +46,7 @@ namespace APDL
 			indices.clear();
 			dists.clear();
 
-			radiusSearch<ContactSpaceR2::DistanceType>(contactspace.data, 
+			radiusSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -82,12 +81,11 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceSE2 contactspace(p1, p2);
-			for(int i = 0; i < 100000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(100000);
 
 			flann::Index<ContactSpaceR2::DistanceType>* index = NULL;
 
-			generateIndex<ContactSpaceR2::DistanceType>(contactspace.data, 
+			generateIndex<ContactSpaceR2::DistanceType>(contactspace_samples, 
 				contactspace.active_data_dim(), 
 				index,
 				flann::KDTreeIndexParams());
@@ -95,7 +93,7 @@ namespace APDL
 		    std::vector<std::vector<int> > indices;
 		    std::vector<std::vector<double> > dists;
 
-			knnSearch<ContactSpaceR2::DistanceType>(contactspace.data, 
+			knnSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -106,7 +104,7 @@ namespace APDL
 			indices.clear();
 			dists.clear();
 
-			radiusSearch<ContactSpaceR2::DistanceType>(contactspace.data, 
+			radiusSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,

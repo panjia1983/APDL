@@ -24,11 +24,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 		}
 		
 		{
@@ -51,11 +50,10 @@ namespace APDL
 			std::pair<Vec2D, double> c2 = p2.getCircle();
 			
 			ContactSpaceSE2 contactspace(p1, p2, 0.1 * c2.second);
-			for(int i = 0; i < 100000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(100000);
 				
 			std::ofstream out("space_test_2d_2.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 		}
 		
 		{
@@ -64,11 +62,10 @@ namespace APDL
 			readOffFile(model1, "../data/cup.off");
 			readOffFile(model2, "../data/spoon.off");
 			ContactSpaceR3 contactspace(model1, model2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			model1->ComputeCenterOfMass();
 			model1->ComputeRadius();
@@ -86,11 +83,10 @@ namespace APDL
 			readObjFile(model1, "../data/cup.obj");
 			readObjFile(model2, "../data/spoon.obj");
 			ContactSpaceR3 contactspace(model1, model2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			model1->ComputeCenterOfMass();
 			model1->ComputeRadius();
@@ -107,11 +103,10 @@ namespace APDL
 			readTriFile(model1, "../data/cup.tri");
 			readTriFile(model2, "../data/spoon.tri");
 			ContactSpaceR3 contactspace(model1, model2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			model1->ComputeCenterOfMass();
 			model1->ComputeRadius();
@@ -128,11 +123,10 @@ namespace APDL
 			readTriFile(model1, "../data/cup.tri");
 			readTriFile(model2, "../data/spoon.tri");
 			ContactSpaceSE3Quat contactspace(model1, model2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test2.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			model1->ComputeCenterOfMass();
 			model1->ComputeRadius();
@@ -149,11 +143,10 @@ namespace APDL
 			readTriFile(model1, "../data/cup.tri");
 			readTriFile(model2, "../data/spoon.tri");
 			ContactSpaceSE3Quat2 contactspace(model1, model2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test3.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			model1->ComputeCenterOfMass();
 			model1->ComputeRadius();
@@ -166,25 +159,25 @@ namespace APDL
 			out.close();
 			
 			std::ifstream in("space_test3.txt");
-			contactspace.data.clear();
-			asciiReader(in, contactspace);
+			contactspace_samples.clear();
+			asciiReader(in, contactspace_samples);
 			in.close();
 			
 			std::ofstream out2("space_test4.txt");
-			asciiWriter(out2, contactspace);
+			asciiWriter(out2, contactspace_samples);
 			out2.close();
 			
 			std::ofstream out3("space_test5.txt", std::ios::binary);
-			binaryWriter(out3, contactspace);
+			binaryWriter(out3, contactspace_samples);
 			out3.close();
 			
 			std::ifstream in2("space_test5.txt", std::ios::binary);
-			contactspace.data.clear();
-			binaryReader(in2, contactspace);
+			contactspace_samples.clear();
+			binaryReader(in2, contactspace_samples);
 			in2.close();
 			
 			std::ofstream out4("space_test6.txt");
-			asciiWriter(out4, contactspace);
+			asciiWriter(out4, contactspace_samples);
 			out4.close();
 			
 			

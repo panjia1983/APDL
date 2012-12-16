@@ -252,6 +252,12 @@ private:
 	}
 };
 
+
+double k_function(const svm_node* x, const svm_node* y, const svm_parameter& param)
+{
+	return Kernel::k_function(x, y, param);
+}
+
 Kernel::Kernel(int l, svm_node * const * x_, const svm_parameter& param)
 :kernel_type(param.kernel_type), degree(param.degree),
  gamma(param.gamma), coef0(param.coef0)

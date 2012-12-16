@@ -120,15 +120,22 @@ namespace APDL
 			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v_ = sampler.sample();
+			std::vector<ContactSpaceSampleData> samples;
 			DataVector v(3);
-			v[0] = v_[0];
-			v[1] = v_[1];
-			v[2] = 0;
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v_ = sampler.sample();
+			
+				v[0] = v_[0];
+				v[1] = v_[1];
+				v[2] = 0;
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
 		
 		std::size_t data_dim() const
@@ -152,8 +159,6 @@ namespace APDL
 			return Scaler(v_min, v_max, 2);
 		}
 		
-		std::vector<ContactSpaceSampleData> data;
-		
 		SamplerR2 sampler;
 		
 		Collider2D collider;
@@ -173,14 +178,18 @@ namespace APDL
 			                 c2.first.x, c2.first.y, c2.second + 0.5 * delta);
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v = sampler.sample();
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+			std::vector<ContactSpaceSampleData> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
 		
 		std::size_t data_dim() const
 		{
@@ -230,14 +239,18 @@ namespace APDL
 			sampler.setBound(x_center - r2, x_center + r2, y_center - r2, y_center + r2);
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v = sampler.sample();
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+			std::vector<ContactSpaceSampleData> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
 		
 		std::size_t data_dim() const
 		{
@@ -289,18 +302,26 @@ namespace APDL
 			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v_ = sampler.sample();
+			std::vector<ContactSpaceSampleData> samples;
 			DataVector v(6);
-			v[0] = v_[0];
-			v[1] = v_[1];
-			v[2] = v_[2];
-			v[3] = 0;
-			v[4] = 0;
-			v[5] = 0;
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v_ = sampler.sample();
+			
+				v[0] = v_[0];
+				v[1] = v_[1];
+				v[2] = v_[2];
+				v[3] = 0;
+				v[4] = 0;
+				v[5] = 0;
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
 		
 		std::vector<ContactSpaceSampleData> data;
@@ -348,14 +369,19 @@ namespace APDL
 			                 model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta);
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v = sampler.sample();
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+			std::vector<ContactSpaceSampleData> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
+
 		
 		std::size_t data_dim() const
 		{
@@ -401,14 +427,18 @@ namespace APDL
 			                 
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
-			DataVector v = sampler.sample();
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+			std::vector<ContactSpaceSampleData> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
 		
 		std::size_t data_dim() const
 		{
@@ -449,44 +479,49 @@ namespace APDL
 			delta = delta_;
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
+			std::vector<ContactSpaceSampleData> samples;
 			double r_[4];
-			rng.quaternion(r_);
-			
-			Quaternion r(r_[0], r_[1], r_[2], r_[3]);
 			double R[3][3];
-			Quat2Rot(R, r);
-			
-			AABB3D new_aabb2 = rotate(aabb2, R);
-			
-			double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-			double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
-			
-			double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-			double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
-			
-			double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-			double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
-			
-			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
-			DataVector t = sampler.sample();
-			
 			DataVector v(6);
 			double a, b, c;
-			Quat2Euler(a, b, c, r);
-			v[0] = t[0];
-			v[1] = t[1];
-			v[2] = t[2];
-			v[3] = a;
-			v[4] = b;
-			v[5] = c;
-			
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				rng.quaternion(r_);
+				Quaternion r(r_[0], r_[1], r_[2], r_[3]);
+
+				Quat2Rot(R, r);
+
+				AABB3D new_aabb2 = rotate(aabb2, R);
+
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+
+				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
+				DataVector t = sampler.sample();
+
+				Quat2Euler(a, b, c, r);
+				v[0] = t[0];
+				v[1] = t[1];
+				v[2] = t[2];
+				v[3] = a;
+				v[4] = b;
+				v[5] = c;
+
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
 		
 		std::size_t data_dim() const
 		{
@@ -508,9 +543,9 @@ namespace APDL
 			return Scaler(v_min, v_max, 6);
 		}
 		
-		SamplerR3 sampler;
+		mutable SamplerR3 sampler;
 		
-		RNG rng;
+		mutable RNG rng;
 		
 		Collider3D collider;
 		
@@ -532,43 +567,51 @@ namespace APDL
 			delta = delta_;
 		}
 		
-		void random_sample()
+		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
+			std::vector<ContactSpaceSampleData> samples;
+
 			double r_[4];
-			rng.quaternion(r_);
-			
-			Quaternion r(r_[0], r_[1], r_[2], r_[3]);
 			double R[3][3];
-			Quat2Rot(R, r);
-			
-			AABB3D new_aabb2 = rotate(aabb2, R);
-			
-			double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-			double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
-			
-			double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-			double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
-			
-			double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-			double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
-			
-			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
-			DataVector t = sampler.sample();
-			
 			DataVector v(7);
-			v[0] = t[0];
-			v[1] = t[1];
-			v[2] = t[2];
-			v[3] = r_[0];
-			v[4] = r_[1];
-			v[5] = r_[2];
-			v[6] = r_[3];
-			
-			bool col = collider.isCollide(v);
-			data.push_back(ContactSpaceSampleData(v, col));
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				rng.quaternion(r_);
+
+				Quaternion r(r_[0], r_[1], r_[2], r_[3]);
+
+				Quat2Rot(R, r);
+
+				AABB3D new_aabb2 = rotate(aabb2, R);
+
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+
+				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
+				DataVector t = sampler.sample();
+
+
+				v[0] = t[0];
+				v[1] = t[1];
+				v[2] = t[2];
+				v[3] = r_[0];
+				v[4] = r_[1];
+				v[5] = r_[2];
+				v[6] = r_[3];
+
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
 		}
-		
-		std::vector<ContactSpaceSampleData> data;
 		
 		std::size_t data_dim() const
 		{
@@ -590,9 +633,9 @@ namespace APDL
 			return Scaler(v_min, v_max, 7);
 		}
 		
-		SamplerR3 sampler;
+		mutable SamplerR3 sampler;
 		
-		RNG rng;
+		mutable RNG rng;
 		
 		Collider3D collider;
 		
@@ -601,17 +644,18 @@ namespace APDL
 		double delta;
 	};
 	
-	template<typename TContactSpace>
-	std::ofstream& asciiWriter(std::ofstream& os, const TContactSpace& space)
+	inline std::ofstream& asciiWriter(std::ofstream& os, const std::vector<ContactSpaceSampleData>& samples)
 	{
-		os << space.data.size() << " " << space.data_dim() << std::endl;
-		std::size_t dim = space.data_dim();
-		for(std::size_t i = 0; i < space.data.size(); ++i)
+		if(samples.size() == 0) return os;
+
+		os << samples.size() << " " << samples[0].v.dim() << std::endl;
+		std::size_t dim = samples[0].v.dim();
+		for(std::size_t i = 0; i < samples.size(); ++i)
 		{
-			os << space.data[i].col << " ";
+			os << samples[i].col << " ";
 			for(std::size_t j = 0; j < dim; ++j)
 			{
-				os << space.data[i].v[j] << " ";
+				os << samples[i].v[j] << " ";
 			}
 			os << std::endl;
 		}
@@ -619,11 +663,12 @@ namespace APDL
 		return os;
 	}
 	
-	template<typename TContactSpace>
-	std::ofstream& binaryWriter(std::ofstream& os, const TContactSpace& space)
+	inline std::ofstream& binaryWriter(std::ofstream& os, const std::vector<ContactSpaceSampleData>& samples)
 	{
-		std::size_t data_num = space.data.size();
-		std::size_t data_dim = space.data_dim();
+		if(samples.size() == 0) return os;
+
+		std::size_t data_num = samples.size();
+		std::size_t data_dim = samples[0].v.dim();
 		os.write((char*)&data_num, sizeof(std::size_t));
 		os.write((char*)&data_dim, sizeof(std::size_t));
 		
@@ -631,10 +676,10 @@ namespace APDL
 		char col;
 		for(std::size_t i = 0; i < data_num; ++i)
 		{
-			col = space.data[i].col;
+			col = samples[i].col;
 			for(std::size_t j = 0; j < data_dim; ++j)
 			{
-				v[j] = space.data[i].v[j];
+				v[j] = samples[i].v[j];
 			}
 			
 			os.write(&col, sizeof(char));
@@ -646,13 +691,13 @@ namespace APDL
 		return os;
 	}
 	
-	template<typename TContactSpace>
-	std::ifstream& asciiReader(std::ifstream& is, TContactSpace& space)
+
+	inline std::ifstream& asciiReader(std::ifstream& is, std::vector<ContactSpaceSampleData>& samples)
 	{
 		std::size_t data_num, data_dim;
 		is >> data_num >> data_dim;
-		if(space.data.size() != 0)
-			assert(data_dim == space.data[0].v.dim());
+		if(samples.size() != 0)
+			assert(data_dim == samples[0].v.dim());
 			
 		DataVector v(data_dim);
 		bool col;
@@ -662,20 +707,19 @@ namespace APDL
 			for(std::size_t j = 0; j < data_dim; ++j)
 				is >> v[j];
 				
-			space.data.push_back(ContactSpaceSampleData(v, col));
+			samples.push_back(ContactSpaceSampleData(v, col));
 		}
 		
 		return is;
 	}
 	
-	template<typename TContactSpace>
-	std::ifstream& binaryReader(std::ifstream& is, TContactSpace& space)
+	inline std::ifstream& binaryReader(std::ifstream& is, std::vector<ContactSpaceSampleData>& samples)
 	{
 		std::size_t data_num, data_dim;
 		is.read((char*)&data_num, sizeof(std::size_t));
 		is.read((char*)&data_dim, sizeof(std::size_t));
-		if(space.data.size() != 0)
-			assert(data_dim == space.data[0].v.dim());
+		if(samples.size() != 0)
+			assert(data_dim == samples[0].v.dim());
 			
 		DataVector v(data_dim);
 		bool col;
@@ -696,7 +740,7 @@ namespace APDL
 				v[j] = t;
 				p = p + sizeof(double);
 			}
-			space.data.push_back(ContactSpaceSampleData(v, col));
+			samples.push_back(ContactSpaceSampleData(v, col));
 		}
 		
 		delete [] buffer;

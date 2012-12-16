@@ -9,36 +9,89 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test", "APD_test\APD_te
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_2d", "APD_test_minkowski_2d\APD_test_minkowski_2d.vcproj", "{EB3CFA1D-931F-4CF9-AB96-F226626CC40E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_3d", "APD_test_minkowski_3d\APD_test_minkowski_3d.vcproj", "{CE1D98AE-B404-4E55-BD43-2B39DEAA4248}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_GJK", "APD_test_GJK\APD_test_GJK.vcproj", "{D3EF1F53-F6A3-43CA-8DF8-F31B79996674}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_contactspace", "APD_test_contactspace\APD_test_contactspace.vcproj", "{8F552E2F-C3A2-498C-9496-82EAB3D3B2DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d", "APD_test_conlitron_learner_2d\APD_test_conlitron_learner_2d.vcproj", "{B6520072-C9B1-47A9-BE97-D11F5FD2B5F6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d_rotation", "APD_test_conlitron_learner_2d_rotation\APD_test_conlitron_learner_2d_rotation.vcproj", "{41FD2426-5FA4-4931-B97D-2CCC4E4976F3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d_rotation", "APD_test_svm_learner_2d_rotation\APD_test_svm_learner_2d_rotation.vcproj", "{DAAEEFC3-72C1-4B7C-8595-64A2C491856C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d", "APD_test_svm_learner_2d\APD_test_svm_learner_2d.vcproj", "{0C593816-CBBF-41F9-BF98-FD2932CA39BD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_boosting_learner_2d", "APD_test_boosting_learner_2d\APD_test_boosting_learner_2d.vcproj", "{072ED564-BBFA-4CEB-9FF8-0D47C2D47795}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_incremental_svm", "APD_test_incremental_svm\APD_test_incremental_svm.vcproj", "{0F7B391A-C9B6-44E8-824A-EE8310759CEC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_KNN", "APD_test_KNN\APD_test_KNN.vcproj", "{3F9EFC2F-B07F-4CBE-98E4-B9AB44F712C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_conlitron", "APD_test_distance_to_decision_boundary_conlitron\APD_test_distance_to_decision_boundary_conlitron.vcproj", "{FDA30B73-F22C-42B2-A928-7A07838845CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_boundary_sampler", "APD_test_svm_boundary_sampler\APD_test_svm_boundary_sampler.vcproj", "{0CF2EF2C-74EE-46ED-9498-DA4CA6A7BA2C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_boundary_sampler", "APD_test_conlitron_boundary_sampler\APD_test_conlitron_boundary_sampler.vcproj", "{DA86A088-454A-4BF9-9F2A-E3F1595531E1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_angle_interpolation", "APD_test_angle_interpolation\APD_test_angle_interpolation.vcproj", "{C9060584-EB2A-40BE-A558-3E8405C35D49}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_svm", "APD_test_distance_to_decision_boundary_svm\APD_test_distance_to_decision_boundary_svm.vcproj", "{B13E7C73-70CA-473E-A0BC-295BCA03663A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning", "APD_test_active_learning\APD_test_active_learning.vcproj", "{2A15F0B5-354F-401F-B984-CD99CFF277C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -118,6 +171,10 @@ Global
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Debug|Win32.Build.0 = Debug|Win32
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Release|Win32.ActiveCfg = Release|Win32
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Release|Win32.Build.0 = Release|Win32
+		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Debug|Win32.Build.0 = Debug|Win32
+		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Release|Win32.ActiveCfg = Release|Win32
+		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

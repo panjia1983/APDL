@@ -24,11 +24,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
 			ContactSpaceR2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 
 			SVMLearner learner;
 			learner.setC(10);
@@ -72,21 +71,21 @@ namespace APDL
 			}
 		
 
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 
 			SVMEvaluator evaluator(learner);
 
 			learner.save("model.txt");
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
 			int error_num = 0;
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
-				if(results[i].label != contactspace.data[i].col) error_num++;
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
+				if(results[i].label != contactspace_samples[i].col) error_num++;
 			}
 			std::cout << std::endl;
-			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
 
 
 			std::vector<DataVector> samples1, samples2, samples3;
@@ -95,7 +94,7 @@ namespace APDL
 			
 			sample_decision_boundary_interpolation(learner, samples1, 50);
 			samples1 = filter(evaluator, samples1, 1);
-			samples1_kcentriods = sampleSelectionKCentroids(samples1, 100);
+			samples1_kcentriods = sampleSelectionKCentroids(samples1, 100, 10);
 
 			//std::cout << samples1_kcentriods.size() << std::endl;
 			//
@@ -121,7 +120,7 @@ namespace APDL
 
 			
 			sample_decision_boundary_hierarchial_tree<SVMDistanceToDecisionBoundary_OptimizationGradient>(param0, learner, samples2);
-			samples2_kcentriods = sampleSelectionKCentroids(samples2, 100);
+			samples2_kcentriods = sampleSelectionKCentroids(samples2, 100, 10);
 
 			for(std::size_t i = 0; i < samples2_kcentriods.size(); ++i)
 			{
@@ -147,7 +146,7 @@ namespace APDL
 
 
 			sample_decision_boundary_hierarchial_tree_E<SVMEvaluator>(param, learner, samples3);
-			samples3_kcentriods = sampleSelectionKCentroids(samples3, 100);
+			samples3_kcentriods = sampleSelectionKCentroids(samples3, 100, 10);
 
 			//std::ofstream boundary_sample_file("boundary_sample.txt");
 			//for(std::size_t i = 0; i < samples3_kcentriods.size(); ++i)

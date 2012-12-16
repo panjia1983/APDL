@@ -24,17 +24,16 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
 			ContactSpaceR2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 
 			DataVector w(2);
 			w[0] = 1; w[1] = 1;
 			MulticonlitronLearner learner(w, 0.01);
 			learner.setScaler(contactspace.getScaler());
-			learner.learn(contactspace.data, 2);
+			learner.learn(contactspace_samples, 2);
 			SpatialTreeEParam param;
 
 			param.max_depth = 10;
@@ -44,30 +43,29 @@ namespace APDL
 			param.epsilon = 0;	
 			param.result_eps = 0;
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			}
 			std::cout << std::endl;
 
 			int error_num = 0;
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				if(results[i].label != contactspace.data[i].col) error_num++;
+				if(results[i].label != contactspace_samples[i].col) error_num++;
 			}
-			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
 
 			learner.saveVisualizeData("conlitron_2d_vis.txt", contactspace.getScaler(), 100);
 			MulticonlitronEvaluator evaluator(learner);
 
 			std::vector<DataVector> samples1;
 			sample_decision_boundary_hierarchial_tree_E<MulticonlitronEvaluator>(param, learner, samples1);
+			std::vector<DataVector> samples1_kcentriods = sampleSelectionKCentroids(samples1, 100, 10);
 			std::cout << samples1.size() << std::endl;
-
-			std::vector<DataVector> samples1_kcentriods = sampleSelectionKCentroids(samples1, 100);
 			
 			//for(std::size_t i = 0; i < samples1_kcentriods.size(); ++i)
 			//{
@@ -101,11 +99,11 @@ namespace APDL
 			//std::cout << std::endl;
 
 			std::vector<DataVector> samples2;
-			sample_decision_boundary_interpolation(learner, samples2);
+			sample_decision_boundary_interpolation(learner, samples2, 50);
 			samples2 = filter(evaluator, samples2, 0.01);
 			std::cout << samples2.size() << std::endl;
 
-			std::vector<DataVector> samples2_kcentriods = samples2; // sampleSelectionKCentroids(samples2, 100);
+			std::vector<DataVector> samples2_kcentriods = samples2; // sampleSelectionKCentroids(samples2, 100, 10);
 			//for(std::size_t i = 0; i < samples2_kcentriods.size(); ++i)
 			//{
 			//	double value = evaluator.evaluate(samples2_kcentriods[i]);

@@ -24,31 +24,30 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceSE2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 10000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
 				
 			std::ofstream out("space_test_2d_rotation.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 
 			DataVector w(3);
 			w[0] = 1; w[1] = 1; w[2] = 1;
 			MulticonlitronLearner learner(w, 0.01);
-			learner.learn(contactspace.data, 3);
+			learner.learn(contactspace_samples, 3);
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			}
 
 			int error_num = 0;
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				if(results[i].label != contactspace.data[i].col) error_num++;
+				if(results[i].label != contactspace_samples[i].col) error_num++;
 			}
-			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
 
 			learner.saveVisualizeData("conlitron_2d_rotation_vis.txt", contactspace.getScaler(), 100);
 		}

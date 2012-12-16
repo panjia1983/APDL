@@ -24,11 +24,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			SVMLearner learner;
 			learner.setC(10);
@@ -41,13 +40,13 @@ namespace APDL
 			scaler_file << contactspace.getScaler() << std::endl;
 			
 
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_2d.txt");
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
-				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			std::cout << std::endl;
 		}
 
@@ -72,26 +71,25 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			SVMLearner learner;
 			learner.setLinearClassifier();
 			learner.setC(10);
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_2d.txt");
 
 			HyperPlane hp = learner.getLinearModel();
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
 				DataVector v(contactspace.active_data_dim());
 				for(std::size_t j = 0; j < contactspace.active_data_dim(); ++j)
-					v[j] = contactspace.data[i].v[j];
+					v[j] = contactspace_samples[i].v[j];
 				double pred = hp.evaluate(v);
 				if(pred > 0) 
 					std::cout << 1 << " ";
@@ -100,7 +98,7 @@ namespace APDL
 			}
 			std::cout << std::endl;
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 				std::cout << results[i].label << " ";
 			std::cout << std::endl;
 		}

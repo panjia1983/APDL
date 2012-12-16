@@ -24,11 +24,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceSE2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 10000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
 				
 			std::ofstream out("space_test_2d_rotation.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			SVMLearner learner;
 			learner.setC(10);
@@ -42,18 +41,18 @@ namespace APDL
 			std::ofstream scaler_file("scaler_2d_rotation.txt");
 			scaler_file << contactspace.getScaler() << std::endl;
 
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_2d_rotation.txt");
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
 			std::size_t error_num = 0;
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				if(results[i].label != contactspace.data[i].col) error_num++;
+				if(results[i].label != contactspace_samples[i].col) error_num++;
 			}
-			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
 
 
 		}
@@ -80,11 +79,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceSE2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 10000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
 				
 			std::ofstream out("space_test_2d_rotation.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			SVMLearner learner;
 			learner.setC(10);
@@ -95,18 +93,18 @@ namespace APDL
 			std::ofstream scaler_file("scaler_2d_rotation.txt");
 			scaler_file << contactspace.getScaler() << std::endl;
 
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_2d_rotation.txt");
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
 			std::size_t error_num = 0;
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				if(results[i].label != contactspace.data[i].col) error_num++;
+				if(results[i].label != contactspace_samples[i].col) error_num++;
 			}
-			std::cout << "error ratio: " << error_num / (double)contactspace.data.size() << std::endl;
+			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
 		}
 	}
 }

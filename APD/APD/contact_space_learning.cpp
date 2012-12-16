@@ -3,15 +3,55 @@
 
 namespace APDL
 {
-	std::vector<PredictResult> MulticonlitronLearner::predict(const std::vector<ContactSpaceSampleData>& queries) const
+	PredictResult MulticonlitronLearner::predict(const DataVector& query) const
+	{
+		PredictResult predict_result;
+
+		double predict_label = model.evaluate(query);
+		if(predict_label > 0) predict_label = 0;
+		else predict_label = 1;
+
+		return PredictResult(predict_label, 1);
+	}
+
+	std::vector<PredictResult> MulticonlitronLearner::predict(const std::vector<DataVector>& queries) const
 	{
 		std::vector<PredictResult> predict_results;
 
 		for(std::size_t i = 0; i < queries.size(); ++i)
 		{
-			const DataVector& v = queries[i].v;
+			double predict_label = model.evaluate(queries[i]);
+			if(predict_label > 0) predict_label = 0;
+			else predict_label = 1;
 
-			double predict_label = model.evaluate2(v);
+			predict_results.push_back(PredictResult(predict_label, 1));
+		}
+
+		return predict_results;
+	}
+
+	std::vector<PredictResult> MulticonlitronLearner::predict(const std::vector<ContactSpaceSampleData>& queries) const
+	{
+		//std::vector<PredictResult> predict_results;
+
+		//for(std::size_t i = 0; i < queries.size(); ++i)
+		//{
+		//	const DataVector& v = queries[i].v;
+
+		//	double predict_label = model.evaluate2(v);
+		//	if(predict_label > 0) predict_label = 0;
+		//	else predict_label = 1;
+		//	
+		//	predict_results.push_back(PredictResult(predict_label, 1));
+		//}
+
+		//return predict_results;
+
+		std::vector<PredictResult> predict_results;
+
+		for(std::size_t i = 0; i < queries.size(); ++i)
+		{
+			double predict_label = model.evaluate(queries[i].v);
 			if(predict_label > 0) predict_label = 0;
 			else predict_label = 1;
 			
@@ -367,103 +407,98 @@ after_separable_test:
 		return index;
 	}
 
-	//std::vector<PredictResult> SVMLearner::predict2(const std::vector<ContactSpaceSampleData>& queries, std::size_t active_dim) const
-	//{
-	//	std::vector<PredictResult> predict_results;
-	//	int svm_type = svm_get_svm_type(model);
-	//	int nr_class = svm_get_nr_class(model);
 
-	//	assert((svm_type == C_SVC) || (svm_type == NU_SVC));
-	//	assert(nr_class == 2);
+	PredictResult SVMLearner::predict(const DataVector& query) const
+	{
+		int svm_type = svm_get_svm_type(model);
+		int nr_class = svm_get_nr_class(model);
+		double* prob_estimates = NULL;
 
-	//	svm_node* x = (svm_node *)malloc((active_dim + 1)*sizeof(svm_node));
+		svm_node* x = (svm_node *)malloc((feature_dim + 1)*sizeof(svm_node));
 
-	//	flann::Index<FLANN_WRAPPER::DistanceRN>* index;
-	//	std::vector<std::vector<double> > boundary;
-	//	if(scaler)
-	//	{
-	//		double* lower = new double[active_dim];
-	//		double* upper = new double[active_dim];
-	//		for(int j = 0; j < active_dim; ++j)
-	//		{
-	//			lower[j] = use_scaler ? 0 : scaler->v_min[j];
-	//			upper[j] = use_scaler ? 1 : scaler->v_max[j];
-	//		}
-	//		sample_decision_boundary_brute_force(model, upper, lower, active_dim, 0.005, 100, boundary, index);
-	//	}
+		if(param.probability)
+		{
+			prob_estimates = (double *) malloc(nr_class*sizeof(double));
+		}
 
-	//	std::ofstream file("collect.txt");
+		const DataVector& v = (scaler && use_scaler) ? scaler->scale(v) : query;
+		for(std::size_t j = 0; j < feature_dim; ++j)
+		{
+			x[j].index = j + 1;
+			x[j].value = v[j];
+		}
+		x[feature_dim].index = -1;
 
-	//	double inv_hyperw = 1 / sqrt(hyperw_normsqr);
-	//	// for(std::size_t i = 0; i < queries.size(); ++i)
-	//	for(std::size_t i = 0; i < queries.size(); ++i)
-	//	{
-	//		const DataVector& v = (scaler && use_scaler) ? scaler->scale(queries[i].v) : queries[i].v;
-	//		for(std::size_t j = 0; j < active_dim; ++j)
-	//		{
-	//			x[j].index = j + 1;
-	//			x[j].value = v[j];
-	//		}
-	//		x[active_dim].index = -1;
+		PredictResult predict_result;
+		double predict_label;
+		if(param.probability)
+		{
+			predict_label = svm_predict_probability(model, x, prob_estimates);
+			if(predict_label > 0) predict_label = 1;
+			else predict_label = 0;
+			predict_result = PredictResult(predict_label, *prob_estimates);
+		}
+		else
+		{	
+			predict_label = svm_predict(model, x);
+			if(predict_label > 0) predict_label = 1;
+			else predict_label = 0;
+			predict_result = PredictResult(predict_label, 1);
+		}
 
-	//		double predict_label = svm_predict_values_twoclass(model, x);
+		if(param.probability) free(prob_estimates);
+		free(x);
 
-	//		double s = (scaler && use_scaler) ? scaler->getScale() : 1;
-	//		double f_dist = predict_label * inv_hyperw;
-	//		double i_dist = sqrt(-1/param.gamma * log(1 - f_dist * f_dist * 0.5)) * s;
+		return predict_result;
+	}
 
+	std::vector<PredictResult> SVMLearner::predict(const std::vector<DataVector>& queries) const
+	{
+		std::vector<PredictResult> predict_results;
 
-	//		double real_i_dist1 = dist_to_decision_boundary(model, x) * s;
-	//		double real_i_dist2 = dist_to_decision_boundary_with_gradient(model, x) * s;
-	//		double real_i_dist3 = dist_to_decision_boundary_constrain_free(model, sqrt(hyperw_normsqr), x) * s;
+		int svm_type = svm_get_svm_type(model);
+		int nr_class = svm_get_nr_class(model);
+		double* prob_estimates = NULL;
 
-	//		bool is_sv = false;
-	//		for(int j = 0; j < model->l; ++j)
-	//		{
-	//			if(i == model->sv_indices[j])
-	//			{
-	//				is_sv = true;
-	//				break;
-	//			}
-	//		}
+		svm_node* x = (svm_node *)malloc((feature_dim + 1)*sizeof(svm_node));
 
-	//		double brute_force_dist = dist_to_decision_boundary_brute_force(boundary, index, x) * s;
-	//		
-	//		file << is_sv << " " << brute_force_dist << " 1) " << f_dist << " 2) " << i_dist << " 3) " << real_i_dist1 << " 4) " << real_i_dist2 << " 5) " << real_i_dist3 << std::endl;
+		if(param.probability)
+		{
+			prob_estimates = (double *) malloc(nr_class*sizeof(double));
+		}
 
-	//		if(predict_label > 0) predict_label = 1;
-	//		else predict_label = 0;
+		for(std::size_t i = 0; i < queries.size(); ++i)
+		{
+			const DataVector& v = (scaler && use_scaler) ? scaler->scale(queries[i]) : queries[i];
+			for(std::size_t j = 0; j < feature_dim; ++j)
+			{
+				x[j].index = j + 1;
+				x[j].value = v[j];
+			}
+			x[feature_dim].index = -1;
 
-	//		predict_results.push_back(PredictResult(predict_label, 1));
-	//	}
-	//	std::cout << std::endl;
-	//	file.close();
+			double predict_label;
+			if(param.probability)
+			{
+				predict_label = svm_predict_probability(model, x, prob_estimates);
+				if(predict_label > 0) predict_label = 1;
+				else predict_label = 0;
+				predict_results.push_back(PredictResult(predict_label, *prob_estimates));
+			}
+			else
+			{	
+				predict_label = svm_predict(model, x);
+				if(predict_label > 0) predict_label = 1;
+				else predict_label = 0;
+				predict_results.push_back(PredictResult(predict_label, 1));
+			}
+		}
 
+		if(param.probability) free(prob_estimates);
+		free(x);
 
-	//	// interpolate and check
-	//	std::vector<std::vector<double> > samples;
-	//	sample_decision_boundary_interpolation(model, active_dim, sqrt(hyperw_normsqr), samples);
-
-	//	svm_node* sample = new svm_node[active_dim + 1];
-	//	for(std::size_t i = 0; i < active_dim; ++i) sample[i].index = i + 1;
-	//	sample[active_dim].index = -1;
-
-	//	std::cout << samples.size() << std::endl;
-	//	for(std::size_t i = 0; i < samples.size(); ++i)
-	//	{
-	//		for(std::size_t j = 0; j < active_dim; ++j) sample[j].value = samples[i][j];
-	//		
-	//		double val = dist_to_decision_boundary_brute_force(boundary, index, sample);
-	//	}
-
-	//	delete [] sample;
-
-	//	free(x);
-	//	delete index;
-
-
-	//	return predict_results;
-	//}
+		return predict_results;
+	}
 
 
 	std::vector<PredictResult> SVMLearner::predict(const std::vector<ContactSpaceSampleData>& queries) const
@@ -596,6 +631,26 @@ after_separable_test:
 		// build model & classify
 		model = svm_train(&problem, &param);
 		hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
+	}
+
+	void SVMLearner::incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
+	{
+		if(!model || data.size() == 0) return;
+
+		std::vector<ContactSpaceSampleData> data_(data);
+
+		for(std::size_t i = 0; i < model->l; ++i)
+		{
+			DataVector v(data[0].v.dim());
+			for(std::size_t j = 0; j < active_dim; ++j)
+				v[j] = model->SV[i][j].value;
+			for(std::size_t j = active_dim; j < v.dim(); ++j)
+				v[j] = 0;
+			int id = model->sv_indices[i] - 1;			
+			data_.push_back(ContactSpaceSampleData(v, (problem.y[id] > 0)));
+		}
+
+		learn(data_, active_dim);
 	}
 
 	HyperPlane SVMLearner::getLinearModel() const

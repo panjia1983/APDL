@@ -24,22 +24,21 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			AdaBoostLearner learner;
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			//for(std::size_t i = 0; i < results.size(); ++i)
-			//{
-			//	std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
-			//}
-			//std::cout << std::endl;
+			for(std::size_t i = 0; i < results.size(); ++i)
+			{
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
+			}
+			std::cout << std::endl;
 		}
 	}
 

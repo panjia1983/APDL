@@ -234,6 +234,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\active_learning.h"
+				>
+			</File>
+			<File
 				RelativePath=".\collider.h"
 				>
 			</File>

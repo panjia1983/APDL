@@ -104,7 +104,7 @@ double dist_to_decision_boundary_constrain_free(const struct svm_model* model, d
 void feature_space_midpoint(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);
 void feature_space_midpoint_with_gradient(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);
 
-
+double k_function(const svm_node* x, const svm_node* y, const svm_parameter& param);
 
 
 

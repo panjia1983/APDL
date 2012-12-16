@@ -115,8 +115,16 @@ namespace APDL
 
 		// clusters[i] contains the id of points in the i-th cluster
 		std::vector<std::vector<std::size_t> > clusters(n_clusters);
+
+		double old_cluster_cost;
+		double new_cluster_cost;
+
 		for(std::size_t iter = 0; iter < max_iter; ++iter)
 		{
+			if(iter != 0) old_cluster_cost = new_cluster_cost;
+
+			new_cluster_cost = 0;
+
 			for(std::size_t i = 0; i < samples.size(); ++i)
 			{
 				std::size_t min_cluster_id = -1;
@@ -135,6 +143,13 @@ namespace APDL
 				}
 
 				clusters[min_cluster_id].push_back(i);
+
+				new_cluster_cost += min_cluster_dist; 
+			}
+
+			if(iter != 0)
+			{
+				if(new_cluster_cost >= old_cluster_cost) break;
 			}
 
 
@@ -538,7 +553,7 @@ namespace APDL
 	}
 
 
-	std::vector<DataVector> filter(SVMEvaluator& eval, std::vector<DataVector>& samples, double threshold)
+	std::vector<DataVector> filter(const SVMEvaluator& eval, std::vector<DataVector>& samples, double threshold)
 	{
 		std::vector<DataVector> res;
 		for(std::size_t i = 0; i < samples.size(); ++i)
@@ -550,7 +565,7 @@ namespace APDL
 		return res;
 	}
 
-	std::vector<DataVector> filter(MulticonlitronEvaluator& eval, std::vector<DataVector>& samples, double threshold)
+	std::vector<DataVector> filter(const MulticonlitronEvaluator& eval, std::vector<DataVector>& samples, double threshold)
 	{
 		std::vector<DataVector> res;
 		for(std::size_t i = 0; i < samples.size(); ++i)

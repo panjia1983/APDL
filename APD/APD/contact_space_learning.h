@@ -87,6 +87,8 @@ namespace APDL
 		int label;
 		double prob;
 
+		PredictResult() {}
+
 		PredictResult(int label_, double prob_)
 		{
 			label = label_;
@@ -186,11 +188,15 @@ namespace APDL
 		
 		void learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim);
 
+		void incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim);
+
 		void learn(const std::vector<ContactSpaceSampleData>& data, const std::vector<double>& weights, std::size_t active_dim);
 
-		// std::vector<PredictResult> predict2(const std::vector<ContactSpaceSampleData>& queries, std::size_t active_dim) const;
-
 		std::vector<PredictResult> predict(const std::vector<ContactSpaceSampleData>& queries) const;
+
+		PredictResult predict(const DataVector& query) const;
+
+		std::vector<PredictResult> predict(const std::vector<DataVector>& queries) const;
 		
 		void save(const std::string& file_name) const
 		{
@@ -251,6 +257,8 @@ namespace APDL
 			os.close();
 
 			delete [] v;
+
+			delete [] ids;
 		}
 
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectors() const;
@@ -356,6 +364,10 @@ namespace APDL
 
 		std::vector<PredictResult> predict(const std::vector<ContactSpaceSampleData>& queries) const;
 
+		PredictResult predict(const DataVector& query) const;
+
+		std::vector<PredictResult> predict(const std::vector<DataVector>& queries) const;
+
 		void learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
 		{
 			if(active_dim  != feature_dim)
@@ -378,6 +390,31 @@ namespace APDL
 			}
 
 			model = SMA(X, Y);
+		}
+
+		void incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
+		{
+			if(data.size() == 0) return;
+			std::vector<ContactSpaceSampleData> data_(data);
+
+			DataVector v(data[0].v.dim());
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					for(std::size_t k = 0; k < active_dim; ++k)
+						v[k] = model[i][j].supp1[k];
+					data_.push_back(ContactSpaceSampleData(v, false));
+
+					for(std::size_t k = 0; k < active_dim; ++k)
+						v[k] = model[i][j].supp2[k];
+					for(std::size_t k = active_dim; k < v.dim(); ++k)
+						v[k] = 0;
+					data_.push_back(ContactSpaceSampleData(v, true));
+				}
+			}
+
+			learn(data_, active_dim);
 		}
 
 		void setScaler(const Scaler& scaler_)
@@ -426,6 +463,8 @@ namespace APDL
 					os << v[j] << " ";
 				os << eval << std::endl;	
 			}
+
+			delete [] ids;
 
 			os.close();
 		}

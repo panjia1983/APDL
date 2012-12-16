@@ -491,7 +491,6 @@ void IncSVM::adddata(int indc, int y_new, double c_new)
 	ind[UNLEARNED].push_back(indc);
 }
 
-
 int IncSVM::learn(int indc, int rflag)
 {
 	_Q.addrow(indc);

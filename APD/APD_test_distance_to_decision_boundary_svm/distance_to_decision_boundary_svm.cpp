@@ -24,11 +24,10 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 			
 			ContactSpaceR2 contactspace(p1, p2, 2);
-			for(int i = 0; i < 1000; ++i)
-				contactspace.random_sample();
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 				
 			std::ofstream out("space_test_2d.txt");
-			asciiWriter(out, contactspace);
+			asciiWriter(out, contactspace_samples);
 			
 			SVMLearner learner;
 			learner.setC(10);
@@ -37,13 +36,13 @@ namespace APDL
 
 			learner.setUseScaler(true);
 
-			learner.learn(contactspace.data, contactspace.active_data_dim());
+			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model.txt");
 
-			std::vector<PredictResult> results = learner.predict(contactspace.data);
+			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
-				std::cout << "(" << results[i].label << "," << contactspace.data[i].col << ")";
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			std::cout << std::endl;
 
 			std::cout << learner.hyperw_normsqr << std::endl;
@@ -55,9 +54,9 @@ namespace APDL
 			SVMDistanceToDecisionBoundary_Optimization distancer4(learner);
 			SVMDistanceToDecisionBoundary_RoughLowerBound distancer5(learner);
 
-			for(std::size_t i = 0; i < contactspace.data.size(); ++i)
+			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			{
-				DataVector v = (learner.scaler && learner.use_scaler) ? contactspace.getScaler().scale(contactspace.data[i].v) : contactspace.data[i].v;
+				DataVector v = (learner.scaler && learner.use_scaler) ? contactspace.getScaler().scale(contactspace_samples[i].v) : contactspace_samples[i].v;
 				double d1 = distancer1.distance(v);
 				double d2 = distancer2.distance(v);
 				double d3 = distancer3.distance(v);
