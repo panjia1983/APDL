@@ -1,12 +1,15 @@
 #include "decision_boundary_distance.h"
 
+extern double* user_conlitron_data;
+extern void* user_conlitron_model;
+
 namespace APDL
 {
 	struct CompareDistToDecisionBoundaryLess
 	{
 		bool operator ()(const std::pair<std::size_t, double>& a, const std::pair<std::size_t, double>& b) const 
 		{
-			return std::abs(a.second) < std::abs(b.second);
+			return abs(a.second) < abs(b.second);
 		}
 	};
 
@@ -468,6 +471,112 @@ namespace APDL
 		return hyperplanes[min_id]->distance(v);
 	}
 
+
+	MulticonlitronDistanceToDecisionBoundary_Optimization::MulticonlitronDistanceToDecisionBoundary_Optimization(const MulticonlitronLearner& learner_) : learner(learner_)
+	{
+		if(learner.model.size() == 0) return;
+
+		data_dim = learner.model[0][0].dim();
+		std::size_t data_num = learner.model.numOfHyperPlanes();
+
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[data_dim * data_num], data_num, data_dim);
+
+		std::size_t id = 0;
+		for(std::size_t i = 0; i < learner.model.size(); ++i)
+		{
+			for(std::size_t j = 0; j < learner.model[i].size(); ++j)
+			{
+				DataVector p = 0.5 * (learner.model[i][j].supp1 + learner.model[i][j].supp2);
+				hyperplanes.push_back(&learner.model[i][j]);
+
+				for(std::size_t k = 0; k < data_dim; ++k)
+					dataset[id][k] = p[k];
+
+				id++;
+			}
+		}
+
+		index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		lower = new double[data_dim];
+		upper = new double[data_dim];
+		for(std::size_t i = 0; i < learner.feature_dim; ++i)
+		{
+			lower[i] = learner.scaler->v_min[i];
+			upper[i] = learner.scaler->v_max[i];
+		}
+	}
+
+	double MulticonlitronDistanceToDecisionBoundary_Optimization::distance(const DataVector& v) const
+	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[data_dim], 1, data_dim);
+		for(std::size_t i = 0; i < data_dim; ++i) queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		std::size_t min_id = indices[0][0];
+
+		DataVector midpoint = 0.5 * (learner.hyperplanes[min_id]->supp1 + learner.hyperplanes[min_id]->supp2);
+
+		double* initial_guess = new double[data_dim];
+		double* x = new double[data_dim];
+
+		for(std::size_t i = 0; i < data_dim; ++i)
+		{
+			initial_guess[i] = midpoint[i];
+			x[i] = v[i];
+		}
+
+		double d = conlitron_dist_to_decision_boundary((void*)(&learner.model), x, initial_guess, upper, lower, NULL, conlitron_distanceF, data_dim);
+
+
+		delete [] initial_guess;
+		delete [] x;
+
+		return d;
+	}
+
+	double MulticonlitronDistanceToDecisionBoundary_Optimization::distance(const DataVector& v, DataVector& closest_v) const
+	{
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[data_dim], 1, data_dim);
+		for(std::size_t i = 0; i < data_dim; ++i) queryset[0][i] = v[i];
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+
+		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+		std::size_t min_id = indices[0][0];
+
+		DataVector midpoint = 0.5 * (learner.hyperplanes[min_id]->supp1 + learner.hyperplanes[min_id]->supp2);
+
+		double* initial_guess = new double[data_dim];
+		double* x = new double[data_dim];
+		double* closest_x = new double[data_dim];
+
+		for(std::size_t i = 0; i < data_dim; ++i)
+		{
+			initial_guess[i] = midpoint[i];
+			x[i] = v[i];
+		}
+
+		double d = conlitron_dist_to_decision_boundary((void*)(&learner.model), x, initial_guess, upper, lower, closest_x, conlitron_distanceF, data_dim);
+
+
+		delete [] initial_guess;
+		delete [] x;
+		delete [] closest_x;
+
+		for(std::size_t i = 0; i < data_dim; ++i)
+			closest_v[i] = closest_x[i];
+
+		return d;
+	}
+
 	MulticonlitronDistanceToDecisionBoundary_EmbedKNN::MulticonlitronDistanceToDecisionBoundary_EmbedKNN(const MulticonlitronLearner& learner_) : learner(learner_)
 	{
 		if(learner.model.size() == 0) return;
@@ -597,6 +706,29 @@ namespace APDL
 		closest_v = hyperplanes[min_id]->project(v);
 
 		return hyperplanes[min_id]->distance(v);
+	}
+	
+	int conlitron_distanceF(long int *Status, long int *n,    double x[],
+		long int    *needF,  long int *neF,  double F[],
+		long int    *needG,  long int *neG,  double G[],
+		char       *cu,     long int *lencu,
+		long int    iu[],    long int *leniu,
+		double ru[],    long int *lenru )
+	{
+		const double* user_conlitron_data_ = (const double*)user_conlitron_data;
+		const APDL::MulticonlitronLearner::MultiConlitron* user_conlitron_model_ = (const APDL::MulticonlitronLearner::MultiConlitron*)user_conlitron_model;
+		DataVector v(*n);
+		F[0] = 0;
+		F[1] = 0;
+		for(int i = 0; i < *n; ++i)
+		{
+			F[0] += (x[i] - user_conlitron_data_[i]) * (x[i] - user_conlitron_data_[i]);
+			v[i] = x[i];
+		}
+	
+		F[1] = user_conlitron_model_->evaluate2(v);
+	
+		return 0;
 	}
 
 

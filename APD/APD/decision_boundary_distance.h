@@ -349,6 +349,33 @@ namespace APDL
 		std::size_t data_dim;
 	};
 
+	struct MulticonlitronDistanceToDecisionBoundary_Optimization
+	{
+		MulticonlitronDistanceToDecisionBoundary_Optimization(const MulticonlitronLearner& learner_);
+
+		~MulticonlitronDistanceToDecisionBoundary_Optimization() 
+		{ 
+			delete index; 
+			delete [] upper;
+			delete [] lower;
+		}
+
+		double distance(const DataVector& v) const;
+
+		double distance(const DataVector& v, DataVector& closest_v) const;
+
+		const MulticonlitronLearner& learner;
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index;
+		std::vector<const HyperPlane*> hyperplanes;
+
+		std::size_t data_dim;
+
+		double* lower;
+		double* upper;
+	};
+
+
 	struct MulticonlitronDistanceToDecisionBoundary_EmbedKNN
 	{
 		MulticonlitronDistanceToDecisionBoundary_EmbedKNN(const MulticonlitronLearner& learner_);
@@ -368,6 +395,15 @@ namespace APDL
 		std::size_t embedded_dim;
 	};
 
+
+
+
+	int conlitron_distanceF(long int *Status, long int *n,    double x[],
+		long int    *needF,  long int *neF,  double F[],
+		long int    *needG,  long int *neG,  double G[],
+		char       *cu,     long int *lencu,
+		long int    iu[],    long int *leniu,
+		double ru[],    long int *lenru );
 
 }
 

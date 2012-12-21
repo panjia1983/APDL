@@ -2695,6 +2695,129 @@ int distanceF(integer    *Status, integer *n,    doublereal x[],
 	return 0;
 }
 
+extern void* user_conlitron_model;
+extern double* user_conlitron_data;
+
+double conlitron_dist_to_decision_boundary(
+	void* model, 
+	double* query_x,
+	double* init_guess, 
+	double* upper,
+	double* lower,
+	double* x_res,
+	Conlitron_DistanceF_type func,
+	int dim)
+{
+	snoptProblem prob(0);
+
+	integer n = dim;
+
+	integer neF = 2;
+	integer lenA = 10;
+
+	integer* iAfun = new integer[lenA];
+	integer* jAvar = new integer[lenA];
+	doublereal* A = new doublereal[lenA];
+
+	integer lenG = 2 * n;
+	integer* iGfun = new integer[lenG];
+	integer* jGvar = new integer[lenG];
+
+	doublereal* x = new doublereal[n];
+	doublereal* xlow = new doublereal[n];
+	doublereal* xupp = new doublereal[n];
+	doublereal* xmul = new doublereal[n];
+	integer* xstate = new integer[n];
+
+	doublereal* F = new doublereal[neF];
+	doublereal* Flow = new doublereal[neF];
+	doublereal* Fupp = new doublereal[neF];
+	doublereal* Fmul = new doublereal[neF];
+	integer* Fstate = new integer[neF];
+
+	integer nxnames = 1;
+	integer nFnames = 1;
+	char* xnames = new char[nxnames*8];
+	char* Fnames = new char[nFnames*8];
+
+	integer ObjRow = 0;
+	doublereal ObjAdd = 0;
+
+	// set the upper and lower bounds
+	for(int i = 0; i < n; ++i)
+	{
+		xlow[i] = lower ? lower[i] : -1e20;
+		xupp[i] = upper ? upper[i] : 1e20;
+		xstate[i] = 0;
+	}
+
+	Flow[0] = 0; Flow[1] = 0;
+	Fupp[0] = 1e20; Fupp[1] = 0;
+
+	for(int i = 0; i < n; ++i)
+	{
+		x[i] = init_guess ? init_guess[i] : 0;
+	}
+
+
+	// load the data for problem
+	// prob.setPrintFile("distance0.out");
+	prob.setProblemSize(n, neF);
+	prob.setObjective(ObjRow, ObjAdd);
+	prob.setA(lenA, iAfun, jAvar, A);
+	prob.setG(lenG, iGfun, jGvar);
+	prob.setX(x, xlow, xupp, xmul, xstate);
+	prob.setF(F, Flow, Fupp, Fmul, Fstate);
+	prob.setXNames(xnames, nxnames);
+	prob.setFNames(Fnames, nFnames);
+	prob.setProbName("distance0");
+	prob.setUserFun(func);
+
+
+	user_conlitron_model = model;
+	user_conlitron_data = query_x;
+
+	// snopta will compute the Jacobian by finite differences
+	prob.computeJac();
+	prob.setIntParameter("Derivative option", 0);
+
+
+	integer Cold = 0, Basis = 1, Warm  = 2;
+	prob.solve(Cold);
+
+	double dist = 0;
+	for(int i = 0; i < n; ++i)
+		dist += (query_x[i] - x[i]) * (query_x[i] - x[i]);
+
+	dist = sqrt(dist);
+
+	if(x_res)
+	{
+		for(int i = 0; i < n; ++i)
+			x_res[i] = x[i];
+	}
+
+	delete [] iAfun; 
+	delete [] jAvar;
+	delete [] A;
+	delete [] iGfun;
+	delete [] jGvar;
+	delete [] x;
+	delete [] xlow;
+	delete [] xupp;
+	delete [] xmul;
+	delete [] xstate;
+	delete [] F;
+	delete [] Flow;
+	delete [] Fupp;
+	delete [] Fmul;
+	delete [] Fstate;
+	delete [] xnames;
+	delete [] Fnames;
+
+	return dist;
+}
+
 double dist_to_decision_boundary(const struct svm_model* model, const struct svm_node* x_node, double* init_guess_x, double* upper, double* lower, struct svm_node* x_res)
 {
 	snoptProblem prob(0);

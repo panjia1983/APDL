@@ -265,6 +265,64 @@ namespace APDL
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery() const
+		{
+			std::size_t data_num = model->l;
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			for(std::size_t i = 0; i < data_num; ++i)
+			{
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					dataset[i][j] = model->SV[i][j].value;
+				}
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
+
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass0() const
+		{
+			size_t data_num = model->nSV[0];
+			// size_t start = 0;
+
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			for(std::size_t i = 0; i < data_num; ++i)
+			{
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					dataset[i][j] = model->SV[i][j].value;
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass1() const
+		{
+			size_t data_num = model->nSV[1];
+			size_t start = model->nSV[0];
+
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			for(std::size_t i = 0; i < data_num; ++i)
+			{
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					dataset[i][j] = model->SV[i+start][j].value;
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
 		svm_parameter param;
 		
 		svm_problem problem;
@@ -390,6 +448,16 @@ namespace APDL
 			}
 
 			model = SMA(X, Y);
+
+			hyperplanes.clear();
+
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					hyperplanes.push_back(&(model[i][j]));
+				}
+			}
 		}
 
 		void incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
@@ -473,15 +541,92 @@ namespace APDL
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
+
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery() const
+		{
+			std::size_t data_num = 2 * model.numOfHyperPlanes();
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			std::size_t id = 0;
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						dataset[id][k] = model[i][j].supp1[k];
+					id++;
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						dataset[id][k] = model[i][j].supp2[k];
+					id++;
+				}
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass0() const
+		{
+			std::size_t data_num = model.numOfHyperPlanes();
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			std::size_t id = 0;
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						dataset[id][k] = model[i][j].supp1[k];
+					id++;
+				}
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
+		template<typename ContactSpace, typename IndexParams>
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass1() const
+		{
+			std::size_t data_num = model.numOfHyperPlanes();
+			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+			std::size_t id = 0;
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						dataset[id][k] = model[i][j].supp2[k];
+					id++;
+				}
+			}
+
+			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+			index->buildIndex();
+
+			return index;
+		}
+
+
+
+
+
 		DistanceProxyRN distancer;
 
 		MultiConlitron model;
+
+		std::vector<HyperPlane*> hyperplanes;
 
 		std::size_t feature_dim;
 
 		double epsilon;
 
 		Scaler* scaler;
+
 	};
 
 	class AdaBoostLearner
@@ -1006,7 +1151,8 @@ namespace APDL
 
 		std::size_t weak_classifier_id;
 	};
-	
+
+
 }
 
 

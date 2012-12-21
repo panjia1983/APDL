@@ -174,7 +174,7 @@ namespace APDL
 			DataVector PD_p(2);
 			PD_p[0] = to_inexact(best_p[0]);
 			PD_p[1] = to_inexact(best_p[1]);
-			return std::make_pair(PD_p, best_d);
+			return std::make_pair(PD_p, sqrt(best_d));
 		}
 		
 		static std::pair<DataVector, double> Exact_PD_SE2(const DataVector& q, const std::vector<std::pair<Polygon_with_holes_2, double> >& CSpace, double rotation_weight)
@@ -199,7 +199,7 @@ namespace APDL
 				}
 			}
 			
-			return std::make_pair(best_p, best_d);
+			return std::make_pair(best_p, sqrt(best_d));
 		}
 	};
 	
@@ -358,7 +358,7 @@ namespace APDL
 			PD_p[0] = to_inexact(best_p[0]);
 			PD_p[1] = to_inexact(best_p[1]);
 			PD_p[2] = to_inexact(best_p[2]);
-			return std::make_pair(PD_p, best_d);
+			return std::make_pair(PD_p, sqrt(best_d));
 		}
 		
 		static std::pair<DataVector, double> Exact_PD_SE3(const DataVector& q, const std::vector<std::pair<Polyhedron, Quaternion> >& CSpace, double rotation_weight)
@@ -395,7 +395,7 @@ namespace APDL
 					}
 				}
 				
-				return std::make_pair(best_p, best_d);
+				return std::make_pair(best_p, sqrt(best_d));
 			}
 			else if(q.dim() == 7)
 			{
@@ -431,7 +431,7 @@ namespace APDL
 					}
 				}
 				
-				return std::make_pair(best_p, best_d);
+				return std::make_pair(best_p, sqrt(best_d));
 			}
 			else
 				return std::make_pair(q, -1);

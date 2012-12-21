@@ -56,8 +56,9 @@ namespace APDL
 
 		DataVector operator + (const DataVector& other) const
 		{
+			std::size_t dim = (std::min)(data.size(), other.dim());
 			DataVector res(*this);
-			for(std::size_t i = 0; i < data.size(); ++i)
+			for(std::size_t i = 0; i < dim; ++i)
 			{
 				res[i] += other[i];
 			}
@@ -66,8 +67,9 @@ namespace APDL
 
 		DataVector operator - (const DataVector& other) const
 		{
+			std::size_t dim = (std::min)(data.size(), other.dim());
 			DataVector res(*this);
-			for(std::size_t i = 0; i < data.size(); ++i)
+			for(std::size_t i = 0; i < dim; ++i)
 			{
 				res[i] -= other[i];
 			}
@@ -96,7 +98,8 @@ namespace APDL
 
 		DataVector& operator += (const DataVector& other)
 		{
-			for(std::size_t i = 0; i < data.size(); ++i)
+			std::size_t dim = (std::min)(data.size(), other.dim());
+			for(std::size_t i = 0; i < dim; ++i)
 			{
 				data[i] += other[i];
 			}
@@ -105,7 +108,8 @@ namespace APDL
 
 		DataVector& operator -= (const DataVector& other)
 		{
-			for(std::size_t i = 0; i < data.size(); ++i)
+			std::size_t dim = (std::min)(data.size(), other.dim());
+			for(std::size_t i = 0; i < dim; ++i)
 			{
 				data[i] -= other[i];
 			}
@@ -134,7 +138,8 @@ namespace APDL
 	inline double dot_prod(const DataVector& a, const DataVector& b)
 	{
 		double sum = 0;
-		for(std::size_t i = 0; i < a.dim(); ++i)
+		std::size_t dim = (std::min)(a.dim(), b.dim());
+		for(std::size_t i = 0; i < dim; ++i)
 		{
 			sum += a[i] * b[i];
 		}

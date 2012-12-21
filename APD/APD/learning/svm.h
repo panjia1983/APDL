@@ -100,6 +100,25 @@ double dist_to_decision_boundary(const struct svm_model* model, const struct svm
 double dist_to_decision_boundary_with_gradient(const struct svm_model* model, const struct svm_node* x, double* init_guess_x = NULL, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
 double dist_to_decision_boundary_constrain_free(const struct svm_model* model, double w_norm, const struct svm_node* x, double* init_guess_x = NULL, double* upper = NULL, double* lower = NULL, struct svm_node* x_res = NULL);
 
+
+typedef  int (*Conlitron_DistanceF_type)(long int *Status, long int *n,    double x[],
+					  long int    *needF,  long int *neF,  double F[],
+			          long int    *needG,  long int *neG,  double G[],
+			          char       *cu,     long int *lencu,
+			          long int    iu[],    long int *leniu,
+					  double ru[],    long int *lenru );
+
+
+double conlitron_dist_to_decision_boundary(
+	void* model, 
+	double* x,
+	double* initial_guess, 
+	double* upper_bound,
+	double* lower_bound,
+	double* closest_x,
+	Conlitron_DistanceF_type func,
+	int dim);
+
 // initial guess is 0.5 * (x + y)
 void feature_space_midpoint(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);
 void feature_space_midpoint_with_gradient(const struct svm_model* model, const struct svm_node* x_node, const struct svm_node* y_node, struct svm_node* midpoint, double* upper = NULL, double* lower = NULL);

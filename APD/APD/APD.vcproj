@@ -168,6 +168,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\distance_proxy.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\math_utility.cpp"
 				>
 			</File>
@@ -279,6 +283,10 @@
 			</File>
 			<File
 				RelativePath=".\minkowski_cspace.h"
+				>
+			</File>
+			<File
+				RelativePath=".\online_query.h"
 				>
 			</File>
 			<File

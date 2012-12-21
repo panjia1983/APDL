@@ -6,8 +6,11 @@
 #include <iostream>
 #include <flann/flann.hpp>
 
+
+
 namespace APDL
 {
+	extern double angle_weight;
 	namespace FLANN_WRAPPER
 	{
 		struct DistanceRN
@@ -43,7 +46,7 @@ namespace APDL
 			typedef double ElementType;
 			typedef double ResultType;
 
-			DistanceSE2(ElementType angle_weight_) : angle_weight(angle_weight_)
+			DistanceSE2()
 			{}
 
 			/// size must be 3
@@ -58,13 +61,11 @@ namespace APDL
 					result += diff*diff;
 				}
 				
-				diff = *a - *b;
+				diff = angleTruncate(*a - *b);
 				result += angle_weight * diff * diff;
 
 				return result;
 			}
-
-			ElementType angle_weight;
 		};
 
 		struct DistanceSE3EulerAngle
@@ -72,7 +73,7 @@ namespace APDL
 			typedef double ElementType;
 			typedef double ResultType;
 
-			DistanceSE3EulerAngle(ElementType angle_weight_) : angle_weight(angle_weight_)
+			DistanceSE3EulerAngle()
 			{}
 
 			/// size must be 6
@@ -96,8 +97,6 @@ namespace APDL
 
 				return result;
 			}
-
-			ElementType angle_weight;
 		};
 
 
@@ -106,7 +105,7 @@ namespace APDL
 			typedef double ElementType;
 			typedef double ResultType;
 
-			DistanceSE3Quat(ElementType angle_weight_) : angle_weight(angle_weight_)
+			DistanceSE3Quat()
 			{}
 
 			/// size must be 7
@@ -130,8 +129,6 @@ namespace APDL
 
 				return result;
 			}
-
-			ElementType angle_weight;
 		};
 	}
 

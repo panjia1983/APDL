@@ -1,6 +1,8 @@
 #include "contact_space_learning.h"
 #include "distance_proxy.h"
 
+
+
 namespace APDL
 {
 	PredictResult MulticonlitronLearner::predict(const DataVector& query) const
@@ -730,3 +732,7 @@ after_separable_test:
 		return index;	
 	}
 }
+
+
+
+
