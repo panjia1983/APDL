@@ -525,7 +525,8 @@ namespace APDL
 	
 	
 	inline GJKResult doGJK(const Polygon& s1, const Transform2D& tf1,
-	                       const Polygon& s2, const Transform2D& tf2)
+	                       const Polygon& s2, const Transform2D& tf2,
+						   Simplex* last_simplex = NULL)
 	{
 		Simplex simplex;
 		std::pair<Vec2D, int> sup1 = s1.getSupport(tf1.untransform_dir(Vec2D(-1, 0)));
@@ -618,6 +619,8 @@ namespace APDL
 		result.distance = distance(result.point1, result.point2);
 		
 		result.iterations = iter;
+
+		if(last_simplex) *last_simplex = simplex;
 		
 		return result;
 	}
@@ -650,6 +653,7 @@ namespace APDL
 		Polytope(const Simplex& simplex)
 		{
 			count = simplex.count;
+			verts.resize(count);
 			for(int i = 0; i < count; ++i)
 				verts[i] = simplex.verts[i];
 				
@@ -665,7 +669,6 @@ namespace APDL
 				Vec2D a = simplex.verts[0].point;
 				Vec2D b = simplex.verts[1].point;
 				Vec2D c = simplex.verts[2].point;
-				
 				Vec2D ab = b - a;
 				Vec2D bc = c - b;
 				
@@ -683,9 +686,19 @@ namespace APDL
 				}
 			}
 		}
-		
-		
-		
+
+		~Polytope()
+		{
+			PolytopeEdge* p = head;
+			while(p != tail)
+			{
+				PolytopeEdge* t = p;
+				p = p->next;
+				delete t;
+			}
+
+			delete tail;
+		}
 		
 		void insertEdge(PolytopeEdge* pre_e,
 		                PolytopeEdge* new_e)
@@ -694,6 +707,8 @@ namespace APDL
 			{
 				head = new_e;
 				tail = new_e;
+				new_e->next = new_e;
+				new_e->next = new_e;
 			}
 			else
 			{
@@ -882,7 +897,165 @@ namespace APDL
 		
 		return polytope;
 	}
+
+	struct Edge
+	{
+		Vec2D v1, v2;
+	};
+
+	inline Edge findSeparateEdge(const Polygon& s, const Transform2D& tf, const Vec2D& n)
+	{
+		Vec2D n_local = tf.untransform_dir(n);
+		int index = s.getSupport(n_local).second;
+		int index_prev = (index + s.size() - 1) % (s.size());
+		int index_next = (index + 1) % (s.size());
+
+		const Vec2D& v = s.points[index];
+		const Vec2D& v_prev = s.points[index_prev];
+		const Vec2D& v_next = s.points[index_next];
+		Vec2D l = v - v_next;
+		Vec2D r = v - v_prev;
+
+		Edge edge;
+		
+		if(dot(r, n_local) <= dot(l, n_local))
+		{
+			edge.v1 = tf.transform(v_prev);
+			edge.v2 = tf.transform(v);
+			return edge;
+		}
+
+		edge.v1 = tf.transform(v);
+		edge.v2 = tf.transform(v_next);
+		return edge;
+	}
+
+	inline std::vector<Vec2D> clipLineSegment(const Vec2D& v1, const Vec2D& v2, const Vec2D& n, double o)
+	{
+		double d1 = dot(n, v1) - o;
+		double d2 = dot(n, v2) - o;
+		
+		std::vector<Vec2D> cp;
+		if(d1 >= 0) cp.push_back(v1);
+		if(d2 >= 0) cp.push_back(v2);
+		if(d1 * d2 < 0)
+		{
+			Vec2D delta = v2 - v1;
+			Vec2D p = v1 + delta * (d1 / (d1 - d2));
+			cp.push_back(p);
+		}
+
+		return cp;
+	}
+
+	struct EPAContact
+	{
+		Vec2D normal;
+		Vec2D point;
+		double penetration;
+
+		EPAContact(const Vec2D& point_, const Vec2D& normal_, double penetration_)
+		{
+			point = point_;
+			normal = normal_;
+			penetration = penetration_;
+		}
+	};
+
+	inline std::vector<EPAContact> computeContactPoints(const Polygon& s1, const Transform2D& tf1,
+														const Polygon& s2, const Transform2D& tf2,
+														const Vec2D & n)
+	{
+		std::vector<EPAContact> cp;
+		Edge e1 = findSeparateEdge(s1, tf1, n);
+		Edge e2 = findSeparateEdge(s2, tf2, -n);
+
+		Vec2D e1d = e1.v2 - e1.v1;
+		Vec2D e2d = e2.v2 - e2.v1;
+
+		Edge ref, inc;
+		Vec2D ref_n;
+		bool flip;
+
+
+		double en1 = abs(dot(e1d, n));
+		double en2 = abs(dot(e2d, n));
+		if(en1 <= en2)
+		{
+			ref = e1;
+			ref_n = normalize(e1d);
+			inc = e2;
+			flip = true;
+		}
+		else
+		{
+			ref = e2;
+			ref_n = normalize(e2d);
+			inc = e1;
+			flip = false;
+		}
+
+		std::vector<Vec2D> v;
+
+		double o1 = dot(ref_n, ref.v1);
+		v = clipLineSegment(inc.v1, inc.v2, ref_n, o1);
+		if(v.size() < 2)
+			return cp;
+
+		double o2 = -dot(ref_n, ref.v2);
+		v = clipLineSegment(v[0], v[1], -ref_n, o2);
+		if(v.size() < 2)
+			return cp;
+
+		Vec2D ref_perp(-ref_n.y, ref_n.x);
+
+
+		double o3 = dot(ref_perp, ref.v1);
+		double depth0 = dot(ref_perp, v[0]) - o3;
+		double depth1 = dot(ref_perp, v[1]) - o3;
+
+		
+		if(depth0 > 0)
+			cp.push_back(EPAContact(v[0], n, -depth0));
+
+		if(depth1 > 0)
+			cp.push_back(EPAContact(v[1], n, -depth1));
+
+		return cp;
+	}
 	
+	struct EPAResult
+	{
+		bool distance;
+
+		std::vector<EPAContact> contacts;
+	};
+
+	inline EPAResult doGJKEPA(const Polygon& s1, const Transform2D& tf1,
+							  const Polygon& s2, const Transform2D& tf2)
+	{
+		Simplex last_simplex;
+		GJKResult gjk_res = doGJK(s1, tf1, s2, tf2, &last_simplex);
+
+		EPAResult epa_res;
+		if(gjk_res.distance > 0)
+		{
+			epa_res.distance = gjk_res.distance;
+			return epa_res;
+		}
+
+		Polytope polytope = doEPA(s1, tf1, s2, tf2, last_simplex);
+		Vec2D normal = polytope.getClosestEdge()->dir;
+		normal.normalize();
+
+		std::vector<EPAContact> info = computeContactPoints(s1, tf1, s2, tf2, -normal);
+
+		epa_res.distance = gjk_res.distance;
+		epa_res.contacts = info;
+
+		return epa_res;
+
+	}
 	
 }
 

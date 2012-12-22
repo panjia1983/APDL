@@ -61,6 +61,28 @@ namespace APDL
 			Vec2D point2;
 			double distance;
 		};
+
+		struct Contact
+		{
+			Vec2D normal;
+			Vec2D contact_point;
+			double penetration_depth;
+
+			Contact(const Vec2D& point_, const Vec2D& normal_, double penetration_)
+			{
+				contact_point = point_;
+				normal = normal_;
+				penetration_depth = penetration_;
+			}
+		};
+
+		struct CollisionResult
+		{
+			bool is_collide;
+
+			std::vector<Contact> contacts;
+			
+		};
 		
 		Collider2D(const Polygon_2* model1_, const Polygon_2* model2_)
 		{
@@ -215,6 +237,38 @@ namespace APDL
 			return dist_res;
 		}
 		
+		CollisionResult collide(const DataVector& q) const
+		{
+			double c = cos(q[2]);
+			double s = sin(q[2]);
+			Transform2D tf1;
+			Transform2D tf2(Mat2D(c, -s, s, c), Vec2D(q[0], q[1]));
+
+			CollisionResult res;
+			res.is_collide = false;
+
+			for(std::size_t i = 0; i < model1_convex.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model2_convex.size(); ++j)
+				{
+					EPAResult epa_res = doGJKEPA(model1_convex[i], tf1,
+											     model2_convex[j], tf2);
+
+					if(epa_res.distance <= 0)
+					{
+						res.is_collide = true;
+
+						for(std::size_t k = 0; k < epa_res.contacts.size(); ++k)
+						{
+							res.contacts.push_back(Contact(epa_res.contacts[k].point, epa_res.contacts[k].normal, epa_res.contacts[k].penetration));
+						}
+					}
+				}
+			}
+
+			return res;
+		}
+
 		bool isCollideCGAL(const DataVector& q) const
 		{
 			double c = cos(q[2]);
@@ -246,7 +300,6 @@ namespace APDL
 			}
 			
 			return false;
-			
 		}
 		
 		std::pair<bool, double> isCCDCollide(const DataVector& qs, const DataVector& qt, std::size_t n_dcd) const

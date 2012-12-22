@@ -98,6 +98,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query", "AP
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_ccd_collide", "APD_test_ccd_collide\APD_test_ccd_collide.vcproj", "{1B7950CD-9294-4D87-9D15-49D24621A32B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -184,6 +186,10 @@ Global
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Debug|Win32.Build.0 = Debug|Win32
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Release|Win32.ActiveCfg = Release|Win32
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Release|Win32.Build.0 = Release|Win32
+		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Debug|Win32.Build.0 = Debug|Win32
+		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Release|Win32.ActiveCfg = Release|Win32
+		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

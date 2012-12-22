@@ -96,6 +96,20 @@ namespace APDL
 		}
 	};
 
+	struct ContactInfo
+	{
+		std::vector<Coord3D> contacts;
+		std::vector<Coord3D> normals;
+	};
+
+	template<typename DistanceType>
+	struct ExtendedModel
+	{
+		flann::Index<DistanceType>* index;
+		std::vector<DataVector> samples; // samples should be of active dim
+		std::vector<ContactInfo> contacts; // contact info for each sample
+	};
+
 	class SVMLearner
 	{
 	public:
@@ -321,6 +335,66 @@ namespace APDL
 			index->buildIndex();
 
 			return index;
+		}
+
+		template<typename ContactSpace, typename IndexParams>
+		ExtendedModel<typename ContactSpace::DistanceType> constructExtendedModelForModelDecisionBoundary() const
+		{
+
+		}
+
+		template<typename ContactSpace, typename IndexParams>
+		ExtendedModel<typename ContactSpace::DistanceType> constructExtendedModelForSupportVectors(const ContactSpace& contactspace) const
+		{
+			ExtendedModel<typename ContactSpace::DistanceType> extended_model;
+
+			flann::Index<typename ContactSpace::DistanceType>* index0 = constructIndexForQueryClass0();
+			flann::Index<typename ContactSpace::DistanceType>* index1 = constructIndexForQueryClass1();
+
+			extended_model.index = constructIndexForQuery();
+
+			std::vector<std::vector<int> > indices;
+			std::vector<std::vector<double> > dists;
+
+			DataVector qs(contactspace.data_dim());
+			DataVector qt(contactspace.data_dim());
+
+			flann::Matrix<double> queryset = flann::Matrix<double>(new double[feature_dim * 1], 1, feature_dim);
+			for(std::size_t i = 0; i < model->nSV[0]; ++i)
+			{
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					queryset[0][j] = model->SV[i][j].value;
+
+				indices.clear();
+				dists.clear();
+				index1->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					qs[j] = queryset[0][j];
+					qt[j] = model->SV[indices[0][0]][j].value;
+				}
+
+
+				std::vector<bool, double> res = contactspace.collider.isCCDCollide(qs, qt);
+				if(res.first == false)
+					std::cout << "Should not happen" << std::endl
+				
+
+			}
+
+			for(std::size_t i = model->nSV[0]; i < model->l; ++i)
+			{
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					queryset[0][j] = model->SV[i][j].value;
+
+				indices.clear();
+				dists.clear();
+				index0->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+			}
+
+			delete index0;
+			delete index1;
 		}
 
 		svm_parameter param;
