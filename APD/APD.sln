@@ -100,6 +100,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query", "AP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_ccd_collide", "APD_test_ccd_collide\APD_test_ccd_collide.vcproj", "{1B7950CD-9294-4D87-9D15-49D24621A32B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d", "APD_test_svm_learner_3d\APD_test_svm_learner_3d.vcproj", "{062BF53A-CF19-4247-BA4D-7BFB3C986037}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_svm_learner_3d_rotation", "test_svm_learner_3d_rotation\test_svm_learner_3d_rotation.vcproj", "{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -190,6 +194,14 @@ Global
 		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Debug|Win32.Build.0 = Debug|Win32
 		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Release|Win32.ActiveCfg = Release|Win32
 		{1B7950CD-9294-4D87-9D15-49D24621A32B}.Release|Win32.Build.0 = Release|Win32
+		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Debug|Win32.ActiveCfg = Debug|Win32
+		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Debug|Win32.Build.0 = Debug|Win32
+		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Release|Win32.ActiveCfg = Release|Win32
+		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Release|Win32.Build.0 = Release|Win32
+		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Debug|Win32.Build.0 = Debug|Win32
+		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.ActiveCfg = Release|Win32
+		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

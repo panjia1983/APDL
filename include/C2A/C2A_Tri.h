@@ -51,12 +51,8 @@ struct C2A_Tri: public Tri
 		return &(index_[0]);
 	}
 	
-	
+private:
 	int index_[3];
-	
-	PQP_REAL n[3];
-	int BV_index;
-	
 };
 
 #endif

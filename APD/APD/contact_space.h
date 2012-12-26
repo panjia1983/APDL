@@ -5,9 +5,59 @@
 #include "sampler.h"
 #include <vector>
 #include "distance_proxy.h"
+#include <C2A/LinearMath.h>
 
 namespace APDL
 {
+	inline std::vector<DataVector> readPM3dFile(const std::string& filename)
+	{
+		std::vector<DataVector> points;
+
+		FILE* fp = fopen(filename.c_str(), "rb");
+		if(fp == NULL)
+		{
+			std::cerr << "!Error: Cannot open file (" << filename << ")" << std::endl;
+			return points;
+		}
+
+		float radian[3];
+		int total_bdSize;
+		fread(&total_bdSize, sizeof(int), 1, fp);
+		fread(radian, sizeof(float) * 3, 1, fp);
+
+		float c_r = cos(radian[0]);
+		float s_r = sin(radian[0]);
+
+		Matrix3x3 mx(1,0,0, 0, c_r,-s_r, 0, s_r,c_r);
+		c_r = cos(radian[1]);
+		s_r = sin(radian[1]);
+		Matrix3x3 my(c_r, 0, s_r, 0, 1, 0, -s_r, 0, c_r);
+		c_r = cos(radian[2]);
+		s_r = sin(radian[2]);
+		Matrix3x3 mz(c_r,-s_r, 0, s_r,c_r,0,0,0,1);
+		Matrix3x3 M = mz * my * mx;
+
+		float* bdM = new float[6*total_bdSize];
+		fread(bdM, sizeof(float)*6*total_bdSize, 1, fp);
+
+		fclose(fp);
+
+		
+		DataVector p(3);
+		for(std::size_t i = 0; i < total_bdSize; ++i)
+		{
+			p[0] = bdM[6*i];
+			p[1] = bdM[6*i+1];
+			p[2] = bdM[6*i+2];
+			points.push_back(p);
+		}
+
+		delete [] bdM;
+
+		return points;
+	}
+
+
 	struct ContactSpaceSampleData
 	{
 		DataVector v;
@@ -107,6 +157,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceRN DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider2D ColliderType;
 
 		ContactSpaceR2(const Polygon& p1, const Polygon& p2, double delta = 0) : collider(&p1, &p2)
 		{
@@ -133,6 +184,23 @@ namespace APDL
 				v[2] = 0;
 				bool col = collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			DataVector v(3);
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v_ = sampler.sample();
+			
+				v[0] = v_[0];
+				v[1] = v_[1];
+				v[2] = 0;
+				samples.push_back(v);
 			}
 
 			return samples;
@@ -169,6 +237,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE2 DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider2D ColliderType;
 
 		ContactSpaceSE2_disk(const Polygon& p1, const Polygon& p2, double delta = 0) : collider(&p1, &p2)
 		{
@@ -186,6 +255,18 @@ namespace APDL
 				DataVector v = sampler.sample();
 				bool col = collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				samples.push_back(v);
 			}
 
 			return samples;
@@ -223,6 +304,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE2 DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider2D ColliderType;
 
 		ContactSpaceSE2(const Polygon& p1, const Polygon& p2, double delta = 0) : collider(&p1, &p2)
 		{
@@ -247,6 +329,18 @@ namespace APDL
 				DataVector v = sampler.sample();
 				bool col = collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				samples.push_back(v);
 			}
 
 			return samples;
@@ -284,6 +378,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceRN DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider3D ColliderType;
 
 		ContactSpaceR3(C2A_Model* model1, C2A_Model* model2, double delta = 0) : collider(model1, model2)
 		{
@@ -323,6 +418,24 @@ namespace APDL
 
 			return samples;
 		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			DataVector v(6);
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v_ = sampler.sample();
+			
+				v[0] = v_[0];
+				v[1] = v_[1];
+				v[2] = v_[2];
+				samples.push_back(v);
+			}
+
+			return samples;
+		}
 		
 		std::vector<ContactSpaceSampleData> data;
 		
@@ -356,6 +469,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE3EulerAngle DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider3D ColliderType;
 
 		ContactSpaceSE3Euler(C2A_Model* model1, C2A_Model* model2, double delta = 0) : collider(model1, model2)
 		{
@@ -382,6 +496,17 @@ namespace APDL
 			return samples;
 		}
 
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				samples.push_back(v);
+			}
+
+			return samples;
+		}
 		
 		std::size_t data_dim() const
 		{
@@ -413,6 +538,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE3Quat DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider3D ColliderType;
 
 		ContactSpaceSE3Quat(C2A_Model* model1, C2A_Model* model2, double delta = 0) : collider(model1, model2)
 		{
@@ -435,6 +561,18 @@ namespace APDL
 				DataVector v = sampler.sample();
 				bool col = collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				DataVector v = sampler.sample();
+				samples.push_back(v);
 			}
 
 			return samples;
@@ -471,6 +609,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE3EulerAngle DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider3D ColliderType;
 
 		ContactSpaceSE3Euler2(C2A_Model* model1, C2A_Model* model2, double delta_ = 0) : collider(model1, model2)
 		{
@@ -522,6 +661,48 @@ namespace APDL
 
 			return samples;
 		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+			double r_[4];
+			double R[3][3];
+			DataVector v(6);
+			double a, b, c;
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				rng.quaternion(r_);
+				Quaternion r(r_[0], r_[1], r_[2], r_[3]);
+
+				Quat2Rot(R, r);
+
+				AABB3D new_aabb2 = rotate(aabb2, R);
+
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+
+				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
+				DataVector t = sampler.sample();
+
+				Quat2Euler(a, b, c, r);
+				v[0] = t[0];
+				v[1] = t[1];
+				v[2] = t[2];
+				v[3] = a;
+				v[4] = b;
+				v[5] = c;
+				samples.push_back(v);
+			}
+
+			return samples;
+		}
 		
 		std::size_t data_dim() const
 		{
@@ -559,6 +740,7 @@ namespace APDL
 	public:
 		typedef FLANN_WRAPPER::DistanceSE3Quat DistanceType;
 		typedef FLANN_WRAPPER::DistanceRN ClassifierDistanceType;
+		typedef Collider3D ColliderType;
 
 		ContactSpaceSE3Quat2(C2A_Model* model1, C2A_Model* model2, double delta_ = 0) : collider(model1, model2)
 		{
@@ -608,6 +790,51 @@ namespace APDL
 
 				bool col = collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(std::size_t n) const
+		{
+			std::vector<DataVector> samples;
+
+			double r_[4];
+			double R[3][3];
+			DataVector v(7);
+
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				rng.quaternion(r_);
+
+				Quaternion r(r_[0], r_[1], r_[2], r_[3]);
+
+				Quat2Rot(R, r);
+
+				AABB3D new_aabb2 = rotate(aabb2, R);
+
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+
+				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
+				DataVector t = sampler.sample();
+
+
+				v[0] = t[0];
+				v[1] = t[1];
+				v[2] = t[2];
+				v[3] = r_[0];
+				v[4] = r_[1];
+				v[5] = r_[2];
+				v[6] = r_[3];
+
+				samples.push_back(v);
 			}
 
 			return samples;

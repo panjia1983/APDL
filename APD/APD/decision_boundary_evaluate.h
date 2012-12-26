@@ -14,8 +14,6 @@ namespace APDL
 			for(std::size_t i = 0; i < learner.feature_dim; ++i)
 				node[i].index = i + 1;
 			node[learner.feature_dim].index = -1;
-
-			ratio = 1.0 / sqrt(learner.hyperw_normsqr);
 		}
 
 		~SVMEvaluator()
@@ -34,8 +32,6 @@ namespace APDL
 		const SVMLearner& learner;
 
 		mutable svm_node* node;
-
-		double ratio;
 	};
 
 	struct MulticonlitronEvaluator

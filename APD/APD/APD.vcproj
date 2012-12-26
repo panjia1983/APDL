@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\profile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sampler.cpp"
 				>
 			</File>
@@ -287,6 +291,14 @@
 			</File>
 			<File
 				RelativePath=".\online_query.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PQP_extension.h"
+				>
+			</File>
+			<File
+				RelativePath=".\profile.h"
 				>
 			</File>
 			<File

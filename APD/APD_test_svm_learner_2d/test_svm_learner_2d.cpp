@@ -1,6 +1,9 @@
 #include <APD/contact_space_learning.h>
 #include <APD/minkowski_cspace.h>
 
+void* user_conlitron_model;
+double* user_conlitron_data;
+
 namespace APDL
 {
 	void test_svm_learner_2d()

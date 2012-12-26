@@ -12,6 +12,94 @@
 
 namespace APDL
 {
+
+	inline flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexForLearning(std::vector<ContactSpaceSampleData>& samples)
+	{
+		if(samples.size() == 0) return NULL;
+
+		std::size_t feature_dim = samples[0].v.dim();
+		std::size_t data_num = samples.size();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		for(std::size_t i = 0; i < data_num; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+			{
+				dataset[i][j] = samples[i].v[j];
+			}
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	inline flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexForLearning(std::vector<DataVector>& samples)
+	{
+		if(samples.size() == 0) return NULL;
+
+		std::size_t feature_dim = samples[0].dim();
+		std::size_t data_num = samples.size();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		for(std::size_t i = 0; i < data_num; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+			{
+				dataset[i][j] = samples[i][j];
+			}
+		}
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* index = new flann::Index<FLANN_WRAPPER::DistanceRN>(dataset, flann::KDTreeIndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	template<typename ContactSpace, typename IndexParams>
+	flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<ContactSpaceSampleData>& samples)
+	{
+		if(samples.size() == 0) return NULL;
+
+		std::size_t feature_dim = samples[0].v.dim();
+		std::size_t data_num = samples.size();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		for(std::size_t i = 0; i < data_num; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+			{
+				dataset[i][j] = samples[i].v[j];
+			}
+		}
+
+		flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+	template<typename ContactSpace, typename IndexParams>
+	flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<DataVector>& samples)
+	{
+		if(samples.size() == 0) return NULL;
+
+		std::size_t feature_dim = samples[0].dim();
+		std::size_t data_num = samples.size();
+		flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
+		for(std::size_t i = 0; i < data_num; ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+			{
+				dataset[i][j] = samples[i][j];
+			}
+		}
+
+		flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+		index->buildIndex();
+
+		return index;
+	}
+
+
 					
 	struct HyperPlane
 	{
@@ -96,19 +184,99 @@ namespace APDL
 		}
 	};
 
-	struct ContactInfo
-	{
-		std::vector<Coord3D> contacts;
-		std::vector<Coord3D> normals;
-	};
-
-	template<typename DistanceType>
+	template<typename ContactSpace>
 	struct ExtendedModel
 	{
-		flann::Index<DistanceType>* index;
+		flann::Index<typename ContactSpace::DistanceType>* index;
 		std::vector<DataVector> samples; // samples should be of active dim
-		std::vector<ContactInfo> contacts; // contact info for each sample
+		std::vector<typename ContactSpace::ColliderType::CollisionResult> contacts; // contact info for each sample
+
+		~ExtendedModel()
+		{
+			delete index;
+		}
 	};
+
+	template<typename ContactSpace, typename Learner, typename IndexParams>
+	ExtendedModel<ContactSpace> constructExtendedModelForModelDecisionBoundary(
+		const ContactSpace& contactspace, const Learner& learner, 
+		std::vector<ContactSpaceSampleData> model_samples, double push_delta_t)
+	{
+		ExtendedModel<ContactSpace> extended_model;
+
+		std::vector<DataVector> supportClass0, supportClass1;
+		learner.collectSupportVectorsClass0(supportClass0);
+		learner.collectSupportVectorsClass1(supportClass1);
+
+		flann::Index<typename ContactSpace::DistanceType>* index0 = constructIndexForQuery<ContactSpace, IndexParams>(supportClass0);
+		flann::Index<typename ContactSpace::DistanceType>* index1 = constructIndexForQuery<ContactSpace, IndexParams>(supportClass1);
+
+
+		std::vector<DataVector> pushed_samples;
+
+		std::vector<std::vector<int> > indices;
+		std::vector<std::vector<double> > dists;
+
+		DataVector qs(contactspace.data_dim()); // for collision
+		DataVector qt(contactspace.data_dim());
+
+		std::size_t feature_dim = learner.feature_dim;
+
+		flann::Matrix<double> queryset = flann::Matrix<double>(new double[feature_dim], 1, feature_dim);
+
+		for(std::size_t i = 0; i < model_samples.size(); ++i)
+		{
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				queryset[0][j] = model_samples[i].v[j];
+
+			indices.clear();
+			dists.clear();
+
+			if(model_samples[i].col)
+			{
+				index0->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					qt[j] = model_samples[i].v[j];               // collision
+					qs[j] = supportClass0[indices[0][0]][j];   // collision-free
+				}
+			}
+			else
+			{
+				index1->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					qs[j] = model_samples[i].v[j];               // collision
+					qt[j] = supportClass1[indices[0][0]][j];   // collision-free
+				}
+			}
+
+			std::pair<bool, double> res = contactspace.collider.isCCDCollide(qs, qt, 100);
+			if(res.first == false)
+				std::cout << "Should not happen" << std::endl;
+
+			DataVector pushed_q = contactspace.collider.interpolate(qs, qt, res.second);
+
+			typename ContactSpace::ColliderType::CollisionResult collision_result = contactspace.collider.collide(pushed_q);
+
+			extended_model.contacts.push_back(collision_result);
+
+			DataVector contact_q_ = contactspace.collider.interpolate(qs, qt, res.second);
+			DataVector contact_q(contactspace.active_data_dim());
+			for(std::size_t j = 0 ; j < contactspace.active_data_dim(); ++j)
+				contact_q[j] = contact_q_[j];
+
+			pushed_samples.push_back(contact_q);
+		}
+
+		extended_model.index = constructIndexForQuery<ContactSpace, IndexParams>(pushed_samples);
+		extended_model.samples = pushed_samples;
+
+		delete index0;
+		delete index1;
+
+		return extended_model;
+	}
 
 	class SVMLearner
 	{
@@ -187,6 +355,11 @@ namespace APDL
 		void setGamma(double gamma)
 		{
 			param.gamma = gamma;
+		}
+
+		void setDim(std::size_t dim)
+		{
+			feature_dim = dim;
 		}
 		
 		~SVMLearner()
@@ -275,126 +448,42 @@ namespace APDL
 			delete [] ids;
 		}
 
+		
+		void collectSupportVectors(std::vector<ContactSpaceSampleData>& samples) const;
+		void collectSupportVectorsClass0(std::vector<ContactSpaceSampleData>& samples) const;
+		void collectSupportVectorsClass1(std::vector<ContactSpaceSampleData>& samples) const;
+
+		void collectSupportVectors(std::vector<DataVector>& samples) const;
+		void collectSupportVectorsClass0(std::vector<DataVector>& samples) const;
+		void collectSupportVectorsClass1(std::vector<DataVector>& samples) const;
+
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectors() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
 		{
-			std::size_t data_num = model->l;
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			for(std::size_t i = 0; i < data_num; ++i)
-			{
-				for(std::size_t j = 0; j < feature_dim; ++j)
-				{
-					dataset[i][j] = model->SV[i][j].value;
-				}
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
+			std::vector<DataVector> samples;
+			collectSupportVectors(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass0() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
 		{
-			size_t data_num = model->nSV[0];
-			// size_t start = 0;
-
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			for(std::size_t i = 0; i < data_num; ++i)
-			{
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					dataset[i][j] = model->SV[i][j].value;
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
+			std::vector<DataVector> samples;
+			collectSupportVectorsClass0(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass1() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
 		{
-			size_t data_num = model->nSV[1];
-			size_t start = model->nSV[0];
-
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			for(std::size_t i = 0; i < data_num; ++i)
-			{
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					dataset[i][j] = model->SV[i+start][j].value;
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
-		}
-
-		template<typename ContactSpace, typename IndexParams>
-		ExtendedModel<typename ContactSpace::DistanceType> constructExtendedModelForModelDecisionBoundary() const
-		{
-
-		}
-
-		template<typename ContactSpace, typename IndexParams>
-		ExtendedModel<typename ContactSpace::DistanceType> constructExtendedModelForSupportVectors(const ContactSpace& contactspace) const
-		{
-			ExtendedModel<typename ContactSpace::DistanceType> extended_model;
-
-			flann::Index<typename ContactSpace::DistanceType>* index0 = constructIndexForQueryClass0();
-			flann::Index<typename ContactSpace::DistanceType>* index1 = constructIndexForQueryClass1();
-
-			extended_model.index = constructIndexForQuery();
-
-			std::vector<std::vector<int> > indices;
-			std::vector<std::vector<double> > dists;
-
-			DataVector qs(contactspace.data_dim());
-			DataVector qt(contactspace.data_dim());
-
-			flann::Matrix<double> queryset = flann::Matrix<double>(new double[feature_dim * 1], 1, feature_dim);
-			for(std::size_t i = 0; i < model->nSV[0]; ++i)
-			{
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					queryset[0][j] = model->SV[i][j].value;
-
-				indices.clear();
-				dists.clear();
-				index1->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
-
-				for(std::size_t j = 0; j < feature_dim; ++j)
-				{
-					qs[j] = queryset[0][j];
-					qt[j] = model->SV[indices[0][0]][j].value;
-				}
-
-
-				std::vector<bool, double> res = contactspace.collider.isCCDCollide(qs, qt);
-				if(res.first == false)
-					std::cout << "Should not happen" << std::endl
-				
-
-			}
-
-			for(std::size_t i = model->nSV[0]; i < model->l; ++i)
-			{
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					queryset[0][j] = model->SV[i][j].value;
-
-				indices.clear();
-				dists.clear();
-				index0->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
-			}
-
-			delete index0;
-			delete index1;
+			std::vector<DataVector> samples;
+			collectSupportVectorsClass1(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 		svm_parameter param;
@@ -483,7 +572,11 @@ namespace APDL
 		{
 			feature_dim = weight.dim();
 			scaler = NULL;
+		}
 
+		void setDim(std::size_t dim)
+		{
+			feature_dim = dim;
 		}
 
 		HyperPlane CDMA(const std::vector<DataVector>& X, const std::vector<DataVector>& Y, double epsilon = 0.01) const;
@@ -611,78 +704,41 @@ namespace APDL
 			os.close();
 		}
 
+		void collectSupportVectors(std::vector<ContactSpaceSampleData>& samples) const;
+		void collectSupportVectorsClass0(std::vector<ContactSpaceSampleData>& samples) const;
+		void collectSupportVectorsClass1(std::vector<ContactSpaceSampleData>& samples) const;
+
+		void collectSupportVectors(std::vector<DataVector>& samples) const;
+		void collectSupportVectorsClass0(std::vector<DataVector>& samples) const;
+		void collectSupportVectorsClass1(std::vector<DataVector>& samples) const;
+
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectors() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
 		{
-			std::size_t data_num = 2 * model.numOfHyperPlanes();
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			std::size_t id = 0;
-			for(std::size_t i = 0; i < model.size(); ++i)
-			{
-				for(std::size_t j = 0; j < model[i].size(); ++j)
-				{
-					for(std::size_t k = 0; k < feature_dim; ++k)
-						dataset[id][k] = model[i][j].supp1[k];
-					id++;
-					for(std::size_t k = 0; k < feature_dim; ++k)
-						dataset[id][k] = model[i][j].supp2[k];
-					id++;
-				}
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
+			std::vector<DataVector> samples;
+			collectSupportVectors(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass0() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
 		{
-			std::size_t data_num = model.numOfHyperPlanes();
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			std::size_t id = 0;
-			for(std::size_t i = 0; i < model.size(); ++i)
-			{
-				for(std::size_t j = 0; j < model[i].size(); ++j)
-				{
-					for(std::size_t k = 0; k < feature_dim; ++k)
-						dataset[id][k] = model[i][j].supp1[k];
-					id++;
-				}
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
+			std::vector<DataVector> samples;
+			collectSupportVectorsClass0(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexForQueryClass1() const
+		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
 		{
-			std::size_t data_num = model.numOfHyperPlanes();
-			flann::Matrix<double> dataset = flann::Matrix<double>(new double[feature_dim * data_num], data_num, feature_dim);
-			std::size_t id = 0;
-			for(std::size_t i = 0; i < model.size(); ++i)
-			{
-				for(std::size_t j = 0; j < model[i].size(); ++j)
-				{
-					for(std::size_t k = 0; k < feature_dim; ++k)
-						dataset[id][k] = model[i][j].supp2[k];
-					id++;
-				}
-			}
-
-			flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
-			index->buildIndex();
-
-			return index;
+			std::vector<DataVector> samples;
+			collectSupportVectorsClass1(samples);
+			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
 		}
 
 
@@ -1225,6 +1281,8 @@ namespace APDL
 
 		std::size_t weak_classifier_id;
 	};
+
+
 
 
 }

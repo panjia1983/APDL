@@ -425,6 +425,18 @@ namespace APDL
 			
 			return std::make_pair(c, std::sqrt(r_max));
 		}
+
+		double getMaxDistanceToOrigin() const
+		{
+			double r_max = 0;
+			for(std::size_t i = 0; i < points.size(); ++i)
+			{
+				double r = points[i].sqrLength();
+				if(r > r_max) r_max = r;
+			}
+
+			return std::sqrt(r_max);
+		}
 		
 		std::vector<Vec2D> points;
 	};
@@ -1013,7 +1025,6 @@ namespace APDL
 		double o3 = dot(ref_perp, ref.v1);
 		double depth0 = dot(ref_perp, v[0]) - o3;
 		double depth1 = dot(ref_perp, v[1]) - o3;
-
 		
 		if(depth0 > 0)
 			cp.push_back(EPAContact(v[0], n, -depth0));
@@ -1026,7 +1037,7 @@ namespace APDL
 	
 	struct EPAResult
 	{
-		bool distance;
+		double distance;
 
 		std::vector<EPAContact> contacts;
 	};

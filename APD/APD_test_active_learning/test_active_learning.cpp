@@ -3,6 +3,9 @@
 #include <APD/minkowski_cspace.h>
 #include <APD/decision_boundary_sampler.h>
 
+void* user_conlitron_model;
+double* user_conlitron_data;
+
 namespace APDL
 {
 	void test_svm_active_learning()
@@ -34,6 +37,8 @@ namespace APDL
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
+			learner.setDim(contactspace.active_data_dim());
+			 
 
 			std::ofstream scaler_file("scaler_2d.txt");
 			scaler_file << contactspace.getScaler() << std::endl;
@@ -72,6 +77,7 @@ namespace APDL
 			ContactSpaceR2 contactspace(p1, p2, 2);
 
 			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
@@ -172,6 +178,7 @@ namespace APDL
 			DataVector w(2);
 			w[0] = 1; w[1] = 1;
 			MulticonlitronLearner learner(w, 0.01);
+			learner.setDim(contactspace.active_data_dim());
 			learner.setScaler(contactspace.getScaler());
 			learner.learn(contactspace_samples, 2);
 
@@ -261,6 +268,7 @@ namespace APDL
 			ContactSpaceR2 contactspace(p1, p2, 2);
 
 			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
@@ -361,6 +369,7 @@ namespace APDL
 			DataVector w(2);
 			w[0] = 1; w[1] = 1;
 			MulticonlitronLearner learner(w, 0.01);
+			learner.setDim(contactspace.active_data_dim());
 			learner.setScaler(contactspace.getScaler());
 			learner.learn(contactspace_samples, 2);
 

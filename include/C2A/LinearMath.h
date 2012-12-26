@@ -8,7 +8,6 @@
 #endif
 
 
-
 typedef double Real;
 
 
@@ -453,8 +452,6 @@ public:
 		return true;
 	}
 	
-	
-	
 	inline void Set_Value(Real rotx, Real roty, Real rotz)
 	{
 		Real cos_a = cos(rotx);
@@ -475,8 +472,6 @@ public:
 	//zhangxy Feb 11, 2006-------------
 	inline Quaternion Quaternion_();
 	
-	inline void EigenVectorandValue(Coord3D &e0, Coord3D &e1, Coord3D &e2, Real &a, Real &b, Real &c);
-	
 	inline void Set_Value(const Quaternion& q);
 	inline Matrix3x3 Inverse() const;
 	Real Cofac(int r1, int c1, int r2, int c2) const
@@ -490,7 +485,6 @@ public:
 	inline void Identity();
 	//void Negate( );
 	inline void Transpose();
-	
 	//bool Invert( );
 	
 	// Operators that change this object
@@ -629,13 +623,6 @@ public:
 	{
 		T = t;
 	}
-	
-	inline void Get_Translation(Coord3D &t)
-	{
-		t = T;
-	}
-	
-	
 	
 	// Operations that change this object
 	
@@ -1019,208 +1006,11 @@ inline void Quaternion::Negate()
 	Invert();
 }
 
-inline void Quaternion::Normalize()
-{
-	double length = sqrt(val[0] * val[0] + val[1] * val[1] + val[2] * val[2] + val[3] * val[3]);
-	val[0] /= length;
-	val[1] /= length;
-	val[2] /= length;
-	val[3] /= length;
-}
-
 
 
 //////////////////////////////////////////////////////////////////////////////
 // Matrix3x3 member functions inline definitions
 //////////////////////////////////////////////////////////////////////////////
-
-inline void Matrix3x3::EigenVectorandValue(Coord3D &e0, Coord3D &e1, Coord3D &e2, Real &a, Real &b, Real &c)
-{
-	Real v[3][3];
-	
-	v[0][0] = val[0], v[0][1] = val[1], v[0][2] = val[2];
-	v[1][0] = val[3], v[1][1] = val[4], v[1][2] = val[5];
-	v[2][0] = val[6], v[2][1] = val[7], v[2][2] = val[8];
-	Real fM00 = v[0][0];
-	Real fM01 = v[0][1];
-	Real fM02 = v[0][2];
-	Real fM11 = v[1][1];
-	Real fM12 = v[1][2];
-	Real fM22 = v[2][2];
-	Real m_afSubd[3];
-	Real m_afDiag[3];
-	Real m_kMat[3][3];
-	bool m_bIsRotation;
-	
-	m_afDiag[0] = fM00;
-	m_afSubd[2] = (Real)0.0;
-	if(fabs(fM02) > 1e-30)
-	{
-		Real fLength = sqrt(fM01 * fM01 + fM02 * fM02);
-		Real fInvLength = ((Real)1.0) / fLength;
-		fM01 *= fInvLength;
-		fM02 *= fInvLength;
-		Real fQ = ((Real)2.0) * fM01 * fM12 + fM02 * (fM22 - fM11);
-		m_afDiag[1] = fM11 + fM02 * fQ;
-		m_afDiag[2] = fM22 - fM02 * fQ;
-		m_afSubd[0] = fLength;
-		m_afSubd[1] = fM12 - fM01 * fQ;
-		m_kMat[0][0] = (Real)1.0;
-		m_kMat[0][1] = (Real)0.0;
-		m_kMat[0][2] = (Real)0.0;
-		m_kMat[1][0] = (Real)0.0;
-		m_kMat[1][1] = fM01;
-		m_kMat[1][2] = fM02;
-		m_kMat[2][0] = (Real)0.0;
-		m_kMat[2][1] = fM02;
-		m_kMat[2][2] = -fM01;
-		m_bIsRotation = false;
-	}
-	else
-	{
-		m_afDiag[1] = fM11;
-		m_afDiag[2] = fM22;
-		m_afSubd[0] = fM01;
-		m_afSubd[1] = fM12;
-		m_kMat[0][0] = (Real)1.0;
-		m_kMat[0][1] = (Real)0.0;
-		m_kMat[0][2] = (Real)0.0;
-		m_kMat[1][0] = (Real)0.0;
-		m_kMat[1][1] = (Real)1.0;
-		m_kMat[1][2] = (Real)0.0;
-		m_kMat[2][0] = (Real)0.0;
-		m_kMat[2][1] = (Real)0.0;
-		m_kMat[2][2] = (Real)1.0;
-		m_bIsRotation = true;
-	}
-	
-	const int iMaxIter = 32;
-	int  m_iSize = 3;
-	
-	for(int i0 = 0; i0 < m_iSize; i0++)
-	{
-		int i1;
-		for(i1 = 0; i1 < iMaxIter; i1++)
-		{
-			int i2;
-			for(i2 = i0; i2 <= m_iSize - 2; i2++)
-			{
-				Real fTmp = fabs(m_afDiag[i2]) +
-				            fabs(m_afDiag[i2 + 1]);
-				            
-				if(fabs(m_afSubd[i2]) + fTmp == fTmp)
-				{
-					break;
-				}
-			}
-			if(i2 == i0)
-			{
-				break;
-			}
-			
-			Real fG = (m_afDiag[i0 + 1] - m_afDiag[i0]) / (((Real)2.0) *
-			          m_afSubd[i0]);
-			Real fR = sqrt(fG * fG + (Real)1.0);
-			if(fG < (Real)0.0)
-			{
-				fG = m_afDiag[i2] - m_afDiag[i0] + m_afSubd[i0] / (fG - fR);
-			}
-			else
-			{
-				fG = m_afDiag[i2] - m_afDiag[i0] + m_afSubd[i0] / (fG + fR);
-			}
-			Real fSin = (Real)1.0, fCos = (Real)1.0, fP = (Real)0.0;
-			for(int i3 = i2 - 1; i3 >= i0; i3--)
-			{
-				Real fF = fSin * m_afSubd[i3];
-				Real fB = fCos * m_afSubd[i3];
-				if(fabs(fF) >= fabs(fG))
-				{
-					fCos = fG / fF;
-					fR = sqrt(fCos * fCos + (Real)1.0);
-					m_afSubd[i3 + 1] = fF * fR;
-					fSin = ((Real)1.0) / fR;
-					fCos *= fSin;
-				}
-				else
-				{
-					fSin = fF / fG;
-					fR = sqrt(fSin * fSin + (Real)1.0);
-					m_afSubd[i3 + 1] = fG * fR;
-					fCos = ((Real)1.0) / fR;
-					fSin *= fCos;
-				}
-				fG = m_afDiag[i3 + 1] - fP;
-				fR = (m_afDiag[i3] - fG) * fSin + ((Real)2.0) * fB * fCos;
-				fP = fSin * fR;
-				m_afDiag[i3 + 1] = fG + fP;
-				fG = fCos * fR - fB;
-				
-				for(int i4 = 0; i4 < m_iSize; i4++)
-				{
-					fF = m_kMat[i4][i3 + 1];
-					m_kMat[i4][i3 + 1] = fSin * m_kMat[i4][i3] + fCos * fF;
-					m_kMat[i4][i3] = fCos * m_kMat[i4][i3] - fSin * fF;
-				}
-			}
-			m_afDiag[i0] -= fP;
-			m_afSubd[i0] = fG;
-			m_afSubd[i2] = (Real)0.0;
-		}
-		
-	}
-	
-	
-	if(!m_bIsRotation)
-	{
-		// change sign on the first column
-		for(int iRow = 0; iRow < m_iSize; iRow++)
-		{
-			m_kMat[iRow][0] = -m_kMat[iRow][0];
-		}
-	}
-	
-	
-	
-	
-	int order[3] = { 0, 1, 2};
-	int tmporder;
-	for(int i = 0; i < 3; i++)
-	{
-		for(int j = i + 1; j < 3; j++)
-		{
-			if(m_afDiag[order[i]] > m_afDiag[order[j]])
-			{
-				tmporder = order[i];
-				order[i] = order[j];
-				order[j] = tmporder;
-			}
-		}
-	}
-	
-	a = m_afDiag[order[0]];
-	b = m_afDiag[order[1]];
-	c = m_afDiag[order[2]];
-	
-	
-	e0.Set_X(m_kMat[0][order[0]]);
-	e0.Set_Y(m_kMat[1][order[0]]);
-	e0.Set_Z(m_kMat[2][order[0]]);
-	
-	e1.Set_X(m_kMat[0][order[1]]);
-	e1.Set_Y(m_kMat[1][order[1]]);
-	e1.Set_Z(m_kMat[2][order[1]]);
-	
-	
-	e2.Set_X(m_kMat[0][order[2]]);
-	e2.Set_Y(m_kMat[1][order[2]]);
-	e2.Set_Z(m_kMat[2][order[2]]);
-	
-	
-	
-	
-	
-}
 inline void Matrix3x3::Get_Value(Real v[]) const
 {
 	v[0] = val[0], v[1] = val[1], v[2] = val[2];
@@ -1290,8 +1080,8 @@ inline Matrix3x3 Matrix3x3::Inverse() const
 {
 	Coord3D co(Cofac(1, 1, 2, 2), Cofac(1, 2, 2, 0), Cofac(1, 0, 2, 1));
 	Real det = val[0] * co.X() +  val[1] * co.Y() + val[2] * co.Z() ;
-	//asserst(det != double(0.0f));
-	if(fabs(det) < 1.0e-15) exit(0);
+	//assert(det != double(0.0f));
+	if(det < 1.0e-15) exit(0);
 	Real s = Real(1.0f) / det;
 	return Matrix3x3(co.X() * s, Cofac(0, 2, 2, 1) * s, Cofac(0, 1, 1, 2) * s,
 	                 co.Y() * s, Cofac(0, 0, 2, 2) * s, Cofac(0, 2, 1, 0) * s,

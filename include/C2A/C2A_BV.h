@@ -36,7 +36,6 @@ public:
 
 	PQP_REAL R_abs[3][3]; // abs orientation of RSS & OBB: Liangjun
 	PQP_REAL R_loc[3][3];
-	PQP_REAL Tr_loc[3];
 	PQP_REAL trilength;
 	
 #if PQP_BV_TYPE & RSS_TYPE

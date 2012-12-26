@@ -1,5 +1,9 @@
 #include <APD/contact_space_learning.h>
 #include <APD/minkowski_cspace.h>
+#include <APD/active_learning.h>
+
+void* user_conlitron_model;
+double* user_conlitron_data;
 
 namespace APDL
 {
@@ -34,20 +38,7 @@ namespace APDL
 			MulticonlitronLearner learner(w, 0.01);
 			learner.learn(contactspace_samples, 3);
 
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
-
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			{
-				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			}
-
-			int error_num = 0;
-
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			{
-				if(results[i].label != contactspace_samples[i].col) error_num++;
-			}
-			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
 
 			learner.saveVisualizeData("conlitron_2d_rotation_vis.txt", contactspace.getScaler(), 100);
 		}

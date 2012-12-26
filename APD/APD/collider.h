@@ -20,6 +20,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "2d_collision.h"
+#include "PQP_extension.h"
 
 namespace APDL
 {
@@ -81,6 +82,11 @@ namespace APDL
 			bool is_collide;
 
 			std::vector<Contact> contacts;
+
+			CollisionResult()
+			{
+				is_collide = false;
+			}
 			
 		};
 		
@@ -192,8 +198,8 @@ namespace APDL
 				poly.points.resize(model2_->size());
 				
 				int i = 0;
-				for(Polygon_2::Vertex_const_iterator v_it = model1_->vertices_begin();
-				        v_it != model1_->vertices_end();
+				for(Polygon_2::Vertex_const_iterator v_it = model2_->vertices_begin();
+				        v_it != model2_->vertices_end();
 				        ++v_it)
 				{
 					double x = to_inexact(v_it->x());
@@ -203,6 +209,18 @@ namespace APDL
 				
 				model2_convex.push_back(poly);
 			}
+
+			max_distance_to_origin_model2 = 0;
+			for(Polygon_2::Vertex_const_iterator v_it = model2_->vertices_begin();
+				        v_it != model2_->vertices_end();
+				        ++v_it)
+			{
+				double x = to_inexact(v_it->x());
+				double y = to_inexact(v_it->y());
+				double dist = x * x + y * y;
+				if(dist > max_distance_to_origin_model2) max_distance_to_origin_model2 = dist;
+			}
+			max_distance_to_origin_model2 = sqrt(max_distance_to_origin_model2);
 		}
 		
 		DistanceResult distance(const DataVector& q) const
@@ -221,7 +239,7 @@ namespace APDL
 				{
 				
 					GJKResult res = doGJK(model1_convex[i], tf1,
-					                      model2_convex[i], tf2);
+					                      model2_convex[j], tf2);
 					                      
 					if(res.distance < global_res.distance)
 						global_res = res;
@@ -301,6 +319,12 @@ namespace APDL
 			
 			return false;
 		}
+
+
+		static DataVector interpolate(const DataVector& qs, const DataVector& qt, double t)
+		{
+			return InterpConfig2D(qs, qt, t);
+		}
 		
 		std::pair<bool, double> isCCDCollide(const DataVector& qs, const DataVector& qt, std::size_t n_dcd) const
 		{
@@ -336,35 +360,52 @@ namespace APDL
 			Vec2D n;
 			Vec2D p1, p2;
 			
-			double t_threshold = 1e-3;
+			double t_threshold = 1e-6;
+			double d_threshold = 1e-6;
 			
 			Transform2D tf1;
 			double c = cos(qs[2]), s = sin(qs[2]);
 			Transform2D tf2(Mat2D(c, -s, s, c), Vec2D(qs[0], qs[1]));
 			Vec2D v(qt[0] - qs[0], qt[1] - qs[1]);
 			double w = angleTruncate(angleTruncate(qt[2]) - angleTruncate(qs[2]));
+
+			double v_len = v.length();
+
+			DataVector q(3);
+			Vec2D cached_n(2, 1);
 			
 			do
 			{
-				DataVector q(3);
-				q[0] = qs[0] + v.x * t;
-				q[1] = qs[1] + v.y * t;
-				q[2] = qs[2] + w * t;
+				q[0] = qs[0] + v.x * toc;
+				q[1] = qs[1] + v.y * toc;
+				q[2] = qs[2] + w * toc;
 				
 				DistanceResult res = distance(q);
 				n = res.point2 - res.point1;
 				d = n.length();
-				n *= 1 / d;
-				
-				u = max(0, dot(v, n) + sqrt(q[0] * q[0] + q[1] * q[1]) - q[0] * n.x - q[1] * n.y);
-				
 				if(d > 0)
+				{
+					n *= 1 / d;
+					cached_n = n;
+				}
+				else 
+					n = cached_n;
+
+				//u = max(0, dot(v, n) + abs(q[2]) * max_distance_to_origin_model2); /// can not use this, because this is for convex shapes
+				u = v_len + abs(q[2]) * max_distance_to_origin_model2;
+
+				if(d > d_threshold && u > 0)
 					t = d / u;
 				else break;
 				
 				toc += t;
 			}
 			while(t > t_threshold && toc < 1);
+
+			if(toc < 1)
+				return std::make_pair(true, toc);
+			else
+				return std::make_pair(false, 1);
 		}
 		
 	protected:
@@ -374,6 +415,8 @@ namespace APDL
 		
 		Polygon_2 model1;
 		Polygon_2 model2;
+		double max_distance_to_origin_model2;  // for ccd
+
 		
 	};
 	
@@ -386,6 +429,36 @@ namespace APDL
 			double point1[3];
 			double point2[3];
 			double distance;
+		};
+
+		struct Contact
+		{
+			double normal[3];
+			double contact_point[3];
+			double penetration_depth;
+
+			Contact(double normal_[3], double contact_point_[3], double penetration_depth_)
+			{
+				for(std::size_t i = 0; i < 3; ++i)
+				{
+					normal[i] = normal_[i];
+					contact_point[i] = contact_point_[i];
+				}
+
+				penetration_depth = penetration_depth_;
+			}
+		};
+
+		struct CollisionResult
+		{
+			bool is_collide;
+
+			std::vector<Contact> contacts;
+
+			CollisionResult()
+			{
+				is_collide = false;
+			}
 		};
 		
 		Collider3D(C2A_Model* model1_, C2A_Model* model2_) : model1(model1_), model2(model2_)
@@ -428,6 +501,78 @@ namespace APDL
 			
 			return res;
 		}
+
+		CollisionResult collide(const DataVector& q) const
+		{
+			CollisionResult res;
+			res.is_collide = false;
+
+			double R1[3][3];
+			double T1[3];
+			
+			IdentityRotTrans(R1, T1);
+			
+			double R2[3][3];
+			double T2[3];
+			
+			if(q.dim() == 6)
+				ConfigEuler2RotTran(R2, T2, q);
+			else if(q.dim() == 7)
+				ConfigQuat2RotTrans(R2, T2, q);
+			else
+				return res;
+				
+			PQP_CollideResult pqp_res;
+			
+			C2A_Collide(&pqp_res, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+
+			std::cout << pqp_res.num_pairs << std::endl;
+			if(pqp_res.NumPairs() == 0)
+			{
+				res.is_collide = false;
+			}
+			else
+			{
+				res.is_collide = true;
+
+				for(std::size_t i = 0; i < pqp_res.NumPairs(); ++i)
+				{
+					int id1 = pqp_res.pairs[i].id1;
+					int id2 = pqp_res.pairs[i].id2;
+
+					PQP_REAL P1[3], P2[3], P3[3];
+					PQP_REAL Q1[3], Q2[3], Q3[3];
+					PQP_REAL Q_tmp[3];
+
+					C2A_Tri* tri1 = model1.get()->trisConst + id1;
+					C2A_Tri* tri2 = model2.get()->trisConst + id2;
+
+					P1[0] = tri1->p1[0]; P1[1] = tri1->p1[1]; P1[2] = tri1->p1[2];
+					P2[0] = tri1->p2[0]; P2[1] = tri1->p2[1]; P2[2] = tri1->p2[2];
+					P3[0] = tri1->p3[0]; P3[1] = tri1->p3[1]; P3[2] = tri1->p3[2];
+
+					Q_tmp[0] = tri2->p1[0]; Q_tmp[1] = tri2->p1[1]; Q_tmp[2] = tri2->p1[2];
+					MxVpV(Q1, R2, Q_tmp, T2);
+					Q_tmp[0] = tri2->p2[0]; Q_tmp[1] = tri2->p2[1]; Q_tmp[2] = tri2->p2[2];
+					MxVpV(Q2, R2, Q_tmp, T2);
+					Q_tmp[0] = tri2->p3[0]; Q_tmp[1] = tri2->p3[1]; Q_tmp[2] = tri2->p3[2];
+					MxVpV(Q3, R2, Q_tmp, T2);
+
+					PQP_REAL contact_points[6];
+					int num_contact_points = 0;
+					PQP_REAL penetration_depth = 0;
+					PQP_REAL normal[3];
+
+					TriContact(P1, P2, P3, Q1, Q2, Q3, contact_points, num_contact_points, penetration_depth, normal);
+	
+
+					for(int j = 0; j < num_contact_points; ++j)
+						res.contacts.push_back(Contact(normal, &contact_points[3 * j], penetration_depth));
+				}
+			}
+
+			return res;
+		}
 		
 		// q is the relative transform of B to A
 		bool isCollide(const DataVector& q) const
@@ -453,6 +598,17 @@ namespace APDL
 			
 			return result.NumPairs() > 0;
 		}
+
+
+		static DataVector interpolate(const DataVector& qs, const DataVector& qt, double t)
+		{
+			if(qs.dim() == 6)
+				return InterpConfigEuler(qs, qt, t);
+			else if(qs.dim() == 7)
+				return InterpConfigQuat(qs, qt, t);
+			else
+				return DataVector();
+		}
 		
 		std::pair<bool, double> isCCDCollide(const DataVector& qs, const DataVector& qt, std::size_t n_dcd) const
 		{
@@ -464,6 +620,13 @@ namespace APDL
 			
 			double R2[3][3];
 			double T2[3];
+
+			//for(int j = 0; j < qs.dim(); ++j)
+			//	std::cout << qs[j] << " ";
+			//std::cout << std::endl;
+			//for(int j = 0; j < qt.dim(); ++j)
+			//	std::cout << qt[j] << " ";
+			//std::cout << std::endl;
 			
 			for(std::size_t i = 0; i <= n_dcd; ++i)
 			{
@@ -501,6 +664,7 @@ namespace APDL
 				{
 					double t = i / (double)n_dcd;
 					
+					
 					if(qs.dim() == 6)
 					{
 						DataVector q = InterpConfigEuler(qs, qt, t);
@@ -512,7 +676,21 @@ namespace APDL
 						ConfigQuat2RotTrans(R2, T2, qt);
 					}
 					else
+					{
+						std::cout << "should not happen" << std::endl;
 						return std::make_pair(false, 0);
+					}
+
+					//for(std::size_t j = 0; j < 3; ++j)
+					//	std::cout << T2[j] << " ";
+					//std::cout << ", ";
+					//for(std::size_t j = 0; j < 3; ++j)
+					//{
+					//	for(std::size_t k = 0; k < 3; ++k)
+					//		std::cout << R2[j][k] << " ";
+					//	std::cout << " ";
+					//}
+					//std::cout << std::endl;
 						
 					PQP_CollideResult result;
 					C2A_Collide(&result, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
@@ -558,13 +736,12 @@ namespace APDL
 			int num_of_iteration;
 			int num_of_contact;
 			C2A_TimeOfContactResult dres;
-			
-			dres.last_triA = 0;
-			dres.last_triB = 0;
-			
+			dres.last_triA = model1.get()->last_tri;
+			dres.last_triB = model2.get()->last_tri;
+
 			C2A_Solve(&identity, &identity, model1.get(), &trans1, &trans2, model2.get(),
 			          contact_transA, contact_transB, time_of_contact, num_of_iteration, num_of_contact, 0.0, dres);
-			          
+
 			if(dres.toc < 1)
 			{
 				is_collide = true;

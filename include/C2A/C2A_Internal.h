@@ -22,8 +22,8 @@
 #ifndef __C2A_Internal_h
 #define __C2A_Internal_h
 
-#include "C2A_Tri.h"
-#include "C2A_BV.h"
+#include "C2A/C2A_Tri.h"
+#include "C2A/C2A_BV.h"
 #include <vector>
 
 
@@ -33,21 +33,11 @@ class C2A_Model: public PQP_Model
 {
 public:
 
-	C2A_Tri *trisConst;
-	
-	C2A_BV  *B;
+	C2A_Tri *trisConst; //the index of the tri will not change, add by huangxin 11/10/2007
 	
 	int maxdeep;
 	PQP_REAL P[3];
 	PQP_REAL Q[3];
-	
-	int **VertexFace;
-	int *number_vertexFace;
-	
-	
-	PQP_REAL **Vertex;
-	
-	int num_vertex;
 	
 	//use a single tri coherence
 	bool bMotionCoherence;
@@ -66,12 +56,6 @@ public:
 	{
 		return (BV*) & ((C2A_BV*)b)[n];
 	}
-	
-	C2A_BV *getC2Achild(int n)
-	{
-		return &B[n];
-	}
-	
 	
 	int BeginModel(int n = 8);
 	

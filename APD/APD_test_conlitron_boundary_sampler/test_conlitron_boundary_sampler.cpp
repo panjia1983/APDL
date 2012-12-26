@@ -1,6 +1,10 @@
 #include <APD/minkowski_cspace.h>
 #include <APD/contact_space_learning.h>
 #include <APD/decision_boundary_sampler.h>
+#include <APD/active_learning.h>
+
+void* user_conlitron_model;
+double* user_conlitron_data;
 
 namespace APDL
 {	
@@ -33,6 +37,7 @@ namespace APDL
 			w[0] = 1; w[1] = 1;
 			MulticonlitronLearner learner(w, 0.01);
 			learner.setScaler(contactspace.getScaler());
+			learner.setDim(contactspace.active_data_dim());
 			learner.learn(contactspace_samples, 2);
 			SpatialTreeEParam param;
 
@@ -43,21 +48,8 @@ namespace APDL
 			param.epsilon = 0;	
 			param.result_eps = 0;
 
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			{
-				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			}
-			std::cout << std::endl;
-
-			int error_num = 0;
-
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			{
-				if(results[i].label != contactspace_samples[i].col) error_num++;
-			}
-			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
 
 			learner.saveVisualizeData("conlitron_2d_vis.txt", contactspace.getScaler(), 100);
 			MulticonlitronEvaluator evaluator(learner);

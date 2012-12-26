@@ -5,7 +5,6 @@
 #include <list>
 
 #include "C2A_Internal.h"
-#define articular_used true
 
 enum C2A_Result
 {
@@ -145,8 +144,7 @@ public:
 	    int TriangleID_B,
 	    PQP_REAL P_A[3],
 	    PQP_REAL P_B[3],
-	    PQP_REAL Distance,
-	    PQP_REAL Normal[3]);
+	    PQP_REAL Distance);
 	    
 public:
 
@@ -163,7 +161,6 @@ public:
 	PQP_REAL P_B[3];
 	
 	PQP_REAL Distance;
-	PQP_REAL Normal[3];
 	
 	friend bool operator > (const ContactF&, const ContactF&);
 	friend bool operator < (const ContactF&, const ContactF&);
@@ -172,31 +169,9 @@ public:
 };
 
 
-
-
-struct contact_Dist
-{
-
-public:
-	PQP_REAL Distance;
-	PQP_REAL normal[3];
-	int BV1_id;
-	int BV2_id;
-public:
-
-	contact_Dist(PQP_REAL Dis, PQP_REAL N[3], int id1, int id2);
-	
-};
-
-
-
 typedef std::list<ContactF> ContactFList;
 
 typedef std::list<ContactF>::iterator ContactFListIterator;
-
-typedef std::list<contact_Dist> contact_list;
-typedef std::list<contact_Dist>::iterator ContactDListIterator;
-
 
 
 struct C2A_TimeOfContactResult
@@ -235,45 +210,6 @@ struct C2A_TimeOfContactResult
 	
 	Tri *last_triA;
 	Tri *last_triB;
-	
-	PQP_REAL lastpoint_A[3];
-	PQP_REAL lastpoint_B[3];
-	
-#ifdef articular_used
-	
-	contact_list cont_dist;
-	
-	
-	PQP_REAL rotAxis[2][3];
-	
-	PQP_REAL radius2P[2][128];
-	
-	
-	PQP_REAL Velocity[2][128][3];
-	
-	
-	PQP_REAL rotAngle[2][128];
-	
-	
-	int num_link[2];
-	
-	bool flag_TriangleVisted;
-	bool flag_motionbound[2];
-	
-	
-	PQP_REAL accum_RotAngle[2];
-	
-	PQP_REAL Motion_Upbound[2];
-	
-	PQP_REAL R_reasolution0[1000][3][3];
-	PQP_REAL T_reasolution0[1000][3];
-	
-	PQP_REAL R_reasolution1[1000][3][3];
-	PQP_REAL T_reasolution1[1000][3];
-	
-	bool flag_intersecstion;
-	
-#endif
 	
 public:
 
@@ -314,7 +250,6 @@ public:
 		return p2;
 	}
 };
-
 
 
 
@@ -390,34 +325,5 @@ C2A_QueryContactOnly(C2A_TimeOfContactResult *res,
                      PQP_REAL T2[3],
                      C2A_Model *o2,
                      double threshold);
-
-int
-C2A_TOCStep_articular(C2A_TimeOfContactResult *res,
-                      PQP_REAL R1[3][3], PQP_REAL T1[3], C2A_Model *o1,
-                      PQP_REAL R2[3][3], PQP_REAL T2[3], C2A_Model *o2,
-                      PQP_REAL tolerance, PQP_REAL tolerance_t,
-                      int qsize = 2);
-
-
-double
-C2A_TOCStepRecurse_Dis_Deep(C2A_TimeOfContactResult *res,
-                            C2A_Model *o1, int b1,
-                            C2A_Model *o2, int b2,
-                            PQP_REAL mint,
-                            PQP_REAL dis_threshold, PQP_REAL m_toc_delta, int Max_Iter, int Max_Deep);
-
-
-
-void
-Contact_normal_new(C2A_TimeOfContactResult *res, C2A_Model *o1, C2A_Model *o2);
-
-double
-CAonNonAdjacentTriangles_New(C2A_TimeOfContactResult *res,
-                             C2A_Tri *t1, C2A_Tri *t2,
-                             C2A_BV *b1, C2A_BV *b2,
-                             PQP_REAL *mint, PQP_REAL *distance, int* Inter,
-                             PQP_REAL dis_threshold, PQP_REAL m_toc_delta, int Max_Iter, PQP_REAL* upperbound);
-
-
 #endif
 

@@ -1,6 +1,10 @@
 #include <APD/minkowski_cspace.h>
 #include <APD/contact_space_learning.h>
 #include <APD/decision_boundary_sampler.h>
+#include <APD/active_learning.h>
+
+void* user_conlitron_model;
+double* user_conlitron_data;
 
 namespace APDL
 {	
@@ -76,16 +80,8 @@ namespace APDL
 			SVMEvaluator evaluator(learner);
 
 			learner.save("model.txt");
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			int error_num = 0;
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			{
-				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-				if(results[i].label != contactspace_samples[i].col) error_num++;
-			}
-			std::cout << std::endl;
-			std::cout << "error ratio: " << error_num / (double)contactspace_samples.size() << std::endl;
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
 
 
 			std::vector<DataVector> samples1, samples2, samples3;
