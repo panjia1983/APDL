@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libm3d", "libm3d\libm3d.vcproj", "{21C3D430-A068-45AA-B153-F83ACD2B55EC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{6616138C-CA41-4EC3-AC89-E76A2AE14C88}"
+	ProjectSection(ProjectDependencies) = postProject
+		{21C3D430-A068-45AA-B153-F83ACD2B55EC} = {21C3D430-A068-45AA-B153-F83ACD2B55EC}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21C3D430-A068-45AA-B153-F83ACD2B55EC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{21C3D430-A068-45AA-B153-F83ACD2B55EC}.Debug|Win32.Build.0 = Debug|Win32
+		{21C3D430-A068-45AA-B153-F83ACD2B55EC}.Release|Win32.ActiveCfg = Release|Win32
+		{21C3D430-A068-45AA-B153-F83ACD2B55EC}.Release|Win32.Build.0 = Release|Win32
+		{6616138C-CA41-4EC3-AC89-E76A2AE14C88}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6616138C-CA41-4EC3-AC89-E76A2AE14C88}.Debug|Win32.Build.0 = Debug|Win32
+		{6616138C-CA41-4EC3-AC89-E76A2AE14C88}.Release|Win32.ActiveCfg = Release|Win32
+		{6616138C-CA41-4EC3-AC89-E76A2AE14C88}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

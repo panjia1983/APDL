@@ -162,8 +162,6 @@ namespace APDL
 				std::cout << "(" << dcd_result.first << "," << dcd_result.second << ")(" << ccd_result.first << "," << ccd_result.second << ")" << std::endl;
 			}
 		}
-
-		tools::Profiler::Status();
 	}
 
 	static void test_continuous_collide_2d_rotation()
@@ -219,8 +217,6 @@ namespace APDL
 				std::cout << "(" << dcd_result.first << "," << dcd_result.second << ")(" << ccd_result.first << "," << ccd_result.second << ")" << std::endl;
 			}
 		}
-
-		tools::Profiler::Status();
 	}
 
 
@@ -335,13 +331,12 @@ namespace APDL
 				std::cout << "(" << dcd_result.first << "," << dcd_result.second << ")(" << ccd_result.first << "," << ccd_result.second << ")" << std::endl;
 			}
 		}
-
-		tools::Profiler::Status();
 	}
 }
 
 void main()
 {
+	APDL::tools::Profiler::Start();
 	// APDL::test_collide_box();
 	// APDL::test_collide_2d();
 	// APDL::test_collide_2d_rotation();
@@ -351,5 +346,8 @@ void main()
 	// APDL::test_collide_3d();
 	// APDL::test_collide_3d_rotation();
 	APDL::test_continuous_collide_3d();
+
+	APDL::tools::Profiler::Stop();
+	APDL::tools::Profiler::Status();
 	
 }
