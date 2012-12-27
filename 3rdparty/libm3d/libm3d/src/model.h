@@ -9,15 +9,15 @@
 #include <Point.h>
 #include <Vector.h>
 #include <Matrix.h>
-using namespace mathtool;
 
 #include <string>
 #include <cassert>
-using namespace std;
 
 #include "objReader.h"
 #include "cd.h"
 
+namespace libm3d 
+{
 
 //these two functions are defined in model.cpp
 struct model; 
@@ -28,39 +28,39 @@ model& getQ();
 //this is a sampled point from the model
 struct point
 {
-    Point3d p;  //position
-    Vector3d n; //normal
+    mathtool::Point3d p;  //position
+    mathtool::Vector3d n; //normal
     char from;  //source, v, f, or e
     int from_id;
     
     //backups
-    Point3d bk_p; 
-    Vector3d bk_n;
+    mathtool::Point3d bk_p; 
+    mathtool::Vector3d bk_n;
 };
 
 //a triangle of the model
 struct triangle
 {
     unsigned int v[3]; //vertex id
-    Vector3d n;
-    list<unsigned int> samples;
+    mathtool::Vector3d n;
+    std::list<unsigned int> samples;
 
     //backups
-    Vector3d bk_n;
+    mathtool::Vector3d bk_n;
 };
 
 //a vertex of the model
 struct vertex
 {
-    Point3d p;  //position
-    Vector3d n; //normal
-    list<unsigned int> m_f;
-    list<unsigned int> m_e; //a list of edges
+    mathtool::Point3d p;  //position
+    mathtool::Vector3d n; //normal
+    std::list<unsigned int> m_f;
+    std::list<unsigned int> m_e; //a list of edges
     unsigned int sample;
 
     //backups
-    Point3d bk_p; 
-    Vector3d bk_n;
+    mathtool::Point3d bk_p; 
+    mathtool::Vector3d bk_n;
 };
 
 //an edge of the model
@@ -68,13 +68,13 @@ struct edge
 {
     int vid[2];
     int fid[2];
-    Vector3d v;       //parallel vertor
-    Vector3d in_n[2]; //inface normals
-    list<unsigned int> samples;
+    mathtool::Vector3d v;       //parallel vertor
+    mathtool::Vector3d in_n[2]; //inface normals
+    std::list<unsigned int> samples;
 
     //backups
-    Vector3d bk_v;       //parallel vertor
-    Vector3d bk_in_n[2]; //inface normals
+    mathtool::Vector3d bk_v;       //parallel vertor
+    mathtool::Vector3d bk_in_n[2]; //inface normals
 };
 
 struct model
@@ -101,6 +101,8 @@ struct model
     //build this model
     bool build(const string & name, bool fixed);
 
+	bool build(const std::vector<std::vector<double> >& points, const std::vector<std::vector<int> >& tri_indices);
+
     // build collision detection model from this model
     // when reverse is true, a reverse version of the model
     // will be built
@@ -111,8 +113,8 @@ struct model
     void resample();
 
     //rotate points
-    void rotate(const Matrix2x2& m);
-    void rotate(const Matrix3x3& M);
+    void rotate(const mathtool::Matrix2x2& m);
+    void rotate(const mathtool::Matrix3x3& M);
 
     //negate point/facets ...
     void negate();
@@ -146,7 +148,7 @@ struct model
 };
 
 
-inline void computeRotationMatrix(float r, Matrix2x2& m)
+inline void computeRotationMatrix(float r, mathtool::Matrix2x2& m)
 {
     float c_r=cos(r);
     float s_r=sin(r);
@@ -154,18 +156,20 @@ inline void computeRotationMatrix(float r, Matrix2x2& m)
 }
 
 
-inline void computeRotationMatrix(const Point3d& r, Matrix3x3& M)
+inline void computeRotationMatrix(const mathtool::Point3d& r, mathtool::Matrix3x3& M)
 {
     float c_r=cos(r[0]);
     float s_r=sin(r[0]);
-    Matrix3x3 mx(1,0,0, 0, c_r,-s_r, 0, s_r,c_r);
+    mathtool::Matrix3x3 mx(1,0,0, 0, c_r,-s_r, 0, s_r,c_r);
     c_r=cos(r[1]);
     s_r=sin(r[1]);
-    Matrix3x3 my(c_r, 0, s_r, 0, 1, 0, -s_r, 0, c_r);
+    mathtool::Matrix3x3 my(c_r, 0, s_r, 0, 1, 0, -s_r, 0, c_r);
     c_r=cos(r[2]);
     s_r=sin(r[2]);
-    Matrix3x3 mz(c_r,-s_r, 0, s_r,c_r,0,0,0,1);
+    mathtool::Matrix3x3 mz(c_r,-s_r, 0, s_r,c_r,0,0,0,1);
     M=mz*my*mx;
+}
+
 }
 
 #endif //_BF_MODEL_H_

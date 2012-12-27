@@ -6,8 +6,9 @@
 #include "model.h"
 #include "cd.h"
 #include <Matrix.h>
-using namespace mathtool;
 
+namespace libm3d 
+{
 
 void cd_model::build(model * m, bool reverse)
 {
@@ -19,9 +20,9 @@ void cd_model::build(model * m, bool reverse)
     m_cd->BeginModel();
     for( unsigned int t=0;t<m->t_size;t++ ){
         const triangle & tri=m->tris[t];
-        const Point3d& pt1=m->vertices[tri.v[0]].p;
-        const Point3d& pt2=m->vertices[tri.v[1]].p;
-        const Point3d& pt3=m->vertices[tri.v[2]].p;
+        const mathtool::Point3d& pt1=m->vertices[tri.v[0]].p;
+        const mathtool::Point3d& pt2=m->vertices[tri.v[1]].p;
+        const mathtool::Point3d& pt3=m->vertices[tri.v[2]].p;
         if(reverse){
             double p1[3]={-pt1[0],-pt1[1],-pt1[2]};
             double p2[3]={-pt2[0],-pt2[1],-pt2[2]};
@@ -71,17 +72,17 @@ bool is_in_collision
 {
     double R[3][3]={ {1,0,0} , {0,1,0} , {0,0,1} };    
     
-    Matrix3x3 M; //build matrix
+    mathtool::Matrix3x3 M; //build matrix
     {
         float c_r=cos(r[0]);
         float s_r=sin(r[0]);
-        Matrix3x3 mx(1,0,0, 0, c_r,-s_r, 0, s_r,c_r);
+        mathtool::Matrix3x3 mx(1,0,0, 0, c_r,-s_r, 0, s_r,c_r);
         c_r=cos(r[1]);
         s_r=sin(r[1]);
-        Matrix3x3 my(c_r, 0, s_r, 0, 1, 0, -s_r, 0, c_r);
+        mathtool::Matrix3x3 my(c_r, 0, s_r, 0, 1, 0, -s_r, 0, c_r);
         c_r=cos(r[2]);
         s_r=sin(r[2]);
-        Matrix3x3 mz(c_r,-s_r, 0, s_r,c_r,0,0,0,1);
+        mathtool::Matrix3x3 mz(c_r,-s_r, 0, s_r,c_r,0,0,0,1);
         M=mz*my*mx;
     }
     
@@ -102,5 +103,7 @@ bool is_in_collision
     return cres.RAPID_num_contacts>0;
 }
 
+
+}
 
 

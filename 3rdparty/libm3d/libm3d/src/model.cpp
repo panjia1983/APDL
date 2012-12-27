@@ -6,6 +6,8 @@
 #include "model.h"
 #include "ModelGraph.h"
 
+
+
 //quasirandom
 //#include "halton.H"
 //#include "hammersley.H"
@@ -13,6 +15,9 @@
 #ifdef WIN32
 #pragma warning(disable:4244)
 #endif
+
+namespace libm3d 
+{
 
 //-----------------------------------------------------------------------------
 // two global scope models, P, Q
@@ -28,7 +33,93 @@ model& getQ(){ return Q; }
 // other information associated with facets and vertices,
 // as well as edges will be build also using model graph
 //
+bool model::build(const std::vector<std::vector<double> >& points, const std::vector<std::vector<int> >& tri_indices)
+{
+	objModel data;
+	data.pts.resize(points.size());
+	for(int i = 0; i < points.size(); ++i)
+	{
+		data.pts[i].x = points[i][0];
+		data.pts[i].y = points[i][1];
+		data.pts[i].z = points[i][2];
+	}
 
+	data.polys.resize(tri_indices.size());
+	for(int i = 0; i < tri_indices.size(); ++i)
+	{
+		polygon tri;
+		for(int j = 0; j < tri_indices[i].size(); ++j)
+			tri.pts.push_back(tri_indices[i][j]);
+		data.polys.push_back(tri);
+	}
+
+	data.compute_v_normal();
+
+	{//build/copy model
+		//allocate memory
+		v_size=data.pts.size();
+		t_size=data.polys.size();
+		vertices=new vertex[v_size];   //
+		tris=new triangle[t_size];     //
+		assert(vertices&&tris);        //make sure enough memory
+
+		//copy vertices
+		for(unsigned int i=0;i<v_size;i++){
+			vertices[i].p.set(&data.pts[i].x);
+			vertices[i].bk_p=vertices[i].p;  //backup for modification
+			vertices[i].n.set(&data.pts[i].nx);
+			vertices[i].bk_n=vertices[i].n;  //backup for modification
+		}
+
+		//copy triangles
+		int tid=0;
+		for(std::list<polygon>::iterator i=data.polys.begin();i!=data.polys.end();i++){
+			std::list<int>& ids=i->pts;
+			//check if triangle
+			if(ids.size()!=3){
+				cerr<<"! Error: polygon "<<tid<<" is not a triangle."<<endl;
+				return false;
+			}
+			int vid=0;
+			for(std::list<int>::iterator j=ids.begin();j!=ids.end();j++){
+				tris[tid].v[vid++]=*j;
+				vertices[*j].m_f.push_back(tid);
+			}
+			tid++;
+		}
+	}//end build/copy model
+
+	{//build model graph and collect informations
+		CModelGraph G;
+		G.doInit(this);
+
+		//create edges
+		e_size=G.getEdgeSize();
+		CModelEdge * ptrE=G.getEdges();
+		edges=new edge[e_size];
+		assert(edges);
+		for(unsigned int i=0;i<e_size;i++,ptrE=ptrE->getNext()){
+			int v1=edges[i].vid[0]=ptrE->getStartPt();
+			int v2=edges[i].vid[1]=ptrE->getEndPt();
+			edges[i].fid[0]=ptrE->getFacet0();
+			edges[i].fid[1]=ptrE->getFacet1();
+			//compute parallel vector
+			edges[i].v=edges[i].bk_v=ptrE->getV();
+			edges[i].in_n[0]=edges[i].bk_in_n[0]=ptrE->getInNormal(0);
+			edges[i].in_n[1]=edges[i].bk_in_n[1]=ptrE->getInNormal(1);
+			vertices[v1].m_e.push_back(i);
+			vertices[v2].m_e.push_back(i);
+		}//end i
+
+		//facets
+		std::vector<CModelFacet>& facets=G.getFacets();
+		for(unsigned int i=0;i<t_size;i++){
+			tris[i].n=tris[i].bk_n=facets[i].n;
+		}//end i
+	}
+
+	return true;
+}
 bool model::build(const string & name, bool fixed)
 {
     if(pts!=NULL) return false; //built
@@ -56,15 +147,15 @@ bool model::build(const string & name, bool fixed)
 
         //copy triangles
         int tid=0;
-        for(list<polygon>::iterator i=data.polys.begin();i!=data.polys.end();i++){
-            list<int>& ids=i->pts;
+        for(std::list<polygon>::iterator i=data.polys.begin();i!=data.polys.end();i++){
+            std::list<int>& ids=i->pts;
             //check if triangle
             if(ids.size()!=3){
                 cerr<<"! Error: polygon "<<tid<<" is not a triangle."<<endl;
                 return false;
             }
             int vid=0;
-            for(list<int>::iterator j=ids.begin();j!=ids.end();j++){
+            for(std::list<int>::iterator j=ids.begin();j!=ids.end();j++){
                 tris[tid].v[vid++]=*j;
                 vertices[*j].m_f.push_back(tid);
             }
@@ -95,7 +186,7 @@ bool model::build(const string & name, bool fixed)
         }//end i
         
         //facets
-        vector<CModelFacet>& facets=G.getFacets();
+        std::vector<CModelFacet>& facets=G.getFacets();
         for(unsigned int i=0;i<t_size;i++){
             tris[i].n=tris[i].bk_n=facets[i].n;
         }//end i
@@ -116,7 +207,7 @@ void model::build_collision_detection(bool reverse)
 
 void model::sample(float d, int edgescale)
 {
-    list<point> samples;
+    std::list<point> samples;
 
     //sample from edges
     for(unsigned int i=0;i<e_size;i++){
@@ -132,11 +223,11 @@ void model::sample(float d, int edgescale)
             continue;
 
         //compute sample size
-        Vector3d vec=(v2.p-v1.p);
+        mathtool::Vector3d vec=(v2.p-v1.p);
         float l=vec.norm();
         int size=edgescale*(int)floor(l/d);
-        Vector3d delta=vec/size;
-        Vector3d enormal=(f1.n+f2.n).normalize();
+        mathtool::Vector3d delta=vec/size;
+        mathtool::Vector3d enormal=(f1.n+f2.n).normalize();
 
         //sample
         for(int j=1;j<size;j++){
@@ -169,15 +260,15 @@ void model::sample(float d, int edgescale)
 
     for(unsigned int i=0;i<t_size;i++){
         triangle& t=tris[i];
-        Point3d& p1=vertices[t.v[0]].p;
-        Point3d& p2=vertices[t.v[1]].p;
-        Point3d& p3=vertices[t.v[2]].p;
+        mathtool::Point3d& p1=vertices[t.v[0]].p;
+        mathtool::Point3d& p2=vertices[t.v[1]].p;
+        mathtool::Point3d& p3=vertices[t.v[2]].p;
 
         //compute triangle area
-        Vector3d v1=p2-p1;
-        Vector3d v2=p3-p1;
-        Vector3d v3=p3-p2;
-        Vector3d v4=p1-p3;
+        mathtool::Vector3d v1=p2-p1;
+        mathtool::Vector3d v2=p3-p1;
+        mathtool::Vector3d v3=p3-p2;
+        mathtool::Vector3d v4=p1-p3;
         float area=(v1%v2).norm()/2;
 
         //compute number of points needed
@@ -189,9 +280,9 @@ void model::sample(float d, int edgescale)
             //halton(r);
             //hammersley_sequence(1,r);
 
-            r[0]=drand48();
-            r[1]=drand48();
-            Point3d pos=p1+v1*r[0]+v2*r[1];
+            r[0]=mathtool::drand48();
+            r[1]=mathtool::drand48();
+            mathtool::Point3d pos=p1+v1*r[0]+v2*r[1];
 
             //check if inside the triangle
             if( (v1%(pos-p1))*t.n<=0 ) continue;
@@ -235,20 +326,20 @@ void model::resample()
         else //pt.from=='f'
         {
             const triangle& t=tris[pt.from_id];
-            Point3d& p1=vertices[t.v[0]].p;
-            Point3d& p2=vertices[t.v[1]].p;
-            Point3d& p3=vertices[t.v[2]].p;
+            mathtool::Point3d& p1=vertices[t.v[0]].p;
+            mathtool::Point3d& p2=vertices[t.v[1]].p;
+            mathtool::Point3d& p3=vertices[t.v[2]].p;
 
             //compute triangle area
-            Vector3d v1=p2-p1;
-            Vector3d v2=p3-p1;
-            Vector3d v3=p3-p2;
-            Vector3d v4=p1-p3;
+            mathtool::Vector3d v1=p2-p1;
+            mathtool::Vector3d v2=p3-p1;
+            mathtool::Vector3d v3=p3-p2;
+            mathtool::Vector3d v4=p1-p3;
 
             //randomly generate these points
             while(true)
             {
-                Point3d pos=p1+v1*drand48()+v2*drand48();
+                mathtool::Point3d pos=p1+v1*mathtool::drand48()+v2*mathtool::drand48();
                 //check if inside the triangle
                 float d1=(v1%(pos-p1))*t.n;
                 float d2=(v3%(pos-p2))*t.n;
@@ -263,7 +354,7 @@ void model::resample()
 }
 
 
-void model::rotate(const Matrix2x2& M)
+void model::rotate(const mathtool::Matrix2x2& M)
 {
     //Vector2d tmp;
  //   for(unsigned int i=0;i<p_size;i++){
@@ -274,7 +365,7 @@ void model::rotate(const Matrix2x2& M)
  //       tmp=m*tmp;
  //       pts[i].n.set(tmp[0],tmp[1],0);
  //   }
-    Vector2d tmp;
+    mathtool::Vector2d tmp;
     //rotate points
     for(unsigned int i=0;i<p_size;i++){
         tmp.set(pts[i].bk_p[0],pts[i].bk_p[1]);
@@ -318,9 +409,9 @@ void model::rotate(const Matrix2x2& M)
 
 
 
-void model::rotate(const Matrix3x3& M)
+void model::rotate(const mathtool::Matrix3x3& M)
 {
-    Vector3d tmp;
+    mathtool::Vector3d tmp;
     //rotate points
     for(unsigned int i=0;i<p_size;i++){
         tmp.set(pts[i].bk_p.get());
@@ -350,10 +441,10 @@ void model::rotate(const Matrix3x3& M)
 void model::negate()
 {
     for(unsigned int i=0;i<p_size;i++){
-        Point3d& pt=pts[i].p;
+        mathtool::Point3d& pt=pts[i].p;
         pt.set(-pt[0],-pt[1],-pt[2]);
 
-        Point3d& pt2=pts[i].bk_p;
+        mathtool::Point3d& pt2=pts[i].bk_p;
         pt2.set(-pt2[0],-pt2[1],-pt2[2]);
 
         pts[i].n=-pts[i].n;
@@ -361,10 +452,10 @@ void model::negate()
     }
 
     for(unsigned int i=0;i<v_size;i++){
-        Point3d& pt=vertices[i].p;
+        mathtool::Point3d& pt=vertices[i].p;
         pt.set(-pt[0],-pt[1],-pt[2]);
 
-        Point3d& pt2=vertices[i].bk_p;
+        mathtool::Point3d& pt2=vertices[i].bk_p;
         pt2.set(-pt2[0],-pt2[1],-pt2[2]);
 
         vertices[i].n=-vertices[i].n;
@@ -385,4 +476,6 @@ void model::negate()
         e.bk_in_n[0]=-e.bk_in_n[0];
         e.bk_in_n[1]=-e.bk_in_n[1];
     }
+}
+
 }

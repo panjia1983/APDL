@@ -2,6 +2,10 @@
 #include "octree.h"
 
 #include <pthread.h>
+
+namespace libm3d 
+{
+
 pthread_mutex_t mutexBD = PTHREAD_MUTEX_INITIALIZER;
 
 double current_rot[3][3]={{1,0,0},{0,1,0},{0,0,1}};
@@ -36,7 +40,7 @@ void collectBoundaryPts_tryall(const model& P, const model& Q,
 
 bool isBoundaryCell(const model& P, const model& Q,
 						   mksum* M, const LibM3dParam& param,
-						   octree_cell* cell, list<mksum_pt>& tmp)
+						   octree_cell* cell, std::list<mksum_pt>& tmp)
 {
 	MKPTS& pts=cell->points;
 	//check if empty cell
@@ -72,10 +76,10 @@ void collectBoundaryPts_using_octree(const model& P, const model& Q,
 											octree& O,
 											MKPTS& allBds)
 {
-	list<octree_cell*> open;
+	std::list<octree_cell*> open;
 	O.root.getBoundaryCells(open);
 
-	for(list<octree_cell*>::iterator i=open.begin();i!=open.end();i++)
+	for(std::list<octree_cell*>::iterator i=open.begin();i!=open.end();i++)
 		(*i)->visited=true;
 
 	int counter=0;
@@ -86,9 +90,9 @@ void collectBoundaryPts_using_octree(const model& P, const model& Q,
 		open.pop_front();
 		bool bd=isBoundaryCell(P, Q, M, param, c, allBds);
 		if(bd){
-			list<octree_cell*> tmp;
+			std::list<octree_cell*> tmp;
 			c->getNeighbors(tmp);
-			for(list<octree_cell*>::iterator i=tmp.begin();i!=tmp.end();i++)
+			for(std::list<octree_cell*>::iterator i=tmp.begin();i!=tmp.end();i++)
 				open.push_back(*i);
 		}
 
@@ -144,9 +148,14 @@ void* MKS(void* _data)
 
 void ComputePointMKSum(model& P, model& Q, 
 					   double R[3][3],
-					   const LibM3dParam& param, MKPTS& allBds)
+					   const LibM3dParam& param, std::vector<std::vector<float> >& points)
 {
+	MKPTS allBds;
 	mksum M;
+
+	for(int i = 0; i < 3; ++i)
+		for(int j = 0; j < 3; ++j)
+			current_rot[i][j] = R[i][j];
 
 	if(param.bNormalfilter)
 		M.build_with_filter(&P, &Q);
@@ -173,7 +182,7 @@ void ComputePointMKSum(model& P, model& Q,
 		{
 			//create threads
 			//split M
-			vector<MKSData> mksdatav(param.threadsize);
+			std::vector<MKSData> mksdatav(param.threadsize);
 			for(int i=0; i<param.threadsize;i++)
 			{
 				mksdatav[i].M.P = M.P;
@@ -196,7 +205,7 @@ void ComputePointMKSum(model& P, model& Q,
 
 			//create threads
 			cout<<"\t- Create "<<param.threadsize<<" threads"<<endl;
-			vector<pthread_t> threads(param.threadsize,pthread_t());
+			std::vector<pthread_t> threads(param.threadsize,pthread_t());
 			for(int i=0;i<param.threadsize;i++)
 				pthread_create(&threads[i], NULL, MKS, (void*)&mksdatav[i]);
 
@@ -206,6 +215,20 @@ void ComputePointMKSum(model& P, model& Q,
 		}
 	}
 
+	float tmpp[3];
+	float tmpn[3];
+	std::vector<float> v(6);
+	for(MKPTIT i = allBds.begin(); i != allBds.end(); ++i)
+	{
+		M.getMPos(*i, tmpp);
+		M.getMNormal(*i, tmpn);
+		v[0] = tmpp[0]; v[1] = tmpp[1]; v[2] = tmpp[2];
+		v[3] = tmpn[0]; v[4] = tmpn[1]; v[5] = tmpn[2]; 
+		points.push_back(v);
+	}
+
 	P.destroy();
 	Q.destroy();
+}
+
 }

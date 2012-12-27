@@ -4,7 +4,8 @@
 #include "model.h"
 #include "minkowski.h"
 
-
+namespace libm3d 
+{
 
 struct LibM3dParam
 {
@@ -44,6 +45,8 @@ struct LibM3dParam
 
 void ComputePointMKSum(model& P, model& Q, 
 					   double R[3][3],
-					   const LibM3dParam& param, MKPTS& allBds);
+					   const LibM3dParam& param, std::vector<std::vector<float> >& points);
+
+}
 
 #endif

@@ -3,17 +3,19 @@
 
 #include <Vector.h>
 #include <Point.h>
-using namespace mathtool;
 
 #include <string>
 #include <cassert>
 
 #include "objReader.h"
 
+namespace libm3d 
+{
+
 struct point
 {
-    Point3d p;  //position
-    Vector3d n; //normal
+    mathtool::Point3d p;  //position
+    mathtool::Vector3d n; //normal
 };
 
 struct points
@@ -31,7 +33,7 @@ struct points
 
         objReader reader(filename);
         reader.Read();
-        const vector<Vpt>& v=reader.getModel().pts;
+        const std::vector<Vpt>& v=reader.getModel().pts;
         size=v.size();
         pts=new point[size];
         assert(pts); //make sure enough memory
@@ -68,10 +70,10 @@ void bbox_point_minkowski_sum(const points& P, const points& Q, float box[6])
 
     const point& ref=P.getRef();
     for(unsigned int i=0;i<Q.size;i++){
-        Vector3d offset=Q.pts[i].p-ref.p;
+        mathtool::Vector3d offset=Q.pts[i].p-ref.p;
 
         for(unsigned int j=0;j<P.size;j++){
-            Point3d np=P.pts[j].p+offset; //
+            mathtool::Point3d np=P.pts[j].p+offset; //
             
             if(box[0]>np[0]) box[0]=np[0];
             if(box[1]<np[0]) box[1]=np[0];
@@ -81,6 +83,8 @@ void bbox_point_minkowski_sum(const points& P, const points& Q, float box[6])
             if(box[5]<np[2]) box[5]=np[2];
         }//end j
     }//end i
+}
+
 }
 
 #endif //_PB_MINKOWSKI_POINTS_

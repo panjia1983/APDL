@@ -5,6 +5,9 @@
 
 #include "ModelNode.h"
 
+namespace libm3d
+{
+
 
     //////////////////////////////////////////////////////////////////////
     // Construction/Destruction
@@ -15,3 +18,4 @@
         m_Key=Key;
     }
 
+}

@@ -2,7 +2,9 @@
 #define _PB_MINKOWSKI_CELL_
 
 #include <list>
-using namespace std;
+
+namespace libm3d 
+{
 
 //a registration of a minkowski point to a cell
 struct regi
@@ -26,10 +28,12 @@ struct ms_cell
 	// check if the cell is an incident cell
 	bool has_gap() const;
 
-	list<regi> enclosed;  // a list of enclosed minkowski points
+	std::list<regi> enclosed;  // a list of enclosed minkowski points
 
 	bool visited; //1 byte....
 };
+
+}
 
 #endif //_PB_MINKOWSKI_CELL_
 

@@ -4,7 +4,9 @@
 //------------------------------------------------------------------------------
 
 #include "ModelEdge.h"
-using namespace std;
+
+namespace libm3d
+{
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -17,4 +19,6 @@ CModelEdge::CModelEdge(int start, int end)
     m_Next=NULL; //m_Kids[0]=m_Kids[1]=NULL;
     //m_Mid=-1;
 	m_Fid[0]=m_Fid[1]=-1;
+}
+
 }

@@ -11,32 +11,29 @@
 #ifndef _H_UTILITY
 #define _H_UTILITY
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include <string>
 #include <iostream>   // define C++ stream I/O routines
 #include <iomanip>
 using namespace std;
-
 namespace mathtool{
 
-    /* range of real numbers */
-    #define SMALLNUMBER 1.0e-10
-    #define HUGENUMBER  1.0e10
+	static const double SMALLNUMBER = 1.0e-10;
+	static const double HUGENUMBER = 1.0e10;
 
     /* Miscellaneous Scalar Math */
-    #define abs(x)      (((x) < 0) ? (-(x)) : (x))
-    #define sqr(x)      ((x) * (x))
-    
-    /*
-    #ifndef min
-    #define min(x1,x2)  ((x1)<(x2)?(x1):(x2))
-    #endif
-
-    #ifndef max
-    #define max(x1,x2)  ((x1)>(x2)?(x1):(x2))
-    #endif
-    */
+	template<typename T>
+	T abs(T x)
+	{
+		return (x < 0) ? -x : x;
+	}
+	
+	template<typename T>
+	T sqr(T x)
+	{
+		return x * x;
+	}
 
     //int round(double x, double p);
     //int round( double v );
@@ -54,25 +51,30 @@ namespace mathtool{
             return (fraction>=-0.5)?integer:integer+1;
     }
 
-    #define sign(x)     ((x)>=0? 1: -1)
-    //#define swap(x1, x2)  {int tmp=x1; x1=x2; x2=tmp}
-    #define applysign(x, y) ((y) >= 0? abs(x): -abs(x))
+	template<typename T>
+	int sign(T x) { return (x >= 0) ? 1 : -1; }
+	
+	template<typename T>
+	T applysign(T x, T y)
+	{
+		return (y >= 0) ? abs(x) : -abs(x);
+	}
+	
 
     /* Angle Conversions & Constants */
 
-    #ifndef PI
-    #define PI 3.1415926535897f
-    #endif
-
-    #ifndef PI2
-    #define PI2 6.2831853071794f
-    #endif
-
-    #define RAD2DEG (180/PI)
-    #define DEG2RAD (PI/180)
-
-    #define DegToRad(x) ((x)*DEG2RAD)
-    #define RadToDeg(x) ((x)*RAD2DEG)
+    static const float PI = 3.1415926535897f;
+	
+	static const float PI2 = 6.2831853071794f;
+	
+	static const float RAD2DEG = 180 / PI;
+	static const float DEG2RAD = PI/180;
+	
+	template<typename T>
+	T DegToRad(T x) { return x * DEG2RAD; }
+	
+	template<typename T>
+	T RadToDeg(T x) { return x * RAD2DEG; }
 
     /*
       computes sqrt(a^2 + b^2) without destructive underflow or overflow

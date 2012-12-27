@@ -8,6 +8,10 @@
 
 #include "model.h"
 
+namespace libm3d
+{
+
+
 
 class CModelEdge  
 {
@@ -36,8 +40,8 @@ public:
 	int getFacet0() const {return m_Fid[0];}
 	int getFacet1() const {return m_Fid[1];}
 
-	Vector3d& getInNormal(int id){ return m_InNormal[id]; }
-	Vector3d& getV(){ return m_V; }
+	mathtool::Vector3d& getInNormal(int id){ return m_InNormal[id]; }
+	mathtool::Vector3d& getV(){ return m_V; }
 	//////////////////////////////////////////////////////////////////////
 	// Private Stuff
 private:
@@ -45,12 +49,13 @@ private:
 	int m_Key[2]; ///< 0->start, 1->end
 	int m_Fid[2]; //facet id
 
-	Vector3d m_V;  //points from start to end
-	Vector3d m_InNormal[2]; //inface normal
+	mathtool::Vector3d m_V;  //points from start to end
+	mathtool::Vector3d m_InNormal[2]; //inface normal
 
 	//list link
 	CModelEdge * m_Next;
 };
 
+}
 
 #endif // _MODEL_GRAPH_EDGE_H_

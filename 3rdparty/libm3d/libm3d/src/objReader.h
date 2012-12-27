@@ -12,9 +12,10 @@
 #include <list>
 #include <vector>
 #include <ctype.h>
-#include <math.h>
+#include <cmath>
 
-using namespace std;
+namespace libm3d 
+{
 
 class Vpt
 {
@@ -42,8 +43,8 @@ public:
 class polygon
 {
 public:
-    list<int> pts;
-    list<int> normals;
+    std::list<int> pts;
+    std::list<int> normals;
 };
 
 class objModel
@@ -53,10 +54,10 @@ public:
     
     void compute_v_normal()
     {
-        for(list<polygon>::iterator i=polys.begin();i!=polys.end();i++)
+        for(std::list<polygon>::iterator i=polys.begin();i!=polys.end();i++)
         {
-            list<int>::iterator ni=i->normals.begin();
-            list<int>::iterator pi=i->pts.begin();
+            std::list<int>::iterator ni=i->normals.begin();
+            std::list<int>::iterator pi=i->pts.begin();
 
             for( ;pi!=i->pts.end();pi++,ni++){
                 V& n=normals[*ni];
@@ -68,15 +69,15 @@ public:
         }//end for
 
         //normalize
-        for(vector<Vpt>::iterator i=pts.begin();i!=pts.end();i++)
+        for(std::vector<Vpt>::iterator i=pts.begin();i!=pts.end();i++)
         {
             i->normalize();
         }
     }
 
-    vector<Vpt> pts;
-    vector<V> normals;
-    list<polygon> polys;
+    std::vector<Vpt> pts;
+    std::vector<V> normals;
+    std::list<polygon> polys;
 };
 
 class objReader
@@ -159,6 +160,8 @@ private:
     string m_filename;
     objModel data;
 };
+
+}
 
 #endif //_OBJ_READER_H_
 

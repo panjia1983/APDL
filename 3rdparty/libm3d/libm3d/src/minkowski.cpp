@@ -6,13 +6,16 @@
 //compute minkowski sum from two set of points
 #include "minkowski.h"
 
+namespace libm3d 
+{
+
 extern double current_rot[3][3];
 
 //build minkowski points from a vertex from P and a facet from Q
 void mksum::buildVF(model * P, model * Q, bool pfirst)
 {
     mksum_pt pt;
-    typedef list<unsigned int>::iterator IT;
+    typedef std::list<unsigned int>::iterator IT;
     //P.v and Q.facets
     for(unsigned int p=0;p<P->v_size;p++){
         vertex& vp=P->vertices[p];
@@ -54,7 +57,7 @@ void mksum::buildVV(model * P, model * Q)
 void mksum::buildVE(model* P, model * Q, bool pfirst)
 {
     mksum_pt pt;
-    typedef list<unsigned int>::iterator IT;
+    typedef std::list<unsigned int>::iterator IT;
     for(unsigned int p=0;p<P->v_size;p++){
         vertex& vp=P->vertices[p];
         if(pfirst) pt.pid=vp.sample;
@@ -77,7 +80,7 @@ void mksum::buildVE(model* P, model * Q, bool pfirst)
 void mksum::buildEE(model * P, model * Q)
 {
     mksum_pt pt;
-    typedef list<unsigned int>::iterator IT;
+    typedef std::list<unsigned int>::iterator IT;
     //P.e and Q.e
     for(unsigned int p=0;p<P->e_size;p++){
         edge & ep=P->edges[p];
@@ -118,7 +121,7 @@ void mksum::buildAll(model * P, model * Q)
 bool mksum::mksum_test(model * m, vertex& v, triangle& t)
 {
     //return true;
-    typedef list<unsigned int>::iterator  IT;
+    typedef std::list<unsigned int>::iterator  IT;
     for(IT i=v.m_e.begin();i!=v.m_e.end();i++){
         //unsigned int& id=*i;
         edge& e=m->edges[*i];
@@ -136,7 +139,7 @@ bool mksum::mksum_test(model * m, vertex& v, triangle& t)
 
 bool mksum::mksum_test(model * P, model * Q, vertex& p, vertex& q)
 {
-    typedef list<unsigned int>::iterator  IT;
+    typedef std::list<unsigned int>::iterator  IT;
 
     //for each facet incident to q
     for(IT i=q.m_f.begin();i!=q.m_f.end();i++){
@@ -165,7 +168,7 @@ bool mksum::mksum_test(model * P, model * Q, vertex& vp, edge& eq)
     if( eq.fid[1]>=0 )
         if(mksum_test(P,vp,Q->tris[eq.fid[1]])) return true;
 
-    typedef list<unsigned int>::iterator  IT;
+    typedef std::list<unsigned int>::iterator  IT;
     for(IT i=vp.m_e.begin();i!=vp.m_e.end();i++)
         if( mksum_test(P->edges[*i],eq) ) return true;
     return false;
@@ -174,7 +177,7 @@ bool mksum::mksum_test(model * P, model * Q, vertex& vp, edge& eq)
 //test if a pair of edges can be a potiential candidate
 bool mksum::mksum_test(edge& e1, edge& e2)
 {
-    Vector3d n=e1.v%e2.v;
+    mathtool::Vector3d n=e1.v%e2.v;
     if(n.normsqr()==0) return false; //parallel edges
 
     float d1=n*e1.in_n[0];
@@ -200,18 +203,18 @@ bool mksum::mksum_test(edge& e1, edge& e2)
 //-----------------------------------------------------------------------------
 
 void mksum::mksum_normal
-(model * P, model * Q, vertex& p, vertex& q, Vector3d& n)
+(model * P, model * Q, vertex& p, vertex& q, mathtool::Vector3d& n)
 {
     n=(p.n+q.n).normalize();
 }
 
 void mksum::mksum_normal_ve
-(model * P, model * Q, const point& p, const point& q, Vector3d& n)
+(model * P, model * Q, const point& p, const point& q, mathtool::Vector3d& n)
 {
     vertex& v=P->vertices[p.from_id];
     edge&   e=Q->edges[q.from_id];
 
-    vector<Vector3d> candidates;
+    std::vector<mathtool::Vector3d> candidates;
 
     if(mksum_test(P,v,Q->tris[e.fid[0]]))
         candidates.push_back(Q->tris[e.fid[0]].n);
@@ -222,10 +225,10 @@ void mksum::mksum_normal_ve
     }
 
     if(candidates.empty()){
-        typedef list<unsigned int>::iterator  IT;
+        typedef std::list<unsigned int>::iterator  IT;
         for(IT i=v.m_e.begin();i!=v.m_e.end();i++){
             if( mksum_test(P->edges[*i],e) ){
-                Vector3d tmp;
+                mathtool::Vector3d tmp;
                 mksum_normal(P->edges[*i],e,tmp);
                 candidates.push_back(tmp);
             }
@@ -259,7 +262,7 @@ void mksum::mksum_normal_ve
     }
 }
 
-void mksum::mksum_normal(edge& e1, edge& e2, Vector3d& n)
+void mksum::mksum_normal(edge& e1, edge& e2, mathtool::Vector3d& n)
 {
     n=e1.v%e2.v;
     float d=n*e1.in_n[0];
@@ -281,4 +284,4 @@ void mksum::mksum_normal(edge& e1, edge& e2, Vector3d& n)
 }
 
 
-
+}

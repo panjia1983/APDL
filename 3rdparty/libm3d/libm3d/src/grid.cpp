@@ -1,6 +1,7 @@
 #include "grid.h"
 
-
+namespace libm3d 
+{
 
 //register points
 void ms_grid::registering(const points& P,const points& Q)
@@ -12,13 +13,13 @@ void ms_grid::registering(const points& P,const points& Q)
 
 	for(unsigned int i=0;i<Q.size;i++){
 		const point& q=Q.pts[i];
-		Vector3d offset=q.p-ref.p;
+		mathtool::Vector3d offset=q.p-ref.p;
 
 		for(unsigned int j=0;j<P.size;j++){
 			const point& p=P.pts[j];
 
-			Point3d np=p.p+offset;
-			Vector3d v=q.p-np;
+			mathtool::Point3d np=p.p+offset;
+			mathtool::Vector3d v=q.p-np;
 			if(v*q.n<0) continue; //opposite....
 
 			id=pt2id(np);
@@ -31,7 +32,7 @@ void ms_grid::registering(const points& P,const points& Q)
 //-----------------------------------------------------------------------------
 
 inline void classify
-(unsigned int id, ms_cell& c, list<int>& ext, list<int>& bd)
+(unsigned int id, ms_cell& c, std::list<int>& ext, std::list<int>& bd)
 {
 	if(c.visited) return;
 	if( c.isempty() )
@@ -45,8 +46,8 @@ inline void classify
 // compute bd_cells from external cells
 void ms_grid::first_wave()
 {
-	list<int> ext;
-	list<int> nei; //neighbors
+	std::list<int> ext;
+	std::list<int> nei; //neighbors
 
 	classify_grid_boundary(ext);
 	while(!ext.empty()){
@@ -54,7 +55,7 @@ void ms_grid::first_wave()
 		ext.pop_front();
 		getNeighbors(cid,nei);
 		//check the neighboring cells
-		for(list<int>::iterator i=nei.begin();i!=nei.end();i++)
+		for(std::list<int>::iterator i=nei.begin();i!=nei.end();i++)
 			classify(*i,cells[*i],ext,bd_cells);
 	}//end while
 }
@@ -70,15 +71,15 @@ void ms_grid::second_wave()
 
 //-----------------------------------------------------------------------------
 
-void ms_grid::getBoundaryPts(list<Point3d>& M)
+void ms_grid::getBoundaryPts(std::list<mathtool::Point3d>& M)
 {
 	const point& ref=P->getRef();
 
-	for(list<int>::iterator i=bd_cells.begin();i!=bd_cells.end();i++){
+	for(std::list<int>::iterator i=bd_cells.begin();i!=bd_cells.end();i++){
 		ms_cell& c=cells[*i];
-		list<regi>& en=c.enclosed;
-		for(list<regi>::iterator i=en.begin();i!=en.end();i++){
-			Point3d p=P->pts[i->pid].p+(Q->pts[i->qid].p-ref.p);
+		std::list<regi>& en=c.enclosed;
+		for(std::list<regi>::iterator i=en.begin();i!=en.end();i++){
+			mathtool::Point3d p=P->pts[i->pid].p+(Q->pts[i->qid].p-ref.p);
 			M.push_back(p);
 		}
 	}//end i
@@ -87,7 +88,7 @@ void ms_grid::getBoundaryPts(list<Point3d>& M)
 //-----------------------------------------------------------------------------
 
 //classify the most external grids to external or boundary
-void ms_grid::classify_grid_boundary(list<int>& ext)
+void ms_grid::classify_grid_boundary(std::list<int>& ext)
 {
 	unsigned int x_id, y_id, z_id, id1, id2;
 
@@ -125,6 +126,8 @@ void ms_grid::classify_grid_boundary(list<int>& ext)
 			classify(id2, cells[id2], ext, bd_cells);
 		}//end z
 	}
+}
+
 }
 
 

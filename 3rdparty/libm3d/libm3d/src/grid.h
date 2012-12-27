@@ -8,6 +8,9 @@
 #include "cell.h"
 #include "points.h"
 
+namespace libm3d 
+{
+
 class ms_grid
 {
 public:
@@ -55,15 +58,15 @@ public:
 
 
 	//get points on the boundary
-	void getBoundaryPts(list<Point3d>& M);
+	void getBoundaryPts(std::list<mathtool::Point3d>& M);
 
 private:
 
 	//classify the most external grids to external or boundary
-	void classify_grid_boundary(list<int>& ext);
+	void classify_grid_boundary(std::list<int>& ext);
 
 	//given a point, return its id
-	unsigned int pt2id(const Point3d& p)
+	unsigned int pt2id(const mathtool::Point3d& p)
 	{
 		int idx=(int)((p[0]-bbox[0])/cell_size);
 		int idy=(int)((p[1]-bbox[2])/cell_size);
@@ -71,7 +74,7 @@ private:
 		return idx*cell_yz+idy*cell_count[2]+idz;
 	}
 
-	void getNeighbors(int cid, list<int>& nei)
+	void getNeighbors(int cid, std::list<int>& nei)
 	{
 		nei.clear();
 		unsigned int cx=cid/cell_yz;
@@ -108,11 +111,13 @@ private:
 	unsigned int cell_yz;    //size of cell in yz plane
 	float cell_size;
 
-	list<int> bd_cells;
+	std::list<int> bd_cells;
 
 	//associated points
 	const points* P;
 	const points* Q;
 };
+
+}
 
 #endif //_PB_MINKOWSKI_GRID_

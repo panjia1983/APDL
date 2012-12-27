@@ -140,7 +140,7 @@ namespace APDL
 				}
 			}
 
-			if(std::abs(distancer.sqrDistance(x, y) - distancer.sqrDistance(x_star, y_star)) < epsilon) break;
+			if(abs(distancer.sqrDistance(x, y) - distancer.sqrDistance(x_star, y_star)) < epsilon) break;
 		}
 		while(1);
 

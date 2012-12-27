@@ -9,12 +9,14 @@
 #include "ModelNode.h"
 #include "ModelEdge.h"
 
+namespace libm3d
+{
 
 struct CModelFacet
 {
     CModelFacet();
     int vid[3];
-	Vector3d n;
+	mathtool::Vector3d n;
     CModelEdge * m_Edge[3];
 };
 
@@ -30,7 +32,7 @@ public:
     //////////////////////////////////////////////////////////////////////
     // Core Function
     //convert from tri to graph
-    bool doInit(model* m);
+	bool doInit(model* m);
 
     //////////////////////////////////////////////////////////////////////
     // Access Function
@@ -40,7 +42,7 @@ public:
     CModelEdge * getEdges(){ return m_pEdge; }
 
 	//facets
-	vector<CModelFacet>& getFacets(){ return m_Facets; }
+	std::vector<CModelFacet>& getFacets(){ return m_Facets; }
 
 	//////////////////////////////////////////////////////////////////////
     // Private stuff
@@ -48,10 +50,11 @@ private:
     int m_EdgeSize;
     CModelEdge * m_pEdge;           //a list of edges
     CModelEdge * m_Tail;            //point to the end
-    vector<CModelNode>  m_Nodes;    //an array of nodes
-    vector<CModelFacet> m_Facets;   //an array of facets
+	std::vector<CModelNode>  m_Nodes;    //an array of nodes
+    std::vector<CModelFacet> m_Facets;   //an array of facets
     model* m_Model;
 };
 
+}
 
 #endif

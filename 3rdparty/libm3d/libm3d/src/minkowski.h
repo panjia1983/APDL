@@ -13,7 +13,9 @@
 
 #include "model.h"
 #include <vector.h>
-using namespace std;
+
+namespace libm3d 
+{
 
 struct mksum_pt
 {
@@ -21,7 +23,7 @@ struct mksum_pt
     unsigned int pid, qid;
 };
 
-typedef list<mksum_pt> MKPTS;
+typedef std::list<mksum_pt> MKPTS;
 typedef MKPTS::iterator MKPTIT;
 
 
@@ -174,12 +176,12 @@ private:
     // Note: Not good enough and in fact slow computation of point normal
     //       need a better and more efficient method!!
     void mksum_normal
-    (model * P, model * Q, vertex& p, vertex& q, Vector3d& n);
+    (model * P, model * Q, vertex& p, vertex& q, mathtool::Vector3d& n);
     
     void mksum_normal_ve
-    (model * P, model * Q, const point& p, const point& q, Vector3d& n);
+    (model * P, model * Q, const point& p, const point& q, mathtool::Vector3d& n);
 
-    void mksum_normal(edge& e1, edge& e2, Vector3d& n);
+    void mksum_normal(edge& e1, edge& e2, mathtool::Vector3d& n);
 
     //functions that compute the position and the normal of M+ points
     template<class T> void getMNormal
@@ -187,7 +189,7 @@ private:
         const point& p=P->pts[pid];
         const point& q=Q->pts[qid];
 
-        Vector3d tmp;
+        mathtool::Vector3d tmp;
 
         if(p.from=='f') 
         {
@@ -232,6 +234,6 @@ public:
 
 //-----------------------------------------------------------------------------
 
-
+}
 #endif //_BF_MINKOWSKI_H_
 

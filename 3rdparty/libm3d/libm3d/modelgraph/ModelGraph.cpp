@@ -5,6 +5,10 @@
 
 #include "ModelGraph.h"
 
+namespace libm3d
+{
+
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -51,9 +55,9 @@ bool CModelGraph::doInit(model* m)
     for( unsigned int iT=0; iT<m->t_size; iT++ ){
         CModelFacet F;
 		for(int iV=0;iV<3;iV++) F.vid[iV]=tri[iT].v[iV];
-        Point3d& v1=m->vertices[F.vid[0]].p;
-        Point3d& v2=m->vertices[F.vid[1]].p;
-        Point3d& v3=m->vertices[F.vid[2]].p;
+        mathtool::Point3d& v1=m->vertices[F.vid[0]].p;
+        mathtool::Point3d& v2=m->vertices[F.vid[1]].p;
+        mathtool::Point3d& v3=m->vertices[F.vid[2]].p;
         F.n=((v2-v1)%(v3-v1)).normalize();
 
         for( int iE=0;iE<3;iE++ ){ //for each edge
@@ -101,16 +105,16 @@ bool CModelGraph::doInit(model* m)
 //  //for each node i
 //  for(vector<CModelNode>::iterator i=m_Nodes.begin();i!=m_Nodes.end();i++){
 //      const list<CModelEdge *>& edges=i->getEdges();
-//      Vector3d& pn=m_Model->pts[i->getKey()].n;
+//      mathtool::Vector3d& pn=m_Model->pts[i->getKey()].n;
 //      pn.set(0,0,0);
 //      for(list<CModelEdge*>::const_iterator j=edges.begin();j!=edges.end();j++){
 //          CModelEdge* edge=*j;
 //          if(edge->getFacet1()>=0) continue; //not boundary
 //          const point& s=m_Model->pts[edge->getStartPt()];
 //          const point& e=m_Model->pts[edge->getEndPt()];
-//          Vector3d v=e.p-s.p;
-//          Vector3d n(-v[1],v[0],0);
-//          const Vector3d& fn=m_Facets[edge->getFacet0()].n;
+//          mathtool::Vector3d v=e.p-s.p;
+//          mathtool::Vector3d n(-v[1],v[0],0);
+//          const mathtool::Vector3d& fn=m_Facets[edge->getFacet0()].n;
 //          if( (n%v)*fn<0 ) n=-n;
 //          pn=pn+n.normalize();
 //      }
@@ -154,8 +158,8 @@ bool CModelGraph::doInit(model* m)
 //              S=edgescale;
 //          }
 //          else{
-//              const Vector3d& n1=m_Facets[ptr->getFacet0()].n;
-//              const Vector3d& n2=m_Facets[ptr->getFacet1()].n;
+//              const mathtool::Vector3d& n1=m_Facets[ptr->getFacet0()].n;
+//              const mathtool::Vector3d& n2=m_Facets[ptr->getFacet1()].n;
 //              if(n1*n2<0.965f)
 //                  S=edgescale;
 //          }
@@ -243,3 +247,6 @@ bool CModelGraph::doInit(model* m)
 //
 //}
 //
+
+
+}

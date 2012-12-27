@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <RAPID.H>
 
+namespace libm3d 
+{
+
 
 struct model;
 
@@ -47,6 +50,8 @@ bool is_in_collision
 
 bool is_in_collision
 (cd_model* P, cd_model * Q, double p[3], const float * r);
+
+}
 
 
 #endif //_BF_CD_H_

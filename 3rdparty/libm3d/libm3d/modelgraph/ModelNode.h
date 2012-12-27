@@ -7,12 +7,15 @@
 #define _MODELGRAPH_NODEL_H_
 
 #include <list>
-using namespace std;
+
 
 //////////////////////////////////////////////////////////////////////
 // Include ModelGraph Headers.
 #include "ModelEdge.h"
 
+
+namespace libm3d 
+{
 class CModelNode  
 {
 public:
@@ -26,12 +29,12 @@ public:
 	{
 		int Key=nb.m_Key;
 		//linear search
-		for(list<CModelEdge *>::const_iterator i=m_Edges.begin();i!=m_Edges.end();i++)
+		for(std::list<CModelEdge *>::const_iterator i=m_Edges.begin();i!=m_Edges.end();i++)
 		    if( (*i)->isEndPt(Key)==true ) return *i;
 		return NULL;
 	}
 
-	const list<CModelEdge *>& getEdges() const
+	const std::list<CModelEdge *>& getEdges() const
 	{
 		return m_Edges;
 	}
@@ -48,8 +51,9 @@ public:
 private:
 	
 	int m_Key;
-	list<CModelEdge*> m_Edges;
+	std::list<CModelEdge*> m_Edges;
 };
 
+}
 
 #endif // _MODELGRAPH_NODEL_H_

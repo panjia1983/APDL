@@ -1,5 +1,8 @@
 #include "m+.h"
 
+namespace libm3d 
+{
+
 bool parseArg(int argc, char ** argv)
 {
 	if(argc!=4) return false;
@@ -26,7 +29,7 @@ int main(int argc, char ** argv)
 		G.build(box,D);
 	}
 	
-	list<Point3d> M; //minkowski sum boundary
+	std::list<mathtool::Point3d> M; //minkowski sum boundary
 
 	{
 		G.registering(P,Q);
@@ -35,4 +38,6 @@ int main(int argc, char ** argv)
 		G.getBoundaryPts(M);
 		G.destroy();
 	}
+}
+
 }

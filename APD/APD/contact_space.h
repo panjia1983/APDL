@@ -6,6 +6,7 @@
 #include <vector>
 #include "distance_proxy.h"
 #include <C2A/LinearMath.h>
+#include "libm3d_wrapper.h"
 
 namespace APDL
 {
@@ -431,6 +432,44 @@ namespace APDL
 				v[0] = v_[0];
 				v[1] = v_[1];
 				v[2] = v_[2];
+				samples.push_back(v);
+			}
+
+			return samples;
+		}
+
+		std::vector<ContactSpaceSampleData> uniform_sample(libm3d::model& P, libm3d::model& Q, double d, double shift) const
+		{
+			double R[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+			std::vector<DataVector> samples_ = computePointMKDiff(P, Q, R, d, shift);
+
+			std::vector<ContactSpaceSampleData> samples;
+			DataVector v(6);
+			for(std::size_t i = 0; i < samples_.size(); ++i)
+			{
+				v[0] = samples_[i][0];
+				v[1] = samples_[i][1];
+				v[2] = samples_[i][2];
+
+				bool col = collider.isCollide(v);
+				samples.push_back(ContactSpaceSampleData(v, col));
+			}
+			
+			return samples;
+		}
+
+		std::vector<DataVector> uniform_sample0(libm3d::model& P, libm3d::model& Q, double d, double shift) const
+		{
+			double R[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+			std::vector<DataVector> samples_ = computePointMKDiff(P, Q, R, d, shift);
+
+			std::vector<DataVector> samples;
+			DataVector v(6);
+			for(std::size_t i = 0; i < samples_.size(); ++i)
+			{
+				v[0] = samples_[i][0];
+				v[1] = samples_[i][1];
+				v[2] = samples_[i][2];
 				samples.push_back(v);
 			}
 

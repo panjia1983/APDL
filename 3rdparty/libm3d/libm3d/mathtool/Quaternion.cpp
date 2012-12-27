@@ -9,6 +9,7 @@
 *********************************************************************/
 #include "Quaternion.h"
 
+
 namespace mathtool{
 
     istream& operator>>(istream & in, Quaternion & q )
@@ -21,7 +22,7 @@ namespace mathtool{
         return out;
     }
 
-    Quaternion operator*(const Vector3d & v, const Quaternion & q2)
+    Quaternion operator*(const mathtool::Vector3d & v, const Quaternion & q2)
     {
         Quaternion q1(0,v);
         return q1*q2;

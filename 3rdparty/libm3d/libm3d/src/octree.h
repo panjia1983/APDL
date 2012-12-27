@@ -15,6 +15,9 @@
 //
 //
 
+namespace libm3d 
+{
+
 template<int KS=8>
 struct _octree_cell
 {
@@ -71,7 +74,7 @@ struct _octree_cell
             kids[i]->refine(query);
     }
 
-    int index(float * pos, const Point3d& mid) const 
+    int index(float * pos, const mathtool::Point3d& mid) const 
     {
         int x=(pos[0]>mid[0])?1:0;
         int y=(pos[1]>mid[1])?1:0;
@@ -85,7 +88,7 @@ struct _octree_cell
         MKPTS sub_pts[KS];
 
         //compute mid
-        Point3d mid((box[0]+box[1])/2, (box[2]+box[3])/2, (box[4]+box[5])/2);
+        mathtool::Point3d mid((box[0]+box[1])/2, (box[2]+box[3])/2, (box[4]+box[5])/2);
 
         //split accoding to mid
         float pos[3];
@@ -127,7 +130,7 @@ struct _octree_cell
 
     //find intersecting cells with the given box
     void getIntersection
-    (float query[6], list<_octree_cell<KS> *>& result, _octree_cell<KS>* from)
+    (float query[6], std::list<_octree_cell<KS> *>& result, _octree_cell<KS>* from)
     {
         for(int i=0;i<KS;i++){
             if(kids[i]==from || kids[i]->visited) continue;
@@ -168,7 +171,7 @@ struct _octree_cell
                 box[4]>query[4]&&box[5]<query[5]);
     }
 
-    void getNeighbors(list<_octree_cell<KS>*>& nei)
+    void getNeighbors(std::list<_octree_cell<KS>*>& nei)
     {
         if(kids[0]!=NULL) return; //only leaf can call this
         float query[6]={box[0]-1e-5f, box[1]+1e-5f,
@@ -177,7 +180,7 @@ struct _octree_cell
         this->parent->getIntersection(query,nei,this);
     }
 
-    void getBoundaryCells(list<_octree_cell<KS>*>& bd, float query[6])
+    void getBoundaryCells(std::list<_octree_cell<KS>*>& bd, float query[6])
     {
         if( inside(query) && bd_points.empty() ) return;
         
@@ -188,7 +191,7 @@ struct _octree_cell
                 kids[i]->getBoundaryCells(bd,query);
     }
 
-    void getBoundaryCells(list<_octree_cell<KS>*>& bd)
+    void getBoundaryCells(std::list<_octree_cell<KS>*>& bd)
     {
         if(kids[0]!=NULL && parent!=NULL) return; //only root can do this
         for(int i=0;i<KS;i++)
@@ -245,6 +248,9 @@ struct octree
     mksum * mk;
     octree_cell root;
 };
+
+
+}
 
 #endif //_BF_OCT_H_
 

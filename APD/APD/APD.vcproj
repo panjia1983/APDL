@@ -105,7 +105,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_44&quot;;../../include/;../../include/PQP;../../include/C2A;../../include/CLAPACK;&quot;C:\Program Files\CGAL-4.1\include&quot;;&quot;C:\Program Files\CGAL-4.1\auxiliary\gmp\include&quot;;./"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_44&quot;;../../include/;../../include/pthreads;../../include/RAPID;../../include/modelgraph;../../include/mathtool;../../include/libm3d;../../include/PQP;../../include/C2A;../../include/CLAPACK;&quot;C:\Program Files\CGAL-4.1\include&quot;;&quot;C:\Program Files\CGAL-4.1\auxiliary\gmp\include&quot;;./"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -275,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\distance_proxy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libm3d_wrapper.h"
 				>
 			</File>
 			<File
