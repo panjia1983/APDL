@@ -115,7 +115,7 @@ namespace APDL
 			//boundary_sample_file.close();
 
 			
-			sample_decision_boundary_hierarchial_tree<SVMDistanceToDecisionBoundary_OptimizationGradient>(param0, learner, samples2);
+			sample_decision_boundary_hierarchial_tree<SVMLearner, SVMDistanceToDecisionBoundary_OptimizationGradient>(param0, learner, samples2);
 			samples2_kcentriods = sampleSelectionKCentroids(samples2, 100, 10);
 
 			for(std::size_t i = 0; i < samples2_kcentriods.size(); ++i)
@@ -141,7 +141,7 @@ namespace APDL
 
 
 
-			sample_decision_boundary_hierarchial_tree_E<SVMEvaluator>(param, learner, samples3);
+			sample_decision_boundary_hierarchial_tree_E<SVMLearner, SVMEvaluator>(param, learner, samples3);
 			samples3_kcentriods = sampleSelectionKCentroids(samples3, 100, 10);
 
 			//std::ofstream boundary_sample_file("boundary_sample.txt");

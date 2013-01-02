@@ -39,7 +39,7 @@ if size(instance_matrix, 1) ~= N
 end
 
 if size(instance_matrix, 2) ~= 2
-  fprintf(2, 'svmtoy only works for 2-D data\n');
+  fprintf(2, 'multiconlitron_visualize only works for 2-D data\n');
   return;
 end
 

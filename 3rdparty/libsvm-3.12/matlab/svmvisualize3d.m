@@ -1,4 +1,4 @@
-function svmvisualize3d(label_matrix, instance_matrix, model_name, scaler_name, downsample_level)
+function svmvisualize3d(label_matrix, instance_matrix, model_name, scaler_name, contour_level, downsample_level)
 %% svmtoy(label_matrix, instance_matrix, options, contour_level)
 %% label_matrix: N by 1, has to be two-class
 %% instance_matrix: N by 3
@@ -17,6 +17,10 @@ if nargin <= 3
 end
 
 if nargin <= 4
+  contour_level = [0 0];
+end
+
+if nargin <= 5
   downsample_level = 1;
 end
 
@@ -38,7 +42,7 @@ if size(instance_matrix, 1) ~= N
 end
 
 if size(instance_matrix, 2) ~= 3
-  fprintf(2, 'svmtoy only works for 3-D data\n');
+  fprintf(2, 'svmvisualize3d only works for 3-D data\n');
   return;
 end
 
@@ -53,12 +57,6 @@ if nclass ~= 2 || svmtype >= 2
   return
 end
 
-if ~strcmp(scaler_name, '')
-    scaler_matrix = load(scaler_name);
-    instance_matrix(:, 1) = instance_matrix(:, 1) .* scaler_matrix(1, 1) + scaler_matrix(1, 2);
-    instance_matrix(:, 2) = instance_matrix(:, 2) .* scaler_matrix(2, 1) + scaler_matrix(2, 2);
-    instance_matrix(:, 3) = instance_matrix(:, 3) .* scaler_matrix(3, 1) + scaler_matrix(3, 2);
-end
 
 minX = min(instance_matrix(:, 1));
 maxX = max(instance_matrix(:, 1));
@@ -78,11 +76,20 @@ maxY = maxY + 10 * gridY;
 minZ = minZ - 10 * gridZ;
 maxZ = maxZ + 10 * gridZ;
 
+
 [bigX, bigY, bigZ] = meshgrid(minX:gridX:maxX, minY:gridY:maxY, minZ:gridZ:maxZ);
 
 mdl.Parameters(1) = 3; % the trick to get the decision values
 ntest=size(bigX, 1) * size(bigX, 2) * size(bigX, 3);
 instance_test=[reshape(bigX, ntest, 1), reshape(bigY, ntest, 1), reshape(bigZ, ntest, 1)];
+
+if ~strcmp(scaler_name, '')
+    scaler_matrix = load(scaler_name);
+    instance_test(:, 1) = instance_test(:, 1) .* scaler_matrix(1, 1) + scaler_matrix(1, 2);
+    instance_test(:, 2) = instance_test(:, 2) .* scaler_matrix(2, 1) + scaler_matrix(2, 2);
+    instance_test(:, 3) = instance_test(:, 3) .* scaler_matrix(3, 1) + scaler_matrix(3, 2);
+end
+
 label_test = zeros(size(instance_test, 1), 1);
 
 [V, acc] = svmpredict(label_test, instance_test, mdl);
@@ -91,6 +98,7 @@ bigV = reshape(V, size(bigX, 1), size(bigX, 2), size(bigX, 3));
 
 clf;
 hold on;
+
 
 p = patch(isosurface(bigX, bigY, bigZ, bigV, 0));
 isonormals(bigX, bigY, bigZ, bigV, p);
@@ -116,4 +124,5 @@ end
 
 scatter3(instance_matrix(pos, 1), instance_matrix(pos, 2), instance_matrix(pos, 3), 'ko');
 scatter3(instance_matrix(neg, 1), instance_matrix(neg, 2), instance_matrix(neg, 3), 'gx');
+
 

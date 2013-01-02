@@ -9,9 +9,9 @@
 
 namespace APDL
 {
-	template<typename Distancer>
+	template<typename Learner, typename Distancer>
 	void sample_decision_boundary_hierarchial_tree(const SpatialTreeParam& param,
-												   const SVMLearner& learner,
+												   const Learner& learner,
 												   std::vector<DataVector>& samples)
 	{
 		if(!learner.scaler)
@@ -29,41 +29,43 @@ namespace APDL
 			lower[i] = learner.use_scaler ? 0 : learner.scaler->v_min[i];
 		}
 
-		SpatialTree<SVMLearner, Distancer> tree(lower, upper, param, learner);
+		SpatialTree<Learner, Distancer> tree(lower, upper, param, learner);
 
 		tree.collectBoundarySamples(samples);
 	}
 
-	template<typename Distancer>
-	void sample_decision_boundary_hierarchial_tree(const SpatialTreeParam& param,
-												   const MulticonlitronLearner& learner,
-		                                           std::vector<DataVector>& samples)
-	{
-		if(!learner.scaler)
-		{
-			std::cout << "Learner does not have scaler!" << std::endl;
-			return;
-		}
+	//template<typename Distancer>
+	//void sample_decision_boundary_hierarchial_tree(const SpatialTreeParam& param,
+	//											   const MulticonlitronLearner& learner,
+	//	                                           std::vector<DataVector>& samples)
+	//{
+	//	if(!learner.scaler)
+	//	{
+	//		std::cout << "Learner does not have scaler!" << std::endl;
+	//		return;
+	//	}
 
-		std::size_t dim = learner.feature_dim;
+	//	std::size_t dim = learner.feature_dim;
 
-		DataVector upper(dim), lower(dim);
-		for(std::size_t i = 0; i < dim; ++i)
-		{
-			upper[i] = learner.scaler->v_max[i];
-			lower[i] = learner.scaler->v_min[i];
-		}
+	//	DataVector upper(dim), lower(dim);
+	//	for(std::size_t i = 0; i < dim; ++i)
+	//	{
+	//		upper[i] = learner.use_scaler ? 1 : learner.scaler->v_max[i];
+	//		lower[i] = learner.use_scaler ? 1 : learner.scaler->v_min[i];
+	//	}
 
-		SpatialTree<MulticonlitronLearner, Distancer> tree(lower, upper, param, learner);
+	//	SpatialTree<MulticonlitronLearner, Distancer> tree(lower, upper, param, learner);
 
-		tree.collectBoundarySamples(samples);
-	}
+	//	tree.collectBoundarySamples(samples);
+	//}
+
+
 
 	// difference with sample_decision_boundary_hierarchial_tree: 
 	//    we evalute the corners of the node to determine (in fact guess) whether a node is completely inside one region
-	template<typename SVMEvaluator>
+	template<typename Learner, typename Evaluator>
 	void sample_decision_boundary_hierarchial_tree_E(const SpatialTreeEParam& param,
-													 const SVMLearner& learner, 
+													 const Learner& learner, 
 													 std::vector<DataVector>& samples)
 	{
 		if(!learner.scaler)
@@ -81,7 +83,7 @@ namespace APDL
 			lower[i] = learner.use_scaler ? 0 : learner.scaler->v_min[i];
 		}
 
-		SpatialTreeE<SVMLearner, SVMEvaluator> tree(lower, upper, param, learner);
+		SpatialTreeE<Learner, Evaluator> tree(lower, upper, param, learner);
 
 		tree.collectBoundarySamples(samples);
 	}
@@ -89,30 +91,30 @@ namespace APDL
 
 
 
-	template<typename Evaluator>
-	void sample_decision_boundary_hierarchial_tree_E(const SpatialTreeEParam& param,
-													 const MulticonlitronLearner& learner, 
-													 std::vector<DataVector>& samples)
-	{
-		if(!learner.scaler)
-		{
-			std::cout << "Learner does not have scaler!" << std::endl;
-			return;
-		}
+	//template<typename Evaluator>
+	//void sample_decision_boundary_hierarchial_tree_E(const SpatialTreeEParam& param,
+	//												 const MulticonlitronLearner& learner, 
+	//												 std::vector<DataVector>& samples)
+	//{
+	//	if(!learner.scaler)
+	//	{
+	//		std::cout << "Learner does not have scaler!" << std::endl;
+	//		return;
+	//	}
 
-		std::size_t dim = learner.feature_dim;
+	//	std::size_t dim = learner.feature_dim;
 
-		DataVector upper(dim), lower(dim);
-		for(std::size_t i = 0; i < dim; ++i)
-		{
-			upper[i] = learner.scaler->v_max[i];
-			lower[i] = learner.scaler->v_min[i];
-		}
+	//	DataVector upper(dim), lower(dim);
+	//	for(std::size_t i = 0; i < dim; ++i)
+	//	{
+	//		upper[i] = learner.use_scaler ? 1 : learner.scaler->v_max[i];
+	//		lower[i] = learner.use_scaler ? 1 : learner.scaler->v_min[i];
+	//	}
 
-		SpatialTreeE<MulticonlitronLearner, Evaluator> tree(lower, upper, param, learner);
+	//	SpatialTreeE<MulticonlitronLearner, Evaluator> tree(lower, upper, param, learner);
 
-		tree.collectBoundarySamples(samples);
-	}
+	//	tree.collectBoundarySamples(samples);
+	//}
 
 
 	void sample_decision_boundary_interpolation(const SVMLearner& learner,
@@ -173,7 +175,7 @@ namespace APDL
 		std::vector<DataVector> sample(std::size_t n) const
 		{
 			std::vector<DataVector> samples;
-			sample_decision_boundary_hierarchial_tree<Distancer>(param, learner, samples);
+			sample_decision_boundary_hierarchial_tree<Learner, Distancer>(param, learner, samples);
 			return sampleSelectionKCentroids(samples, n, fparam.clustering_max_iter);
 		}
 
@@ -194,7 +196,7 @@ namespace APDL
 		std::vector<DataVector> sample(std::size_t n) const
 		{
 			std::vector<DataVector> samples;
-			sample_decision_boundary_hierarchial_tree_E<Evaluator>(param, learner, samples);
+			sample_decision_boundary_hierarchial_tree_E<Learner, Evaluator>(param, learner, samples);
 			return sampleSelectionKCentroids(samples, n, fparam.clustering_max_iter);
 		}
 		

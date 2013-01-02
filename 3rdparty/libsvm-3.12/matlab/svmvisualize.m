@@ -42,7 +42,7 @@ if size(instance_matrix, 1) ~= N
 end
 
 if size(instance_matrix, 2) ~= 2
-  fprintf(2, 'svmtoy only works for 2-D data\n');
+  fprintf(2, 'svmvisualize only works for 2-D data\n');
   return;
 end
 
@@ -55,12 +55,6 @@ if nclass ~= 2 || svmtype >= 2
   fprintf(2, ['cannot plot the decision boundary for these ' ...
               'SVM problems\n']);
   return
-end
-
-if ~strcmp(scaler_name, '')
-    scaler_matrix = load(scaler_name);
-    instance_matrix(:, 1) = instance_matrix(:, 1) .* scaler_matrix(1, 1) + scaler_matrix(1, 2);
-    instance_matrix(:, 2) = instance_matrix(:, 2) .* scaler_matrix(2, 1) + scaler_matrix(2, 2);
 end
 
 minX = min(instance_matrix(:, 1));
@@ -81,6 +75,15 @@ maxY = maxY + 10 * gridY;
 mdl.Parameters(1) = 3; % the trick to get the decision values
 ntest=size(bigX, 1) * size(bigX, 2);
 instance_test=[reshape(bigX, ntest, 1), reshape(bigY, ntest, 1)];
+
+
+if ~strcmp(scaler_name, '')
+    scaler_matrix = load(scaler_name);
+    instance_test(:, 1) = instance_test(:, 1) .* scaler_matrix(1, 1) + scaler_matrix(1, 2);
+    instance_test(:, 2) = instance_test(:, 2) .* scaler_matrix(2, 1) + scaler_matrix(2, 2);
+end
+
+
 label_test = zeros(size(instance_test, 1), 1);
 
 [Z, acc] = svmpredict(label_test, instance_test, mdl);

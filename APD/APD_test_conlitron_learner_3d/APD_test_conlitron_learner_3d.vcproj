@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="APD_test_active_learning"
-	ProjectGUID="{2A15F0B5-354F-401F-B984-CD99CFF277C9}"
-	RootNamespace="APD_test_active_learning"
+	Name="APD_test_conlitron_learner_3d"
+	ProjectGUID="{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}"
+	RootNamespace="APD_test_conlitron_learner_3d"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -114,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_44&quot;;../../include/;../../include/PQP;../../include/C2A;&quot;C:\Program Files\CGAL-4.1\include&quot;;&quot;C:\Program Files\CGAL-4.1\auxiliary\gmp\include&quot;;../"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_44&quot;;../../include/;../../include/pthreads;../../include/RAPID;../../include/modelgraph;../../include/mathtool;../../include/libm3d;../../include/PQP;../../include/C2A;../../include/CLAPACK;&quot;C:\Program Files\CGAL-4.1\include&quot;;&quot;C:\Program Files\CGAL-4.1\auxiliary\gmp\include&quot;;../"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -175,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\test_active_learning.cpp"
+				RelativePath=".\test_conlitron_learner_3d.cpp"
 				>
 			</File>
 		</Filter>

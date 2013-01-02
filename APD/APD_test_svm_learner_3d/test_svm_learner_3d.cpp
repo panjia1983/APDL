@@ -18,7 +18,10 @@ namespace APDL
 			readOffFile(P, "../data/cup.off");
 			readOffFile(Q, "../data/spoon.off");
 
-			ContactSpaceR3 contactspace(P, Q, 2);
+			P->ComputeRadius();
+			Q->ComputeRadius();
+
+			ContactSpaceR3 contactspace(P, Q, 0.05 * (P->radius + Q->radius));
 			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
 				
 			std::ofstream out("space_test_3d.txt");
@@ -28,7 +31,11 @@ namespace APDL
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
-			// learner.setUseScaler(true);
+			learner.setUseScaler(true);
+			learner.setGamma(50); 
+			//learner.setGamma(0.1 * contactspace.getScaler().getScale());
+			//std::cout << 0.1 * contactspace.getScaler().getScale() << std::endl;
+
 
 
 			std::ofstream scaler_file("scaler_3d.txt");
@@ -37,7 +44,9 @@ namespace APDL
 			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_3d.txt");
 
-			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+			std::cout << "model saved" << std::endl;
+
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 20) << std::endl;
 
 			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
@@ -46,22 +55,22 @@ namespace APDL
 
 	}
 
-	void test()
-	{
-		std::vector<DataVector> points = readPM3dFile("../data/grate12.m+");
-		for(std::size_t i = points.size() - 10; i < points.size(); ++i)
-		{
-			for(std::size_t j = 0; j < points[i].dim(); ++j)
-				std::cout << points[i][j] << " ";
-			std::cout << std::endl;
-		}
-		std::cout << points.size() << std::endl;
-	}
+	//void test()
+	//{
+	//	std::vector<DataVector> points = readPM3dFile("../data/grate12.m+");
+	//	for(std::size_t i = points.size() - 10; i < points.size(); ++i)
+	//	{
+	//		for(std::size_t j = 0; j < points[i].dim(); ++j)
+	//			std::cout << points[i][j] << " ";
+	//		std::cout << std::endl;
+	//	}
+	//	std::cout << points.size() << std::endl;
+	//}
 
 }
 
 void main()
 {
-	APDL::test();
-	// APDL::test_svm_learner_3d();
+	// APDL::test();
+	APDL::test_svm_learner_3d();
 }

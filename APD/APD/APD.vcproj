@@ -156,6 +156,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\contact_space.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\contact_space_learning.cpp"
 				>
 			</File>

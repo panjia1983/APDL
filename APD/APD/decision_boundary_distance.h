@@ -59,46 +59,7 @@ namespace APDL
 
 	struct SVMDistanceToDecisionBoundary_Projection
 	{
-		SVMDistanceToDecisionBoundary_Projection(const SVMLearner& learner_, bool use_bound_ = false) : learner(learner_), use_bound(use_bound_)
-		{
-			node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i + 1;
-			node[learner.feature_dim].index = -1;
-
-			closest_node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i + 1;
-			closest_node[learner.feature_dim].index = -1;
-
-			upper_bound = NULL;
-			lower_bound = NULL;
-
-			if(learner.scaler)
-			{
-				upper_bound = new double[learner.feature_dim];
-				lower_bound = new double[learner.feature_dim];
-
-				for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				{
-					if(learner.use_scaler)
-					{
-						upper_bound[i] = 2;
-						lower_bound[i] = -1;
-					}
-					else
-					{
-						double delta = learner.scaler->v_max[i] - learner.scaler->v_min[i];
-						upper_bound[i] = learner.scaler->v_max[i] + 0.5 * delta;
-						lower_bound[i] = learner.scaler->v_min[i] - 0.5 * delta;
-					}
-				}
-			}
-
-			hyperw = sqrt(learner.hyperw_normsqr);
-
-			index = learner.constructIndexOfSupportVectors();
-		}
+		SVMDistanceToDecisionBoundary_Projection(const SVMLearner& learner_, bool use_bound_ = false);
 
 		~SVMDistanceToDecisionBoundary_Projection()
 		{
@@ -130,44 +91,7 @@ namespace APDL
 
 	struct SVMDistanceToDecisionBoundary_Optimization
 	{
-		SVMDistanceToDecisionBoundary_Optimization(const SVMLearner& learner_, bool use_bound_ = false) : learner(learner_), use_bound(use_bound_)
-		{
-			node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i + 1;
-			node[learner.feature_dim].index = -1;
-
-			closest_node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i + 1;
-			closest_node[learner.feature_dim].index = -1;
-
-			upper_bound = NULL;
-			lower_bound = NULL;
-
-			if(learner.scaler)
-			{
-				upper_bound = new double[learner.feature_dim];
-				lower_bound = new double[learner.feature_dim];
-
-				for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				{
-					if(learner.use_scaler)
-					{
-						upper_bound[i] = 2;
-						lower_bound[i] = -1;
-					}
-					else
-					{
-						double delta = learner.scaler->v_max[i] - learner.scaler->v_min[i];
-						upper_bound[i] = learner.scaler->v_max[i] + 0.5 * delta;
-						lower_bound[i] = learner.scaler->v_min[i] - 0.5 * delta;
-					}
-				}
-			}
-
-			index = learner.constructIndexOfSupportVectors();
-		}
+		SVMDistanceToDecisionBoundary_Optimization(const SVMLearner& learner_, bool use_bound_ = false);
 
 		~SVMDistanceToDecisionBoundary_Optimization()
 		{
@@ -197,44 +121,7 @@ namespace APDL
 
 	struct SVMDistanceToDecisionBoundary_OptimizationGradient
 	{
-		SVMDistanceToDecisionBoundary_OptimizationGradient(const SVMLearner& learner_, bool use_bound_ = false) : learner(learner_), use_bound(use_bound_)
-		{
-			node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i + 1;
-			node[learner.feature_dim].index = -1;
-
-			closest_node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i + 1;
-			closest_node[learner.feature_dim].index = -1;
-
-			upper_bound = NULL;
-			lower_bound = NULL;
-
-			if(learner.scaler)
-			{
-				upper_bound = new double[learner.feature_dim];
-				lower_bound = new double[learner.feature_dim];
-
-				for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				{
-					if(learner.use_scaler)
-					{
-						upper_bound[i] = 2;
-						lower_bound[i] = -1;
-					}
-					else
-					{
-						double delta = learner.scaler->v_max[i] - learner.scaler->v_min[i];
-						upper_bound[i] = learner.scaler->v_max[i] + 0.5 * delta;
-						lower_bound[i] = learner.scaler->v_min[i] - 0.5 * delta;
-					}
-				}
-			}
-
-			index = learner.constructIndexOfSupportVectors();
-		}
+		SVMDistanceToDecisionBoundary_OptimizationGradient(const SVMLearner& learner_, bool use_bound_ = false);
 
 		~SVMDistanceToDecisionBoundary_OptimizationGradient()
 		{
@@ -264,36 +151,7 @@ namespace APDL
 
 	struct SVMDistanceToDecisionBoundary_Bruteforce
 	{
-		SVMDistanceToDecisionBoundary_Bruteforce(const SVMLearner& learner_) : learner(learner_)
-		{
-			if(!learner.scaler)
-			{
-				std::cout << "Error! Must have scaler!" << std::endl;
-				return;
-			}
-
-			double* lower = new double[learner.feature_dim];
-			double* upper = new double[learner.feature_dim];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-			{
-				lower[i] = learner.use_scaler ? 0 : learner.scaler->v_min[i];
-				upper[i] = learner.use_scaler ? 1 : learner.scaler->v_max[i];
-			}
-
-			sample_decision_boundary_brute_force(learner.model, upper, lower, learner.feature_dim, 0.005, 100, boundary, index);
-			delete [] upper;
-			delete [] lower;
-
-			node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				node[i].index = i + 1;
-			node[learner.feature_dim].index = -1;
-
-			closest_node = new svm_node[learner.feature_dim + 1];
-			for(std::size_t i = 0; i < learner.feature_dim; ++i)
-				closest_node[i].index = i + 1;
-			closest_node[learner.feature_dim].index = -1;
-		}
+		SVMDistanceToDecisionBoundary_Bruteforce(const SVMLearner& learner_);
 
 		~SVMDistanceToDecisionBoundary_Bruteforce()
 		{

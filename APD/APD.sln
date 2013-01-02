@@ -88,11 +88,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decisi
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning", "APD_test_active_learning\APD_test_active_learning.vcproj", "{2A15F0B5-354F-401F-B984-CD99CFF277C9}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query", "APD_test_online_query\APD_test_online_query.vcproj", "{3769DF9F-1B43-4099-8DCC-A7A9BE493357}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
@@ -101,8 +96,34 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_ccd_collide", "APD_test_ccd_collide\APD_test_ccd_collide.vcproj", "{1B7950CD-9294-4D87-9D15-49D24621A32B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d", "APD_test_svm_learner_3d\APD_test_svm_learner_3d.vcproj", "{062BF53A-CF19-4247-BA4D-7BFB3C986037}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_svm_learner_3d_rotation", "test_svm_learner_3d_rotation\test_svm_learner_3d_rotation.vcproj", "{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d", "APD_test_conlitron_learner_3d\APD_test_conlitron_learner_3d.vcproj", "{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d_rotation", "APD_test_conlitron_learner_3d_rotation\APD_test_conlitron_learner_3d_rotation.vcproj", "{12DDC8D5-7507-4C79-8D52-340DC1C918AD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_2d", "APD_test_active_learning_svm_2d\APD_test_active_learning_svm_2d.vcproj", "{11F59F3C-2D08-4902-BA41-9049D25A7A93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_conlitron_2d", "APD_test_active_learning_conlitron_2d\APD_test_active_learning_conlitron_2d.vcproj", "{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -182,10 +203,6 @@ Global
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Debug|Win32.Build.0 = Debug|Win32
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Release|Win32.ActiveCfg = Release|Win32
 		{B13E7C73-70CA-473E-A0BC-295BCA03663A}.Release|Win32.Build.0 = Release|Win32
-		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Debug|Win32.Build.0 = Debug|Win32
-		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Release|Win32.ActiveCfg = Release|Win32
-		{2A15F0B5-354F-401F-B984-CD99CFF277C9}.Release|Win32.Build.0 = Release|Win32
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Debug|Win32.Build.0 = Debug|Win32
 		{3769DF9F-1B43-4099-8DCC-A7A9BE493357}.Release|Win32.ActiveCfg = Release|Win32
@@ -202,6 +219,22 @@ Global
 		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Debug|Win32.Build.0 = Debug|Win32
 		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.ActiveCfg = Release|Win32
 		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.Build.0 = Release|Win32
+		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Debug|Win32.Build.0 = Debug|Win32
+		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Release|Win32.ActiveCfg = Release|Win32
+		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Release|Win32.Build.0 = Release|Win32
+		{12DDC8D5-7507-4C79-8D52-340DC1C918AD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12DDC8D5-7507-4C79-8D52-340DC1C918AD}.Debug|Win32.Build.0 = Debug|Win32
+		{12DDC8D5-7507-4C79-8D52-340DC1C918AD}.Release|Win32.ActiveCfg = Release|Win32
+		{12DDC8D5-7507-4C79-8D52-340DC1C918AD}.Release|Win32.Build.0 = Release|Win32
+		{11F59F3C-2D08-4902-BA41-9049D25A7A93}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11F59F3C-2D08-4902-BA41-9049D25A7A93}.Debug|Win32.Build.0 = Debug|Win32
+		{11F59F3C-2D08-4902-BA41-9049D25A7A93}.Release|Win32.ActiveCfg = Release|Win32
+		{11F59F3C-2D08-4902-BA41-9049D25A7A93}.Release|Win32.Build.0 = Release|Win32
+		{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}.Debug|Win32.Build.0 = Debug|Win32
+		{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}.Release|Win32.ActiveCfg = Release|Win32
+		{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

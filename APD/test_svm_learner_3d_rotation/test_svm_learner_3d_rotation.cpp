@@ -17,8 +17,11 @@ namespace APDL
 			readOffFile(P, "../data/cup.off");
 			readOffFile(Q, "../data/spoon.off");
 
-			ContactSpaceR3 contactspace(P, Q, 2);
-			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
+			P->ComputeRadius();
+			Q->ComputeRadius();
+
+			ContactSpaceSE3Euler2 contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(100000);
 				
 			std::ofstream out("space_test_3d_rotation.txt");
 			asciiWriter(out, contactspace_samples);
@@ -27,7 +30,8 @@ namespace APDL
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
-			// learner.setUseScaler(true);
+			learner.setUseScaler(true);
+			learner.setGamma(50); 
 
 
 			std::ofstream scaler_file("scaler_3d_rotation.txt");
@@ -36,7 +40,9 @@ namespace APDL
 			learner.learn(contactspace_samples, contactspace.active_data_dim());
 			learner.save("model_3d_rotation.txt");
 
-			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+			std::cout << "model saved" << std::endl;
+
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 5) << std::endl;
 
 
 			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)

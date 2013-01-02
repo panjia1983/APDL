@@ -1,7 +1,7 @@
-function svmvisualize3d(label_matrix, instance_matrix, vis_matrix, downsample_level)
+function multiconlitron_visualize3d(label_matrix, instance_matrix, vis_matrix, contour_level, downsample_level)
 %% svmtoy(label_matrix, instance_matrix, options, contour_level)
 %% label_matrix: N by 1, has to be two-class
-%% instance_matrix: N by 3
+%% instance_matrix: N by 2
 %% options: default '',
 %%          see libsvm-mat-8 README, has to be a classification formulation.
 %% contour_level: default [0 0], 
@@ -12,6 +12,10 @@ function svmvisualize3d(label_matrix, instance_matrix, vis_matrix, downsample_le
 %%
 %% Hsuan-Tien Lin, htlin at caltech.edu, 2006/04/07
 
+
+if nargin <= 3
+  contour_level = [0 0];
+end
 
 if nargin <= 4
   downsample_level = 1;
@@ -34,8 +38,8 @@ if size(instance_matrix, 1) ~= N
   return;
 end
 
-if size(instance_matrix, 2) ~= 3
-  fprintf(2, 'svmtoy only works for 3-D data\n');
+if size(instance_matrix, 2) ~= 2
+  fprintf(2, 'multiconlitron_visualize3d only works for 3-D data\n');
   return;
 end
 

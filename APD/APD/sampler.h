@@ -144,8 +144,10 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
+
 		mutable RNG rng;
+
+	protected:
 		
 		double x_min, x_max, y_min, y_max;
 	};
@@ -187,8 +189,9 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double x_min, x_max, y_min, y_max;
 	};
@@ -232,8 +235,9 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double c[2];
 		double r1, r2;
@@ -281,8 +285,9 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double x_min, x_max, y_min, y_max, z_min, z_max;
 	};
@@ -337,8 +342,9 @@ namespace APDL
 			return ConfigQuat2Euler(res);
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double x_min, x_max, y_min, y_max, z_min, z_max;
 	};
@@ -393,8 +399,9 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double x_min, x_max, y_min, y_max, z_min, z_max;
 	};
@@ -452,8 +459,9 @@ namespace APDL
 			return ConfigQuat2Euler(res);
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double c[3];
 		double r1, r2;
@@ -510,8 +518,9 @@ namespace APDL
 			return res;
 		}
 		
-	protected:
 		mutable RNG rng;
+
+	protected:
 		
 		double c[3];
 		double r1, r2;

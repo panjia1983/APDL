@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="APD_test_angle_interpolation"
-	ProjectGUID="{C9060584-EB2A-40BE-A558-3E8405C35D49}"
-	RootNamespace="test_angle_interpolation"
+	Name="APD_test_active_learning_svm_2d"
+	ProjectGUID="{11F59F3C-2D08-4902-BA41-9049D25A7A93}"
+	RootNamespace="APD_test_active_learning_svm_2d"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -175,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\test_angle_interpolation.cpp"
+				RelativePath=".\test_active_learning_svm_2d.cpp"
 				>
 			</File>
 		</Filter>

@@ -55,7 +55,7 @@ namespace APDL
 			MulticonlitronEvaluator evaluator(learner);
 
 			std::vector<DataVector> samples1;
-			sample_decision_boundary_hierarchial_tree_E<MulticonlitronEvaluator>(param, learner, samples1);
+			sample_decision_boundary_hierarchial_tree_E<SVMLearner, MulticonlitronEvaluator>(param, learner, samples1);
 			std::vector<DataVector> samples1_kcentriods = sampleSelectionKCentroids(samples1, 100, 10);
 			std::cout << samples1.size() << std::endl;
 			

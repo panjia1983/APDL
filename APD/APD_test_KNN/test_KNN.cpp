@@ -27,7 +27,7 @@ namespace APDL
 
 			flann::Index<ContactSpaceR2::DistanceType>* index = NULL;
 
-			generateIndex<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			generateIndex<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 				contactspace.active_data_dim(), 
 				index,
 				flann::KDTreeIndexParams());
@@ -35,7 +35,7 @@ namespace APDL
 		    std::vector<std::vector<int> > indices;
 		    std::vector<std::vector<double> > dists;
 
-			knnSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			knnSearch<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -46,7 +46,7 @@ namespace APDL
 			indices.clear();
 			dists.clear();
 
-			radiusSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			radiusSearch<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -85,7 +85,7 @@ namespace APDL
 
 			flann::Index<ContactSpaceR2::DistanceType>* index = NULL;
 
-			generateIndex<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			generateIndex<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 				contactspace.active_data_dim(), 
 				index,
 				flann::KDTreeIndexParams());
@@ -93,7 +93,7 @@ namespace APDL
 		    std::vector<std::vector<int> > indices;
 		    std::vector<std::vector<double> > dists;
 
-			knnSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			knnSearch<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,
@@ -104,7 +104,7 @@ namespace APDL
 			indices.clear();
 			dists.clear();
 
-			radiusSearch<ContactSpaceR2::DistanceType>(contactspace_samples, 
+			radiusSearch<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(contactspace_samples, 
 		           contactspace.active_data_dim(), 
 		           index,
 		           indices,

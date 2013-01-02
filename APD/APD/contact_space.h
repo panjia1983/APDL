@@ -503,6 +503,26 @@ namespace APDL
 		Collider3D collider;
 	};
 	
+
+
+	std::vector<ContactSpaceSampleData> uniform_sample_Euler(
+		libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot,
+		const Collider3D& collider,
+		RNG& rng);
+
+	std::vector<DataVector> uniform_sample0_Euler(
+		libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot,
+		RNG& rng);
+
+	std::vector<ContactSpaceSampleData> uniform_sample_Quat(
+		libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot,
+		const Collider3D& collider,
+		RNG& rng);
+
+	std::vector<DataVector> uniform_sample0_Quat(
+		libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot,
+		RNG& rng);
+
 	class ContactSpaceSE3Euler
 	{
 	public:
@@ -547,6 +567,16 @@ namespace APDL
 			return samples;
 		}
 		
+		std::vector<ContactSpaceSampleData> uniform_sample(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample_Euler(P, Q, d, shift, nrot, collider, sampler.rng);
+		}
+
+		std::vector<DataVector> uniform_sample0(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample0_Euler(P, Q, d, shift, nrot, sampler.rng);
+		}
+
 		std::size_t data_dim() const
 		{
 			return 6;
@@ -617,6 +647,16 @@ namespace APDL
 			return samples;
 		}
 		
+		std::vector<ContactSpaceSampleData> uniform_sample(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample_Euler(P, Q, d, shift, nrot, collider, sampler.rng);
+		}
+
+		std::vector<DataVector> uniform_sample0(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample0_Euler(P, Q, d, shift, nrot, sampler.rng);
+		}
+
 		std::size_t data_dim() const
 		{
 			return 7;
@@ -741,6 +781,16 @@ namespace APDL
 			}
 
 			return samples;
+		}
+
+		std::vector<ContactSpaceSampleData> uniform_sample(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample_Euler(P, Q, d, shift, nrot, collider, rng);
+		}
+
+		std::vector<DataVector> uniform_sample0(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample0_Euler(P, Q, d, shift, nrot, rng);
 		}
 		
 		std::size_t data_dim() const
@@ -878,6 +928,16 @@ namespace APDL
 
 			return samples;
 		}
+
+		std::vector<ContactSpaceSampleData> uniform_sample(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample_Euler(P, Q, d, shift, nrot, collider, rng);
+		}
+
+		std::vector<DataVector> uniform_sample0(libm3d::model& P, libm3d::model& Q, double d, double shift, std::size_t nrot) const
+		{
+			return uniform_sample0_Euler(P, Q, d, shift, nrot, rng);
+		}
 		
 		std::size_t data_dim() const
 		{
@@ -1014,9 +1074,21 @@ namespace APDL
 		return is;
 	}
 
+	template<typename SampleType>
+	const DataVector& getVectorData(const SampleType& sample)
+	{
+		return sample;
+	}
 
-	template<typename Distance>
-	void generateIndex(const std::vector<ContactSpaceSampleData>& data, std::size_t active_data_dim,
+	template<>
+	inline const DataVector& getVectorData<ContactSpaceSampleData>(const ContactSpaceSampleData& sample) 
+	{
+		return sample.v;
+	}
+
+
+	template<typename Distance, typename SampleType>
+	void generateIndex(const std::vector<SampleType>& data, std::size_t active_data_dim,
 		flann::Index<Distance>*& index,
 		const flann::IndexParams& params)
 	{
@@ -1028,7 +1100,7 @@ namespace APDL
 		{
 			for(std::size_t j = 0; j < dim_data; ++j)
 			{
-				dataset[i][j] = data[i].v[j];
+				dataset[i][j] = getVectorData(data[i])[j];
 			}
 		}
 
@@ -1036,8 +1108,8 @@ namespace APDL
 		index->buildIndex();
 	}
 
-	template<typename Distance>
-	void knnSearch(const std::vector<ContactSpaceSampleData>& queries, 
+	template<typename Distance, typename SampleType>
+	void knnSearch(const std::vector<typename SampleType>& queries, 
        std::size_t active_data_dim,
        flann::Index<Distance>* index,
        std::vector<std::vector<int> >& indices,
@@ -1053,15 +1125,15 @@ namespace APDL
 		{
 			for(std::size_t j = 0; j < dim_data; ++j)
 			{
-				queryset[i][j] = queries[i].v[j];
+				queryset[i][j] = getVectorData(queries[i])[j];
 			}
 		}
 
 		index->knnSearch(queryset, indices, dists, knn, params);
 	}
 
-	template<typename Distance>
-	void radiusSearch(const std::vector<ContactSpaceSampleData>& queries,
+	template<typename Distance, typename SampleType>
+	void radiusSearch(const std::vector<SampleType>& queries,
 		std::size_t active_data_dim,
 		flann::Index<Distance>* index,
 	    std::vector<std::vector<int> >& indices,
@@ -1077,14 +1149,14 @@ namespace APDL
 		{
 			for(std::size_t j = 0; j < dim_data; ++j)
 			{
-				queryset[i][j] = queries[i].v[j];
+				queryset[i][j] = getVectorData(queries[i])[j];
 			}
 		}
 		index->radiusSearch(queryset, indices, dists, radius, params);
 	}
 
-	template<typename Distance>
-	void knnSearch(const ContactSpaceSampleData& query,
+	template<typename Distance, typename SampleType>
+	void knnSearch(const SampleType& query,
        std::size_t active_data_dim,
        flann::Index<Distance>* index,
        std::vector<int>& indices,
@@ -1095,10 +1167,9 @@ namespace APDL
 		std::size_t dim_data = active_data_dim;
 		flann::Matrix<double> queryset = flann::Matrix<double>(new double[dim_data], 1, dim_data);
 
-
 		for(std::size_t j = 0; j < dim_data; ++j)
 		{
-			queryset[0][j] = query.v[j];
+			queryset[0][j] = getVectorData(query)[j];
 		}
 
 		std::vector<std::vector<int> > indices_;
@@ -1109,8 +1180,8 @@ namespace APDL
 		dists = dists_[0];
 	}
 
-	template<typename Distance>
-	void radiusSearch(const ContactSpaceSampleData& query,
+	template<typename Distance, typename SampleType>
+	void radiusSearch(const SampleType& query,
 		std::size_t active_data_dim,
 		flann::Index<Distance>* index,
 	    std::vector<int>& indices,
@@ -1123,7 +1194,7 @@ namespace APDL
 
 		for(std::size_t j = 0; j < dim_data; ++j)
 		{
-			queryset[0][j] = query.v[j];
+			queryset[0][j] = getVectorData(query)[j];
 		}
 
 		std::vector<std::vector<int> > indices_;
@@ -1133,6 +1204,17 @@ namespace APDL
 		indices = indices_[0];
 		dists = dists_[0];
 	}
+
+
+
+
+
+
+
+
+
+
+
 
 	inline std::ofstream& operator << (std::ofstream& os, const std::vector<std::vector<int> >& indices)
 	{

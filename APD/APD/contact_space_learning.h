@@ -122,6 +122,8 @@ namespace APDL
 			b = inv_w_len * b;
 		}
 
+		HyperPlane() {}
+
 		inline double evaluate(const DataVector& v) const
 		{
 			return dot_prod(w, v) + b;
@@ -552,7 +554,7 @@ namespace APDL
 			{
 				for(std::size_t i = 0; i < size(); ++i)
 				{
-					if(this->operator[](i).evaluate2(v) > 0) return 1;
+					if(this->operator[](i).evaluate(v) > 0) return 1;
 				}
 				return -1;
 			}
@@ -568,10 +570,13 @@ namespace APDL
 			}
 		};
 
-		MulticonlitronLearner(const DataVector& weight, double epsilon_) : distancer(weight), epsilon(epsilon_)
+		MulticonlitronLearner(const DataVector& weight, double epsilon_ = 0.01, double func_epsilon_ = 0, double func_epsilon2_ = 0) : distancer(weight), epsilon(epsilon_), func_epsilon(func_epsilon_), func_epsilon2(func_epsilon2_)
 		{
 			feature_dim = weight.dim();
 			scaler = NULL;
+			use_scaler = false;
+			use_approximate_dist = true;
+			knn_index = NULL;
 		}
 
 		void setDim(std::size_t dim)
@@ -579,7 +584,7 @@ namespace APDL
 			feature_dim = dim;
 		}
 
-		HyperPlane CDMA(const std::vector<DataVector>& X, const std::vector<DataVector>& Y, double epsilon = 0.01) const;
+		HyperPlane CDMA(const std::vector<DataVector>& X, const std::vector<DataVector>& Y) const;
 
 		Conlitron SCA(const std::vector<DataVector>& X, const std::vector<DataVector>& Y) const;
 
@@ -593,64 +598,9 @@ namespace APDL
 
 		std::vector<PredictResult> predict(const std::vector<DataVector>& queries) const;
 
-		void learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
-		{
-			if(active_dim  != feature_dim)
-			{
-				std::cout << "The dimension of the learner is not correct!" << std::endl;
-				return;
-			}
+		void learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim);
 
-			std::vector<DataVector> X, Y;
-			for(std::size_t i = 0; i < data.size(); ++i)
-			{
-				DataVector v(distancer.dim());
-				for(std::size_t j = 0; j < distancer.dim(); ++j)
-					v[j] = data[i].v[j];
-
-				if(data[i].col == false) 
-					X.push_back(v);
-				else
-					Y.push_back(v);
-			}
-
-			model = SMA(X, Y);
-
-			hyperplanes.clear();
-
-			for(std::size_t i = 0; i < model.size(); ++i)
-			{
-				for(std::size_t j = 0; j < model[i].size(); ++j)
-				{
-					hyperplanes.push_back(&(model[i][j]));
-				}
-			}
-		}
-
-		void incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim)
-		{
-			if(data.size() == 0) return;
-			std::vector<ContactSpaceSampleData> data_(data);
-
-			DataVector v(data[0].v.dim());
-			for(std::size_t i = 0; i < model.size(); ++i)
-			{
-				for(std::size_t j = 0; j < model[i].size(); ++j)
-				{
-					for(std::size_t k = 0; k < active_dim; ++k)
-						v[k] = model[i][j].supp1[k];
-					data_.push_back(ContactSpaceSampleData(v, false));
-
-					for(std::size_t k = 0; k < active_dim; ++k)
-						v[k] = model[i][j].supp2[k];
-					for(std::size_t k = active_dim; k < v.dim(); ++k)
-						v[k] = 0;
-					data_.push_back(ContactSpaceSampleData(v, true));
-				}
-			}
-
-			learn(data_, active_dim);
-		}
+		void incremental_learn(const std::vector<ContactSpaceSampleData>& data, std::size_t active_dim);
 
 		void setScaler(const Scaler& scaler_)
 		{
@@ -658,6 +608,10 @@ namespace APDL
 			scaler = new Scaler(scaler_.v_min, scaler_.v_max, scaler_.active_dim);
 		}
 
+		void setUseScaler(bool use_)
+		{
+			use_scaler = use_;
+		}
 		void saveVisualizeData(const std::string& file_name, const Scaler& scaler, std::size_t grid_n) const
 		{
 			std::size_t dim = model[0][0].w.dim();
@@ -742,6 +696,7 @@ namespace APDL
 		}
 
 
+		void setEpsilon(double epsilon_) { epsilon = epsilon_; }
 
 
 
@@ -755,7 +710,18 @@ namespace APDL
 
 		double epsilon;
 
+		double func_epsilon;
+		double func_epsilon2;
+
 		Scaler* scaler;
+
+		bool use_scaler;
+
+		bool use_approximate_dist;
+
+		flann::Index<FLANN_WRAPPER::DistanceRN>* knn_index;
+
+		mutable RNG rng;
 
 	};
 
@@ -840,7 +806,7 @@ namespace APDL
 			data = data_;
 
 			if(knn_index) delete knn_index;
-			generateIndex<ContactSpaceR2::DistanceType>(data, 
+			generateIndex<ContactSpaceR2::DistanceType, ContactSpaceSampleData>(data, 
 				active_dim, 
 				knn_index,
 				flann::KDTreeIndexParams());
