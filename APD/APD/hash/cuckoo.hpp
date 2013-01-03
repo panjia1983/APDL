@@ -285,7 +285,7 @@ private:
     key_equal_ = Cuckoo.key_equal_;
     init();
     const_iterator it = Cuckoo.begin();
-    size_t final_len = Cuckoo.length();  std::cout << "here" << std::endl;
+    size_t final_len = Cuckoo.length();
 
     while (it.pos != final_len) {
       insert(*it);

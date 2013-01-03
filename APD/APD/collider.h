@@ -110,6 +110,23 @@ namespace APDL
 			
 			set(&m1, &m2);
 		}
+
+		Collider2D(const std::vector<Polygon>& model1_convex_, const std::vector<Polygon>& model2_convex_) : model1_convex(model1_convex_), model2_convex(model2_convex_)
+		{
+			max_distance_to_origin_model2 = 0;
+			for(std::size_t i = 0; i < model2_convex.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model2_convex[i].points.size(); ++j)
+				{
+					double x = model2_convex[i].points[j].x;
+					double y = model2_convex[i].points[j].y;
+					double dist = x * x + y * y;
+					if(dist > max_distance_to_origin_model2) max_distance_to_origin_model2 = dist;
+				}
+			}
+
+			max_distance_to_origin_model2 = sqrt(max_distance_to_origin_model2);
+		}
 		
 		void set(const Polygon_2* model1_, const Polygon_2* model2_)
 		{
@@ -289,6 +306,12 @@ namespace APDL
 
 		bool isCollideCGAL(const DataVector& q) const
 		{
+			if(model1.size() == 0 || model2.size() == 0)
+			{
+				std::cout << "CGAL collision is not available!" << std::endl;
+				return false;
+			}
+
 			double c = cos(q[2]);
 			double s = sin(q[2]);
 			Transformation R(c, -s, q[0], s, c, q[1]);
@@ -526,7 +549,7 @@ namespace APDL
 			
 			C2A_Collide(&pqp_res, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
 
-			std::cout << pqp_res.num_pairs << std::endl;
+			// std::cout << pqp_res.num_pairs << std::endl;
 			if(pqp_res.NumPairs() == 0)
 			{
 				res.is_collide = false;

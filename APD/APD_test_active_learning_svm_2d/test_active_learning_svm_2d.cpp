@@ -293,10 +293,25 @@ namespace APDL
 
 
 
+
+	void test_svm_active_learning_poly_spider()
+	{
+		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/tooth.polys");
+		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+
+
+		ContactSpaceR2 contactspace(polys1, polys2, 2);
+
+
+
+
+	}
 }
 
 void main()
 {
+	APDL::test_svm_active_learning_poly_spider();
+	return;
 	APDL::test_svm_active_learning();
 	APDL::test_svm_active_learning_inc();
 }

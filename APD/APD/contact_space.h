@@ -10,6 +10,42 @@
 
 namespace APDL
 {
+	inline std::vector<Polygon> readPolyFile(const std::string& filename)
+	{
+		std::vector<Polygon> polys;
+
+		FILE* fp = fopen(filename.c_str(), "r");
+		if(fp == NULL)
+		{
+			std::cerr << "!Error: Cannot open file (" << filename << ")" << std::endl;
+			return polys;
+		}
+
+		int polys_num;
+		fscanf(fp, "%d", &polys_num);
+		polys.resize(polys_num);
+		for(int i = 0; i < polys_num; ++i)
+		{
+			int point_num;
+			fscanf(fp, "%d", &point_num);
+			float x, y;
+			for(int j = 0; j < point_num; ++j)
+			{
+				fscanf(fp, "%f", &x);
+				fscanf(fp, "%f", &y);
+				polys[i].points.push_back(Vec2D(x, y));
+			}
+		}
+
+		//for(std::size_t i = 0; i < polys.size(); ++i)
+		//{
+		//	for(std::size_t j = 0; j < polys[i].points.size(); ++j)
+		//		std::cout << polys[i].points[j].x << " " << polys[i].points[j].y << std::endl;
+		//}
+
+		return polys;
+	}
+
 	inline std::vector<DataVector> readPM3dFile(const std::string& filename)
 	{
 		std::vector<DataVector> points;
@@ -75,6 +111,8 @@ namespace APDL
 
 		double scale_mag;
 
+		Scaler() {}
+
 		Scaler(const DataVector& v_min_, const DataVector& v_max_, std::size_t active_dim_) : v_min(v_min_), v_max(v_max_), active_dim(active_dim_)
 		{
 			scale_mag = 0;
@@ -118,6 +156,40 @@ namespace APDL
 			os << 1.0 / (scaler.v_max[i] - scaler.v_min[i]) << " " << - scaler.v_min[i] / (scaler.v_max[i] - scaler.v_min[i]) << std::endl;
 		}
 		return os;
+	}
+
+	inline std::ifstream& operator >> (std::ifstream& is, Scaler& scaler)
+	{
+		std::string line;
+
+		std::vector<double> lower, upper;
+
+		while(!std::getline(is, line, '\n').eof())
+		{
+			std::istringstream reader(line);
+
+			double a, b;
+			reader >> a;
+			reader >> b;
+
+			double vmin, vmax;
+			vmin = -b / a;
+			vmax = vmin + 1 / a;
+
+			lower.push_back(vmin);
+			upper.push_back(vmax);
+		}
+
+		DataVector v_min(lower.size());
+		DataVector v_max(upper.size());
+		for(std::size_t i = 0; i < lower.size(); ++i)
+			v_min[i] = lower[i];
+		for(std::size_t i = 0; i < upper.size(); ++i)
+			v_max[i] = upper[i];
+
+		scaler = Scaler(v_min, v_max, lower.size());
+
+		return is;
 	}
 
 	template<typename Collider>
@@ -165,6 +237,18 @@ namespace APDL
 			AABB2D aabb1 = p1.getAABB();
 			AABB2D aabb2 = p2.getAABB();
 			
+			double delta_x_min = aabb1.x_min - aabb2.x_max - delta;
+			double delta_x_max = aabb1.x_max - aabb2.x_min + delta;
+			double delta_y_min = aabb1.y_min - aabb2.y_max - delta;
+			double delta_y_max = aabb1.y_max - aabb2.y_min + delta;
+			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
+		}
+
+		ContactSpaceR2(const std::vector<Polygon>& p1s, const std::vector<Polygon>& p2s, double delta = 0) : collider(p1s, p2s)
+		{
+			AABB2D aabb1 = getAABB(p1s);
+			AABB2D aabb2 = getAABB(p2s);
+
 			double delta_x_min = aabb1.x_min - aabb2.x_max - delta;
 			double delta_x_max = aabb1.x_max - aabb2.x_min + delta;
 			double delta_y_min = aabb1.y_min - aabb2.y_max - delta;
@@ -247,6 +331,14 @@ namespace APDL
 			sampler.setBound(c1.first.x, c1.first.y , c1.second + 0.5 * delta,
 			                 c2.first.x, c2.first.y, c2.second + 0.5 * delta);
 		}
+
+		ContactSpaceSE2_disk(const std::vector<Polygon>& p1s, const std::vector<Polygon>& p2s, double delta = 0) : collider(p1s, p2s)
+		{
+			std::pair<Vec2D, double> c1 = getCircle(p1s);
+			std::pair<Vec2D, double> c2 = getCircle(p2s);
+			sampler.setBound(c1.first.x, c1.first.y , c1.second + 0.5 * delta,
+				c2.first.x, c2.first.y, c2.second + 0.5 * delta);
+		}
 		
 		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
 		{
@@ -315,6 +407,20 @@ namespace APDL
 			SamplerSE2_disk sampler_;
 			sampler_.setBound(c1.first.x, c1.first.y , c1.second + 0.5 * delta,
 			                  c2.first.x, c2.first.y, c2.second + 0.5 * delta);
+
+			double x_center, y_center, r1, r2;
+			sampler_.getBound(x_center, y_center, r1, r2);
+
+			sampler.setBound(x_center - r2, x_center + r2, y_center - r2, y_center + r2);
+		}
+
+		ContactSpaceSE2(const std::vector<Polygon>& p1s, const std::vector<Polygon>& p2s, double delta = 0) : collider(p1s, p2s)
+		{
+			std::pair<Vec2D, double> c1 = getCircle(p1s);
+			std::pair<Vec2D, double> c2 = getCircle(p2s);
+			SamplerSE2_disk sampler_;
+			sampler_.setBound(c1.first.x, c1.first.y , c1.second + 0.5 * delta,
+				c2.first.x, c2.first.y, c2.second + 0.5 * delta);
 
 			double x_center, y_center, r1, r2;
 			sampler_.getBound(x_center, y_center, r1, r2);
@@ -974,7 +1080,7 @@ namespace APDL
 	{
 		if(samples.size() == 0) return os;
 
-		os << samples.size() << " " << samples[0].v.dim() << std::endl;
+		// os << samples.size() << " " << samples[0].v.dim() << std::endl;
 		std::size_t dim = samples[0].v.dim();
 		for(std::size_t i = 0; i < samples.size(); ++i)
 		{
@@ -983,6 +1089,7 @@ namespace APDL
 			{
 				os << samples[i].v[j] << " ";
 			}
+			// os << samples[i].v[dim - 1] << std::endl;
 			os << std::endl;
 		}
 		
@@ -1020,23 +1127,34 @@ namespace APDL
 
 	inline std::ifstream& asciiReader(std::ifstream& is, std::vector<ContactSpaceSampleData>& samples)
 	{
-		std::size_t data_num, data_dim;
-		is >> data_num >> data_dim;
-		if(samples.size() != 0)
-			assert(data_dim == samples[0].v.dim());
-			
-		DataVector v(data_dim);
-		bool col;
-		for(std::size_t i = 0; i < data_num; ++i)
+		std::string line;
+
+		while(!std::getline(is, line, '\n').eof())
 		{
-			is >> col;
-			for(std::size_t j = 0; j < data_dim; ++j)
-				is >> v[j];
-				
+			std::istringstream reader(line);
+
+			int col;
+			reader >> col;
+			if(reader.fail())
+			{
+				std::cerr << "error happen" << std::endl;
+				break;
+			}
+
+			std::vector<double> config;
+
+			double val;
+			while(reader >> val)
+			{
+				config.push_back(val);
+			}
+
+			DataVector v(config.size());
+			for(std::size_t i = 0; i < v.dim(); ++i)
+				v[i] = config[i];
+
 			samples.push_back(ContactSpaceSampleData(v, col));
 		}
-		
-		return is;
 	}
 	
 	inline std::ifstream& binaryReader(std::ifstream& is, std::vector<ContactSpaceSampleData>& samples)

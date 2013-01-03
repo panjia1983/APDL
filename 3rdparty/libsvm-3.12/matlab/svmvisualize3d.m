@@ -99,10 +99,13 @@ bigV = reshape(V, size(bigX, 1), size(bigX, 2), size(bigX, 3));
 clf;
 hold on;
 
-
 p = patch(isosurface(bigX, bigY, bigZ, bigV, 0));
 isonormals(bigX, bigY, bigZ, bigV, p);
 alpha(0.5);
+
+% save obj model 
+[f,v] = isosurface(bigX, bigY, bigZ, bigV, 0);
+vertface2obj(v,f,'model.obj');
 
 set(p,'FaceColor','red','EdgeColor','none');
 

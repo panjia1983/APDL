@@ -319,6 +319,29 @@ namespace APDL
 			y_min = y1;
 			y_max = y2;
 		}
+
+
+		AABB2D operator + (const AABB2D& aabb) const
+		{
+			AABB2D sum(aabb);
+
+			if(x_max > sum.x_max) sum.x_max = x_max;
+			if(x_min < sum.x_min) sum.x_min = x_min;
+			if(y_max > sum.y_max) sum.y_max = y_max;
+			if(y_min < sum.y_min) sum.y_min = y_min;
+
+			return sum;
+		}
+
+		AABB2D& operator += (const AABB2D& aabb)
+		{
+			if(aabb.x_max > x_max) x_max = aabb.x_max;
+			if(aabb.x_min < x_min) x_min = aabb.x_min;
+			if(aabb.y_max > y_max) y_max = aabb.y_max;
+			if(aabb.y_min < y_min) y_min = aabb.y_min;
+
+			return *this;
+		}
 	};
 	
 	inline AABB2D rotate(const AABB2D& aabb, double angle)
@@ -440,6 +463,45 @@ namespace APDL
 		
 		std::vector<Vec2D> points;
 	};
+
+	inline AABB2D getAABB(const std::vector<Polygon>& polys)
+	{
+		AABB2D aabb = polys[0].getAABB();
+		for(std::size_t i = 1; i < polys.size(); ++i)
+			aabb += polys[i].getAABB();
+
+		return aabb;
+	}
+
+	inline std::pair<Vec2D, double> getCircle(const std::vector<Polygon>& polys)
+	{
+		Vec2D c(0, 0);
+
+		std::size_t n = 0;
+		for(std::size_t i = 0; i < polys.size(); ++i)
+		{
+			for(std::size_t j = 0; j < polys[i].points.size(); ++j)
+			{
+				c += polys[i].points[j];
+				n++;
+			}
+		}
+
+		c *= (1.0 / n);
+
+		double r_max = 0;
+
+		for(std::size_t i = 0; i < polys.size(); ++i)
+		{
+			for(std::size_t j = 0; j < polys[i].points.size(); ++j)
+			{
+				double r = (polys[i].points[j] - c).sqrLength();
+				if(r > r_max) r_max = r;
+			}
+		}
+
+		return std::make_pair(c, std::sqrt(r_max));
+	}
 	
 	
 	struct GJKResult

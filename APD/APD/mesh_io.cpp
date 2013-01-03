@@ -12,15 +12,14 @@ namespace APDL
 			return;
 		}
 		
-		char type;
+		std::string type;
 		std::vector<double> v;
 		std::vector<int> id;
 		
 		while(!in.eof())
 		{
-			type = ' ';
 			in >> type;
-			if(type == 'v')
+			if(type == "v")
 			{
 				double a, b, c;
 				in >> a >> b >> c;
@@ -28,7 +27,7 @@ namespace APDL
 				v.push_back(b);
 				v.push_back(c);
 			}
-			else if(type == 'f')
+			else if(type == "f")
 			{
 				int i1, i2, i3;
 				in >> i1 >> i2 >> i3;
@@ -36,6 +35,8 @@ namespace APDL
 				id.push_back(i2 - 1);
 				id.push_back(i3 - 1);
 			}
+
+			getline(in, type);
 		}
 		
 		int num_v = v.size() / 3;

@@ -73,7 +73,7 @@ namespace APDL
 			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
 			ContactSpaceR2 contactspace(p1, p2, 2);
-			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
+			std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
 
 			std::ofstream out("space_test_2d.txt");
 			asciiWriter(out, contactspace_samples);
@@ -89,10 +89,15 @@ namespace APDL
 			learner.learn(contactspace_samples, 2);
 			tools::Profiler::End("learn with approximate knn");
 
+			learner.save("model.txt");
+
 			std::cout << learner.model.numOfHyperPlanes() << std::endl;
 
 			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
 
+			MulticonlitronLearner learner_load(w, 0.01);
+			learner_load.load("model.txt", "", false, 2);
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner_load) << " " << errorRatioOnGrid(contactspace, learner_load, 100) << std::endl;
 
 
 

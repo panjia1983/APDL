@@ -393,6 +393,134 @@ namespace APDL
 				svm_save_model(file_name.c_str(), model);
 		}
 
+		void load(const std::string& model_file_name, const std::string& data_file_name, const std::string& scaler_file_name, bool use_scaler_, std::size_t active_dim_) 
+		{
+			if(model) svm_free_and_destroy_model(&model);
+
+			feature_dim = active_dim_;
+
+			model = svm_load_model(model_file_name.c_str());
+
+			// deep copy of param from model
+			param.svm_type = model->param.svm_type;
+			param.kernel_type = model->param.kernel_type;
+			param.degree = model->param.degree;
+			param.gamma = model->param.gamma;
+			param.coef0 = model->param.coef0;
+			param.cache_size = model->param.cache_size;
+			param.eps = model->param.eps;
+			param.C = model->param.C;
+			param.nr_weight = model->param.nr_weight;
+			if(model->param.weight_label)
+			{
+				param.weight_label = (int *)realloc(param.weight_label, sizeof(int) * param.nr_weight);
+				for(std::size_t i = 0; i < param.nr_weight; ++i)
+					param.weight_label[i] = model->param.weight_label[i];
+			}
+
+			if(model->param.weight)
+			{
+				param.weight = (double *)realloc(param.weight, sizeof(int) * param.nr_weight);
+				for(std::size_t i = 0; i < param.nr_weight; ++i)
+					param.weight[i] = model->param.weight[i];
+			}
+
+			param.nu = model->param.nu;
+			param.p = model->param.p;
+			param.shrinking = model->param.shrinking;
+			param.probability = model->param.probability;
+
+
+			std::vector<ContactSpaceSampleData> data;
+			std::ifstream data_in(data_file_name.c_str());
+			asciiReader(data_in, data);
+
+			problem.l = data.size();
+			if(problem.y) delete [] problem.y;
+			problem.y = new double[problem.l];
+			if(problem.x) delete [] problem.x;
+			problem.x = new svm_node* [problem.l];
+			if(problem.W) delete [] problem.W;
+			problem.W = new double[problem.l];
+			if(x_space) delete [] x_space;
+			x_space = new svm_node[(feature_dim + 1)* problem.l];
+
+			for(std::size_t i = 0; i < data.size(); ++i)
+			{
+				svm_node* cur_x_space = x_space + (feature_dim + 1) * i;
+				const DataVector& v = (scaler && use_scaler) ? scaler->scale(data[i].v) : data[i].v;
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					cur_x_space[j].index = j + 1;
+					cur_x_space[j].value = v[j];
+				}
+				cur_x_space[feature_dim].index = -1;
+				
+				problem.x[i] = cur_x_space;
+				problem.y[i] = (data[i].col ? 1 : -1);
+				problem.W[i] = 1;
+			}
+
+			hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
+
+			std::ifstream scaler_in(scaler_file_name.c_str());
+			
+			scaler = new Scaler();
+
+			scaler_in >> *scaler;
+
+			use_scaler = use_scaler_;
+		}
+
+
+		void load(const std::string& model_file_name, const std::string& scaler_file_name, bool use_scaler_, std::size_t active_dim_) 
+		{
+			if(model) svm_free_and_destroy_model(&model);
+
+			feature_dim = active_dim_;
+
+			model = svm_load_model(model_file_name.c_str());
+
+			// deep copy of param from model
+			param.svm_type = model->param.svm_type;
+			param.kernel_type = model->param.kernel_type;
+			param.degree = model->param.degree;
+			param.gamma = model->param.gamma;
+			param.coef0 = model->param.coef0;
+			param.cache_size = model->param.cache_size;
+			param.eps = model->param.eps;
+			param.C = model->param.C;
+			param.nr_weight = model->param.nr_weight;
+			if(model->param.weight_label)
+			{
+				param.weight_label = (int *)realloc(param.weight_label, sizeof(int) * param.nr_weight);
+				for(std::size_t i = 0; i < param.nr_weight; ++i)
+					param.weight_label[i] = model->param.weight_label[i];
+			}
+
+			if(model->param.weight)
+			{
+				param.weight = (double *)realloc(param.weight, sizeof(int) * param.nr_weight);
+				for(std::size_t i = 0; i < param.nr_weight; ++i)
+					param.weight[i] = model->param.weight[i];
+			}
+
+			param.nu = model->param.nu;
+			param.p = model->param.p;
+			param.shrinking = model->param.shrinking;
+			param.probability = model->param.probability;
+
+			hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
+
+			std::ifstream scaler_in(scaler_file_name.c_str());
+			
+			scaler = new Scaler();
+
+			scaler_in >> *scaler;
+
+			use_scaler = use_scaler_;
+		}
+
 		HyperPlane getLinearModel() const;
 
 
@@ -612,6 +740,98 @@ namespace APDL
 		{
 			use_scaler = use_;
 		}
+
+		void save(const std::string& file_name) const
+		{
+			std::ofstream out(file_name.c_str());
+
+			out << model.size() << " " << feature_dim << std::endl;
+			for(std::size_t i = 0; i < model.size(); ++i)
+			{
+				out << model[i].size() << " ";
+				for(std::size_t j = 0; j < model[i].size(); ++j)
+				{
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						out << model[i][j].w[k] << " ";
+					out << model[i][j].b << " ";
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						out << model[i][j].supp1[k] << " ";
+					for(std::size_t k = 0; k < feature_dim; ++k)
+						out << model[i][j].supp2[k] << " ";
+				}
+				out << std::endl;
+			}
+		}
+
+		void load(const std::string& model_file_name, const std::string& scaler_file_name, bool use_scaler_, std::size_t active_dim_)
+		{
+			std::ifstream in(model_file_name.c_str());
+
+			std::size_t size1;
+			in >> size1;
+			in >> feature_dim;
+
+			if(feature_dim != active_dim_)
+			{
+				std::cerr << "!Error: active dim is not consistent" << std::endl;
+			}
+
+			model.resize(size1);
+
+			for(std::size_t i = 0; i < size1; ++i)
+			{
+				std::size_t size2;
+				in >> size2;
+
+				model[i].resize(size2);
+				DataVector v(feature_dim);
+				double tmp;
+				for(std::size_t j = 0; j < size2; ++j)
+				{
+					for(std::size_t k = 0; k < feature_dim; ++k)
+					{
+						in >> tmp;
+						v[k] = tmp;
+					}
+
+					model[i][j].w = v;
+
+					in >> tmp;
+					model[i][j].b = tmp;
+
+					for(std::size_t k = 0; k < feature_dim; ++k)
+					{
+						in >> tmp;
+						v[k] = tmp;
+					}
+
+					model[i][j].supp1 = v;
+
+					for(std::size_t k = 0; k < feature_dim; ++k)
+					{
+						in >> tmp;
+						v[k] = tmp;
+					}
+
+					model[i][j].supp2 = v;
+				}
+			}
+
+			use_scaler = use_scaler_;
+
+			if(use_scaler)
+			{
+				std::ifstream scaler_in(scaler_file_name.c_str());
+				scaler = new Scaler();
+				scaler_in >> *scaler;
+			}
+			else
+				scaler = NULL;
+
+			
+		}
+
+
 		void saveVisualizeData(const std::string& file_name, const Scaler& scaler, std::size_t grid_n) const
 		{
 			std::size_t dim = model[0][0].w.dim();
