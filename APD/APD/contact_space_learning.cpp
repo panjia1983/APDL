@@ -642,8 +642,10 @@ after_separable_test:
 			prob_estimates = (double *) malloc(nr_class*sizeof(double));
 		}
 
-		const DataVector& v = (scaler && use_scaler) ? scaler->scale(query) : query;
-
+		DataVector v_(feature_dim);
+		for(std::size_t j = 0; j < feature_dim; ++j)
+			v_[j] = query[j];
+		const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 		for(std::size_t j = 0; j < feature_dim; ++j)
 		{
 			x[j].index = j + 1;
@@ -689,9 +691,12 @@ after_separable_test:
 			prob_estimates = (double *) malloc(nr_class*sizeof(double));
 		}
 
+		DataVector v_(feature_dim);
 		for(std::size_t i = 0; i < queries.size(); ++i)
 		{
-			const DataVector& v = (scaler && use_scaler) ? scaler->scale(queries[i]) : queries[i];
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				v_[j] = queries[i][j];
+			const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 			for(std::size_t j = 0; j < feature_dim; ++j)
 			{
 				x[j].index = j + 1;
@@ -738,9 +743,12 @@ after_separable_test:
 			prob_estimates = (double *) malloc(nr_class*sizeof(double));
 		}
 
+		DataVector v_(feature_dim);
 		for(std::size_t i = 0; i < queries.size(); ++i)
 		{
-			const DataVector& v = (scaler && use_scaler) ? scaler->scale(queries[i].v) : queries[i].v;
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				v_[j] = queries[i].v[j];
+			const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 			for(std::size_t j = 0; j < feature_dim; ++j)
 			{
 				x[j].index = j + 1;
@@ -792,10 +800,13 @@ after_separable_test:
 		if(x_space) delete [] x_space;
 		x_space = new svm_node[(feature_dim + 1)* problem.l];
 		
+		DataVector v_(feature_dim);
 		for(std::size_t i = 0; i < data.size(); ++i)
 		{
 			svm_node* cur_x_space = x_space + (feature_dim + 1) * i;
-			const DataVector& v = (scaler && use_scaler) ? scaler->scale(data[i].v) : data[i].v;
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				v_[j] = data[i].v[j];
+			const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 			for(std::size_t j = 0; j < feature_dim; ++j)
 			{
 				cur_x_space[j].index = j + 1;
@@ -834,10 +845,13 @@ after_separable_test:
 		if(x_space) delete [] x_space;
 		x_space = new svm_node[(feature_dim + 1)* problem.l];
 		
+		DataVector v_(feature_dim);
 		for(std::size_t i = 0; i < data.size(); ++i)
 		{
 			svm_node* cur_x_space = x_space + (feature_dim + 1) * i;
-			const DataVector& v = (scaler && use_scaler) ? scaler->scale(data[i].v) : data[i].v;
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				v_[j] = data[i].v[j];
+			const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 			for(std::size_t j = 0; j < feature_dim; ++j)
 			{
 				cur_x_space[j].index = j + 1;

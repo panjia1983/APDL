@@ -57,8 +57,8 @@ namespace APDL
 		}
 		
 		{
-			C2A_Model* model1 = new C2A_Model;
-			C2A_Model* model2 = new C2A_Model;
+			C2A_Model* model1 = NULL;
+			C2A_Model* model2 = NULL;
 			readOffFile(model1, "../data/cup.off");
 			readOffFile(model2, "../data/spoon.off");
 			ContactSpaceR3 contactspace(model1, model2);
@@ -67,19 +67,19 @@ namespace APDL
 			std::ofstream out("space_test.txt");
 			asciiWriter(out, contactspace_samples);
 			
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
 			//std::cout << model1->radius << " " << model2->radius << std::endl;
 			//std::cout << model1->com[0] << " " << model1->com[1] << " " << model1->com[2] << std::endl;
 			//std::cout << model2->com[0] << " " << model2->com[1] << " " << model2->com[2] << std::endl;
+
+
+			delete model1;
+			delete model2;
 		}
 		
 		
 		{
-			C2A_Model* model1 = new C2A_Model;
-			C2A_Model* model2 = new C2A_Model;
+			C2A_Model* model1 = NULL;
+			C2A_Model* model2 = NULL;
 			readObjFile(model1, "../data/cup.obj");
 			readObjFile(model2, "../data/spoon.obj");
 			ContactSpaceR3 contactspace(model1, model2);
@@ -88,13 +88,12 @@ namespace APDL
 			std::ofstream out("space_test.txt");
 			asciiWriter(out, contactspace_samples);
 			
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
 			//std::cout << model1->radius << " " << model2->radius << std::endl;
 			//std::cout << model1->com[0] << " " << model1->com[1] << " " << model1->com[2] << std::endl;
 			//std::cout << model2->com[0] << " " << model2->com[1] << " " << model2->com[2] << std::endl;
+
+			delete model1;
+			delete model2;
 		}
 		
 		{
@@ -108,10 +107,6 @@ namespace APDL
 			std::ofstream out("space_test.txt");
 			asciiWriter(out, contactspace_samples);
 			
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
 			//std::cout << model1->radius << " " << model2->radius << std::endl;
 			//std::cout << model1->com[0] << " " << model1->com[1] << " " << model1->com[2] << std::endl;
 			//std::cout << model2->com[0] << " " << model2->com[1] << " " << model2->com[2] << std::endl;
@@ -128,10 +123,6 @@ namespace APDL
 			std::ofstream out("space_test2.txt");
 			asciiWriter(out, contactspace_samples);
 			
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
 			//std::cout << model1->radius << " " << model2->radius << std::endl;
 			//std::cout << model1->com[0] << " " << model1->com[1] << " " << model1->com[2] << std::endl;
 			//std::cout << model2->com[0] << " " << model2->com[1] << " " << model2->com[2] << std::endl;
@@ -148,10 +139,6 @@ namespace APDL
 			std::ofstream out("space_test3.txt");
 			asciiWriter(out, contactspace_samples);
 			
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
 			//std::cout << model1->radius << " " << model2->radius << std::endl;
 			//std::cout << model1->com[0] << " " << model1->com[1] << " " << model1->com[2] << std::endl;
 			//std::cout << model2->com[0] << " " << model2->com[1] << " " << model2->com[2] << std::endl;

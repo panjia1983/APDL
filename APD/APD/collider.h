@@ -22,8 +22,70 @@
 #include "2d_collision.h"
 #include "PQP_extension.h"
 
+#include "ccd/ccd.h"
+#include "ccd/quat.h"
+
 namespace APDL
 {
+
+	struct ccd_convex_t
+	{
+		ccd_vec3_t pos;
+		ccd_quat_t quat;
+		C2A_Model* model;
+	};
+
+	inline void center_func(const void* _obj, ccd_vec3_t* center)
+	{
+		ccd_convex_t* obj = (ccd_convex_t*)_obj;
+		ccdVec3Set(center, obj->model->com[0], obj->model->com[1], obj->model->com[2]);
+	
+		ccdQuatRotVec(center, &obj->quat);
+		ccdVec3Add(center, &obj->pos);
+	}
+
+	inline void support_func(const void* _obj, const ccd_vec3_t* _dir, ccd_vec3_t* v)
+	{
+		ccd_convex_t* obj = (ccd_convex_t*)_obj;
+		ccd_vec3_t dir;
+		ccd_quat_t qinv;
+		
+		ccdVec3Copy(&dir, _dir);
+		ccdQuatInvert2(&qinv, &obj->quat);
+
+		ccdQuatRotVec(&dir, &qinv);
+
+		double max_proj = -CCD_REAL_MAX;
+		ccd_vec3_t max_p;
+		ccd_vec3_t p;
+		double dot_prod;
+		for(std::size_t i = 0; i < obj->model->num_tris; ++i)
+		{
+			for(int j = 0; j < 3; ++j)
+				p.v[j] = obj->model->GetTriangle(i)->p1[j];
+		
+			dot_prod = ccdVec3Dot(&p, &dir);
+			if(dot_prod > max_proj) { max_p = p; max_proj = dot_prod; }
+
+			for(int j = 0; j < 3; ++j)
+				p.v[j] = obj->model->GetTriangle(i)->p2[j];
+
+			dot_prod = ccdVec3Dot(&p, &dir);
+			if(dot_prod > max_proj) { max_p = p; max_proj = dot_prod; }
+
+			for(int j = 0; j < 3; ++j)
+				p.v[j] = obj->model->GetTriangle(i)->p3[j];
+
+			dot_prod = ccdVec3Dot(&p, &dir);
+			if(dot_prod > max_proj) { max_p = p; max_proj = dot_prod; }
+		}
+
+		*v = max_p;
+
+		// transform support vertex
+		ccdQuatRotVec(v, &obj->quat);
+		ccdVec3Add(v, &obj->pos);
+	}
 
 	template<typename CGAL_Polygon, typename Kernel>
 	Polygon toPolygon(const CGAL_Polygon& in)
@@ -430,6 +492,37 @@ namespace APDL
 			else
 				return std::make_pair(false, 1);
 		}
+
+		static double PDt(const std::vector<Polygon>& model1_convex, const std::vector<Polygon>& model2_convex, const DataVector& q)
+		{
+			double c = cos(q[2]);
+			double s = sin(q[2]);
+			Transform2D tf1;
+			Transform2D tf2(Mat2D(c, -s, s, c), Vec2D(q[0], q[1]));
+
+			double max_PD = 0;
+
+
+			for(std::size_t i = 0; i < model1_convex.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model2_convex.size(); ++j)
+				{
+					EPAResult epa_res = doGJKEPA(model1_convex[i], tf1,
+						model2_convex[j], tf2);
+
+					if(epa_res.distance <= 0)
+					{
+						for(std::size_t k = 0; k < epa_res.contacts.size(); ++k)
+						{
+							if(-epa_res.contacts[k].penetration > max_PD)
+								max_PD = -epa_res.contacts[k].penetration;
+						}
+					}
+				}
+			}
+
+			return max_PD;
+		}
 		
 	protected:
 	
@@ -439,9 +532,10 @@ namespace APDL
 		Polygon_2 model1;
 		Polygon_2 model2;
 		double max_distance_to_origin_model2;  // for ccd
-
-		
 	};
+
+
+	
 	
 	class Collider3D
 	{
@@ -505,7 +599,7 @@ namespace APDL
 				return DistanceResult();
 				
 			C2A_DistanceResult result;
-			C2A_Distance(&result, R1, T1, model1.get(), R2, T2, model2.get(), 0.001, 0.001);
+			C2A_Distance(&result, R1, T1, model1, R2, T2, model2, 0.001, 0.001);
 			
 			DistanceResult res;
 			res.distance = result.Distance();
@@ -547,7 +641,7 @@ namespace APDL
 				
 			PQP_CollideResult pqp_res;
 			
-			C2A_Collide(&pqp_res, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+			C2A_Collide(&pqp_res, R1, T1, model1, R2, T2, model2, C2A_FIRST_CONTACT);
 
 			// std::cout << pqp_res.num_pairs << std::endl;
 			if(pqp_res.NumPairs() == 0)
@@ -567,8 +661,8 @@ namespace APDL
 					PQP_REAL Q1[3], Q2[3], Q3[3];
 					PQP_REAL Q_tmp[3];
 
-					C2A_Tri* tri1 = model1.get()->trisConst + id1;
-					C2A_Tri* tri2 = model2.get()->trisConst + id2;
+					C2A_Tri* tri1 = model1->trisConst + id1;
+					C2A_Tri* tri2 = model2->trisConst + id2;
 
 					P1[0] = tri1->p1[0]; P1[1] = tri1->p1[1]; P1[2] = tri1->p1[2];
 					P2[0] = tri1->p2[0]; P2[1] = tri1->p2[1]; P2[2] = tri1->p2[2];
@@ -617,7 +711,7 @@ namespace APDL
 				
 			PQP_CollideResult result;
 			
-			C2A_Collide(&result, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+			C2A_Collide(&result, R1, T1, model1, R2, T2, model2, C2A_FIRST_CONTACT);
 			
 			return result.NumPairs() > 0;
 		}
@@ -663,7 +757,7 @@ namespace APDL
 						return std::make_pair(false, 0);
 						
 					PQP_CollideResult result;
-					C2A_Collide(&result, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+					C2A_Collide(&result, R1, T1, model1, R2, T2, model2, C2A_FIRST_CONTACT);
 					
 					if(result.NumPairs() > 0)
 						return std::make_pair(true, 0);
@@ -678,7 +772,7 @@ namespace APDL
 						return std::make_pair(false, 0);
 						
 					PQP_CollideResult result;
-					C2A_Collide(&result, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+					C2A_Collide(&result, R1, T1, model1, R2, T2, model2, C2A_FIRST_CONTACT);
 					
 					if(result.NumPairs() > 0)
 						return std::make_pair(true, 1);
@@ -716,7 +810,7 @@ namespace APDL
 					//std::cout << std::endl;
 						
 					PQP_CollideResult result;
-					C2A_Collide(&result, R1, T1, model1.get(), R2, T2, model2.get(), C2A_FIRST_CONTACT);
+					C2A_Collide(&result, R1, T1, model1, R2, T2, model2, C2A_FIRST_CONTACT);
 					
 					if(result.NumPairs() > 0)
 						return std::make_pair(true, t);
@@ -759,10 +853,10 @@ namespace APDL
 			int num_of_iteration;
 			int num_of_contact;
 			C2A_TimeOfContactResult dres;
-			dres.last_triA = model1.get()->last_tri;
-			dres.last_triB = model2.get()->last_tri;
+			dres.last_triA = model1->last_tri;
+			dres.last_triB = model2->last_tri;
 
-			C2A_Solve(&identity, &identity, model1.get(), &trans1, &trans2, model2.get(),
+			C2A_Solve(&identity, &identity, model1, &trans1, &trans2, model2,
 			          contact_transA, contact_transB, time_of_contact, num_of_iteration, num_of_contact, 0.0, dres);
 
 			if(dres.toc < 1)
@@ -777,10 +871,105 @@ namespace APDL
 			
 			return std::make_pair(is_collide, first_time_of_contact);
 		}
+
+		static double PDt(const std::vector<C2A_Model*>& model1_, const std::vector<C2A_Model*>& model2_, const DataVector& q)
+		{
+			std::vector<ccd_convex_t> model1;
+			std::vector<ccd_convex_t> model2;
+
+			double quat[4];
+			double T[3];
+
+			if(q.dim() == 6)
+			{
+				T[0] = q[0];
+				T[1] = q[1];
+				T[2] = q[2];
+				Quaternion quat_;
+				Euler2Quat(quat_,q[3],q[4], q[5]);
+				quat[0] = quat_[0];
+				quat[1] = quat_[1];
+				quat[2] = quat_[2];
+				quat[3] = quat_[3];
+			}
+			else if(q.dim() == 7)
+			{
+				T[0] = q[0];
+				T[1] = q[1];
+				T[2] = q[2];
+				quat[0] = q[3];
+				quat[1] = q[4];
+				quat[2] = q[5];
+				quat[3] = q[6];
+			}
+			else
+				return 0;
+
+			ccd_vec3_t pos1;
+			ccdVec3Set(&pos1, 0, 0, 0);
+			ccd_vec3_t pos2;
+			ccdVec3Set(&pos2, T[0], T[1], T[2]);
+			ccd_quat_t quat1;
+			ccdQuatSet(&quat1, 0, 0, 0, 1);
+			ccd_quat_t quat2;
+			ccdQuatSet(&quat2, quat[1], quat[2], quat[3], quat[0]);
+
+			model1.resize(model1_.size());
+			for(std::size_t i = 0; i < model1_.size(); ++i)
+			{
+				model1[i].pos = pos1;
+				model1[i].quat = quat1;
+				model1[i].model = model1_[i];
+			}
+
+			model2.resize(model2_.size());
+			for(std::size_t i = 0; i < model2_.size(); ++i)
+			{
+				model2[i].pos = pos2;
+				model2[i].quat = quat2;
+				model2[i].model = model2_[i];
+			}
+
+			ccd_vec3_t center1, center2;
+
+
+			double max_PD = 0;
+
+			for(std::size_t i = 0; i < model1.size(); ++i)
+			{
+				for(std::size_t j = 0; j < model2.size(); ++j)
+				{
+					ccd_real_t depth = 0;
+					ccd_vec3_t dir, pos;
+
+					ccd_t ccd;
+					CCD_INIT(&ccd);
+
+					ccd.support1 = support_func;
+					ccd.support2 = support_func;
+					ccd.max_iterations = 1000;     
+					ccd.epa_tolerance = 0.00001;
+					ccd.center1 = center_func;
+					ccd.center2 = center_func;
+					ccd.mpr_tolerance = 0.00001;
+
+					int intersect = ccdMPRPenetration(&model1[i], &model2[j], &ccd, &depth, &dir, &pos);
+
+					if(intersect == 0)
+					{
+						if(depth > max_PD) max_PD = depth;
+					}
+				}
+			}
+
+
+			return max_PD;
+
+		}
 		
 	protected:
-		boost::shared_ptr<C2A_Model> model1;
-		boost::shared_ptr<C2A_Model> model2;
+		C2A_Model* model1;
+		C2A_Model* model2;
 	};
 	
 	

@@ -3,8 +3,6 @@
 #include <APD/decision_boundary_sampler.h>
 #include <APD/active_learning.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
 
 namespace APDL
 {	

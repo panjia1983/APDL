@@ -137,7 +137,7 @@ namespace APDL
 		std::size_t clustering_max_iter;
 
 		// for filter
-		std::size_t filter_threshold;
+		double filter_threshold;
 
 		FilterParam()
 		{

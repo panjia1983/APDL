@@ -169,7 +169,7 @@ namespace APDL
 			std::istringstream reader(line);
 
 			double a, b;
-			reader >> a;
+			if(!(reader >> a)) break;
 			reader >> b;
 
 			double vmin, vmax;
@@ -638,12 +638,6 @@ namespace APDL
 
 		ContactSpaceSE3Euler(C2A_Model* model1, C2A_Model* model2, double delta = 0) : collider(model1, model2)
 		{
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
-			
 			sampler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta,
 			                 model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta);
 		}
@@ -717,12 +711,6 @@ namespace APDL
 
 		ContactSpaceSE3Quat(C2A_Model* model1, C2A_Model* model2, double delta = 0) : collider(model1, model2)
 		{
-			model1->ComputeCenterOfMass();
-			model1->ComputeRadius();
-			
-			model2->ComputeCenterOfMass();
-			model2->ComputeRadius();
-			
 			sampler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta,
 			                 model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta);
 			                 

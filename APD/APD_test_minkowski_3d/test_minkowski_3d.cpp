@@ -132,9 +132,39 @@ namespace APDL
 		//}
 		
 	}
+
+	static void test_Minkowskiw_3D_cupspoon()
+	{
+		std::ifstream cup_file("../data/cup.off");
+
+		if(!cup_file.is_open())
+		{
+			std::cerr << "Failed to open the cup file." << std::endl;
+			return;
+		}
+
+		std::ifstream spoon_file("../data/spoon.off");
+
+		if(!spoon_file.is_open())
+		{
+			std::cerr << "Failed to open the spoon file." << std::endl;
+			return;
+		}
+
+		Minkowski_Cspace_3D::Polyhedron P;
+		Minkowski_Cspace_3D::Polyhedron Q;
+		cup_file >> P;
+		spoon_file >> Q;
+
+		Minkowski_Cspace_3D::Polyhedron CSpace_R3 = Minkowski_Cspace_3D::Minkowski_Cobstacle_R3(P, Q);
+
+		std::ofstream cupspoon_file("cupspoon.off");
+		cupspoon_file << CSpace_R3;
+	}
 }
 
 void main()
 {
-	APDL::test_Minkowskiw_3D();
+	// APDL::test_Minkowskiw_3D();
+	APDL::test_Minkowskiw_3D_cupspoon();
 }

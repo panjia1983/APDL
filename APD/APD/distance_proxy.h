@@ -10,7 +10,8 @@
 
 namespace APDL
 {
-	extern double angle_weight;
+	extern double distance_weight[7];
+
 	namespace FLANN_WRAPPER
 	{
 		struct DistanceRN
@@ -58,11 +59,11 @@ namespace APDL
 				for(size_t i = 0; i < size - 1; ++i ) 
 				{
 					diff = *a++ - *b++;
-					result += diff*diff;
+					result += diff*diff * distance_weight[i];
 				}
 				
 				diff = angleTruncate(*a - *b);
-				result += angle_weight * diff * diff;
+				result +=  diff * diff * distance_weight[size - 1];
 
 				return result;
 			}
@@ -85,14 +86,14 @@ namespace APDL
 				for(size_t i = 0; i < size - 3; ++i ) 
 				{
 					diff = *a++ - *b++;
-					result += diff*diff;
+					result += diff*diff * distance_weight[i];
 				}
 				
 				for(size_t i = 0; i < 3; ++i)
 				{
 					diff = *a++ - *b++;
 					diff = angleTruncate(diff);
-					result += angle_weight * diff * diff;
+					result += diff * diff * distance_weight[size - 3 + i];
 				}
 
 				return result;
@@ -114,10 +115,10 @@ namespace APDL
 			{
 				ResultType result = ResultType();
 				ResultType diff;
-				for(size_t i = 0; i < size - 4; ++i ) 
+				for(size_t i = 0; i < size - 4; ++i) 
 				{
 					diff = *a++ - *b++;
-					result += diff*diff;
+					result += diff*diff * distance_weight[i];
 				}
 
 				Quaternion q1(a[0], a[1], a[2], a[3]);
@@ -125,7 +126,7 @@ namespace APDL
 
 				Quaternion q = q1 * q2.inverse();
 
-				result += angle_weight * (q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+				result += (q[1] * q[1] * distance_weight[size - 4] + q[2] * q[2] * distance_weight[size - 3] + q[3] * q[3] * distance_weight[size - 2]);
 
 				return result;
 			}

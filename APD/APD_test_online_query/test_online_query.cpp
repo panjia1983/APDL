@@ -6,9 +6,6 @@
 
 #include <APD/profile.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
-
 namespace APDL
 {
 	void test_online_query_svm()

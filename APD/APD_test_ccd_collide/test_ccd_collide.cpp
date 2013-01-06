@@ -222,8 +222,8 @@ namespace APDL
 
 	static void test_collide_3d()
 	{
-		C2A_Model* P = new C2A_Model;
-		C2A_Model* Q = new C2A_Model;
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
 		readOffFile(P, "../data/cup.off");
 		readOffFile(Q, "../data/spoon.off");
 
@@ -248,12 +248,15 @@ namespace APDL
 			//	}
 			//}
 		}
+
+		delete P;
+		delete Q;
 	}
 
 	static void test_collide_3d_rotation()
 	{
-		C2A_Model* P = new C2A_Model;
-		C2A_Model* Q = new C2A_Model;
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
 		readOffFile(P, "../data/cup.off");
 		readOffFile(Q, "../data/spoon.off");
 
@@ -285,13 +288,70 @@ namespace APDL
 		}
 
 		std::cout << sum / (double)samples.size() << std::endl;
+
+		delete P;
+		delete Q;
 	}
 
+	static void test_convex_decomposition_PD()
+	{
+		std::vector<C2A_Model*> model1;
+		std::vector<C2A_Model*> model2;
+
+		readObjFiles(model1, "../data/models/Bullet/ringz_convex.obj");
+		readObjFiles(model2, "../data/models/Bullet/ringz_convex.obj");
+
+		C2A_Model* P;
+		C2A_Model* Q;
+		readObjFile(P, "../data/models/Bullet/ringz.obj");
+		readObjFile(Q, "../data/models/Bullet/ringz.obj");
+
+		ContactSpaceSE3Euler2 contactspace(P, Q, 0.1);
+
+		std::vector<DataVector> samples = contactspace.uniform_sample0(1000);
+
+		for(std::size_t i = 0; i < samples.size(); ++i)
+		{
+			double PD = Collider3D::PDt(model1, model2, samples[i]);
+			bool col = contactspace.collider.isCollide(samples[i]);
+
+			bool col2 = false;
+			for(std::size_t j = 0; j < model1.size(); ++j)
+			{
+				for(std::size_t k = 0; k < model2.size(); ++k)
+				{
+					//std::cout << j << " " << k  << std::endl;
+					//for(std::size_t n = 0; n < model1[j]->num_tris; ++n)
+					//{
+					//	std::cout << model1[j]->num_tris << " " << n << std::endl;
+					//	C2A_Tri* tri = model1[j]->GetTriangle(n);
+					//	std::cout << tri->id << " " << tri->p1[0] << " " << tri->p1[1] << " " << tri->p1[2] << " ";
+					//	std::cout << tri->p2[0] << " " << tri->p2[1] << " " << tri->p2[2] << " ";
+					//	std::cout << tri->p3[0] << " " << tri->p3[1] << " " << tri->p3[2] << std::endl;
+					//}
+
+					//for(std::size_t n = 0; n < model2[k]->num_tris; ++n)
+					//{
+					//	std::cout << model1[j]->num_tris << " " << n << std::endl;
+					//	C2A_Tri* tri = model2[k]->GetTriangle(n);
+					//	std::cout << tri->id << " " << tri->p1[0] << " " << tri->p1[1] << " " << tri->p1[2] << " ";
+					//	std::cout << tri->p2[0] << " " << tri->p2[1] << " " << tri->p2[2] << " ";
+					//	std::cout << tri->p3[0] << " " << tri->p3[1] << " " << tri->p3[2] << std::endl;
+					//}
+
+					Collider3D collider(model1[j], model2[k]);
+					if(collider.isCollide(samples[i]))
+						col2 = true;
+				}
+			}
+			std::cout << PD << " " << col2 << " " << col << std::endl;
+		}
+	}
 
 	static void test_continuous_collide_3d()
 	{
-		C2A_Model* P = new C2A_Model;
-		C2A_Model* Q = new C2A_Model;
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
 		readOffFile(P, "../data/cup.off");
 		readOffFile(Q, "../data/spoon.off");
 
@@ -331,6 +391,9 @@ namespace APDL
 				std::cout << "(" << dcd_result.first << "," << dcd_result.second << ")(" << ccd_result.first << "," << ccd_result.second << ")" << std::endl;
 			}
 		}
+
+		delete P;
+		delete Q;
 	}
 }
 
@@ -345,7 +408,9 @@ void main()
 	
 	// APDL::test_collide_3d();
 	// APDL::test_collide_3d_rotation();
-	APDL::test_continuous_collide_3d();
+	// APDL::test_continuous_collide_3d();
+
+	APDL::test_convex_decomposition_PD();
 
 	APDL::tools::Profiler::Stop();
 	APDL::tools::Profiler::Status();

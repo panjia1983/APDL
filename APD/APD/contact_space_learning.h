@@ -445,10 +445,13 @@ namespace APDL
 			if(x_space) delete [] x_space;
 			x_space = new svm_node[(feature_dim + 1)* problem.l];
 
+			DataVector v_(feature_dim);
 			for(std::size_t i = 0; i < data.size(); ++i)
 			{
 				svm_node* cur_x_space = x_space + (feature_dim + 1) * i;
-				const DataVector& v = (scaler && use_scaler) ? scaler->scale(data[i].v) : data[i].v;
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					v_[j] = data[i].v[j];
+				const DataVector& v = (scaler && use_scaler) ? scaler->scale(v_) : v_;
 				for(std::size_t j = 0; j < feature_dim; ++j)
 				{
 					cur_x_space[j].index = j + 1;
@@ -463,13 +466,17 @@ namespace APDL
 
 			hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
 
-			std::ifstream scaler_in(scaler_file_name.c_str());
-			
-			scaler = new Scaler();
-
-			scaler_in >> *scaler;
-
 			use_scaler = use_scaler_;
+			if(use_scaler)
+			{
+				std::ifstream scaler_in(scaler_file_name.c_str());
+				scaler = new Scaler();
+				scaler_in >> *scaler;
+			}
+			else
+			{
+				scaler = NULL;
+			}
 		}
 
 
@@ -490,20 +497,13 @@ namespace APDL
 			param.cache_size = model->param.cache_size;
 			param.eps = model->param.eps;
 			param.C = model->param.C;
-			param.nr_weight = model->param.nr_weight;
-			if(model->param.weight_label)
-			{
-				param.weight_label = (int *)realloc(param.weight_label, sizeof(int) * param.nr_weight);
-				for(std::size_t i = 0; i < param.nr_weight; ++i)
-					param.weight_label[i] = model->param.weight_label[i];
-			}
-
-			if(model->param.weight)
-			{
-				param.weight = (double *)realloc(param.weight, sizeof(int) * param.nr_weight);
-				for(std::size_t i = 0; i < param.nr_weight; ++i)
-					param.weight[i] = model->param.weight[i];
-			}
+			param.nr_weight = 2;
+			param.weight_label = (int *)realloc(param.weight_label, sizeof(int) * param.nr_weight);
+			param.weight = (double *)realloc(param.weight, sizeof(double) * param.nr_weight);
+			param.weight_label[0] = -1;
+			param.weight_label[1] = 1;
+			param.weight[0] = 1;
+			param.weight[1] = 1;
 
 			param.nu = model->param.nu;
 			param.p = model->param.p;
@@ -512,13 +512,17 @@ namespace APDL
 
 			hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
 
-			std::ifstream scaler_in(scaler_file_name.c_str());
-			
-			scaler = new Scaler();
-
-			scaler_in >> *scaler;
-
 			use_scaler = use_scaler_;
+			if(use_scaler)
+			{
+				std::ifstream scaler_in(scaler_file_name.c_str());
+				scaler = new Scaler();
+				scaler_in >> *scaler;
+			}
+			else
+			{
+				scaler = NULL;
+			}
 		}
 
 		HyperPlane getLinearModel() const;

@@ -3,8 +3,6 @@
 #include <APD/decision_boundary_sampler.h>
 #include <APD/active_learning.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
 
 namespace APDL
 {	
@@ -55,7 +53,7 @@ namespace APDL
 			MulticonlitronEvaluator evaluator(learner);
 
 			std::vector<DataVector> samples1;
-			sample_decision_boundary_hierarchial_tree_E<SVMLearner, MulticonlitronEvaluator>(param, learner, samples1);
+			sample_decision_boundary_hierarchial_tree_E<MulticonlitronLearner, MulticonlitronEvaluator>(param, learner, samples1);
 			std::vector<DataVector> samples1_kcentriods = sampleSelectionKCentroids(samples1, 100, 10);
 			std::cout << samples1.size() << std::endl;
 			

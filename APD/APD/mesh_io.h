@@ -6,11 +6,13 @@
 
 namespace APDL
 {
-	void readObjFile(C2A_Model* model, const std::string& obj_file);
+	void readObjFile(C2A_Model*& model, const std::string& obj_file);
+
+	void readObjFiles(std::vector<C2A_Model*>& models, const std::string& obj_file);
 	
-	void readOffFile(C2A_Model* model, const std::string& off_file);
+	void readOffFile(C2A_Model*& model, const std::string& off_file);
 	
-	void readTriFile(C2A_Model* model, const std::string& tris_file);
+	void readTriFile(C2A_Model*& model, const std::string& tris_file);
 	
 }
 

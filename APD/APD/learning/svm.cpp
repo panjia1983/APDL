@@ -2695,8 +2695,8 @@ int distanceF(integer    *Status, integer *n,    doublereal x[],
 	return 0;
 }
 
-extern void* user_conlitron_model;
-extern double* user_conlitron_data;
+void* user_conlitron_model;
+double* user_conlitron_data;
 
 double conlitron_dist_to_decision_boundary(
 	void* model, 

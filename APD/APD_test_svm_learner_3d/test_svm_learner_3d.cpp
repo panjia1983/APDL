@@ -3,18 +3,14 @@
 #include <APD/mesh_io.h>
 #include <APD/active_learning.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
-
-
 namespace APDL
 {
 	void test_svm_learner_3d()
 	{
 
 		{
-			C2A_Model* P = new C2A_Model;
-			C2A_Model* Q = new C2A_Model;
+			C2A_Model* P = NULL;
+			C2A_Model* Q = NULL;
 			readOffFile(P, "../data/cup.off");
 			readOffFile(Q, "../data/spoon.off");
 
@@ -51,6 +47,9 @@ namespace APDL
 			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			//std::cout << std::endl;
+
+			delete P;
+			delete Q;
 		}
 	}
 
@@ -58,8 +57,8 @@ namespace APDL
 	{
 
 		{
-			C2A_Model* P = new C2A_Model;
-			C2A_Model* Q = new C2A_Model;
+			C2A_Model* P = NULL;
+			C2A_Model* Q = NULL;
 			readObjFile(P, "../data/models/Bullet/ringz.obj");
 			readObjFile(Q, "../data/models/Bullet/ringz.obj");
 
@@ -103,6 +102,9 @@ namespace APDL
 			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
 			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
 			//std::cout << std::endl;
+
+			delete P;
+			delete Q;
 		}
 	}
 }

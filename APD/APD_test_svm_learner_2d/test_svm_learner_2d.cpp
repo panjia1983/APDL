@@ -2,8 +2,6 @@
 #include <APD/minkowski_cspace.h>
 #include <APD/active_learning.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
 
 namespace APDL
 {
@@ -37,7 +35,7 @@ namespace APDL
 			learner.setC(10);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
-			// learner.setUseScaler(true);
+			learner.setUseScaler(true);
 
 
 			std::ofstream scaler_file("scaler_2d.txt");
@@ -49,9 +47,20 @@ namespace APDL
 
 			std::vector<PredictResult> results = learner.predict(contactspace_samples);
 
-			for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-				std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			std::cout << std::endl;
+			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
+			//std::cout << std::endl;
+
+			std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+
+
+			SVMLearner learner_load;
+			learner_load.load("model_2d.txt", "scaler_2d.txt", true, 2);
+			std::cout << contactspace_samples.size() << ": " << std::endl;
+			std::cout << empiricalErrorRatio(contactspace_samples, learner_load) << std::endl;
+			std::cout << errorRatioOnGrid(contactspace, learner_load, 100) << std::endl;
+
+
 		}
 
 		return;
@@ -255,9 +264,9 @@ namespace APDL
 
 void main()
 {
-	// APDL::test_svm_learner_2d();
-	APDL::test_svm_learner_poly_spiders();
-	APDL::test_svm_learner_poly_spidertooth();
-	APDL::test_svm_learner_poly_monkeys();
-	APDL::test_svm_learner_poly_monkeytooth();
+	APDL::test_svm_learner_2d();
+	// APDL::test_svm_learner_poly_spiders();
+	// APDL::test_svm_learner_poly_spidertooth();
+	// APDL::test_svm_learner_poly_monkeys();
+	// APDL::test_svm_learner_poly_monkeytooth();
 }

@@ -2,8 +2,6 @@
 #include <APD/contact_space_learning.h>
 #include <APD/decision_boundary_distance.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
 
 namespace APDL
 {	

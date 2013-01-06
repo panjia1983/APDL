@@ -4,15 +4,13 @@
 
 #include <APD/profile.h>
 
-void* user_conlitron_model;
-double* user_conlitron_data;
 
 namespace APDL
 {
 	void test_conlitron_learner_3d_rotation()
 	{
-		C2A_Model* P = new C2A_Model;
-		C2A_Model* Q = new C2A_Model;
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
 		readOffFile(P, "../data/cup.off");
 		readOffFile(Q, "../data/spoon.off");
 
@@ -39,12 +37,15 @@ namespace APDL
 		std::cout << learner.model.numOfHyperPlanes() << std::endl;
 
 		std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 5) << std::endl;
+
+		delete P;
+		delete Q;
 	}
 
 	void test_conlitron_learner_3d_rotation_approximate_knn()
 	{
-		C2A_Model* P = new C2A_Model;
-		C2A_Model* Q = new C2A_Model;
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
 		readOffFile(P, "../data/cup.off");
 		readOffFile(Q, "../data/spoon.off");
 
@@ -119,6 +120,8 @@ namespace APDL
 
 		std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner4) << " " << errorRatioOnGrid(contactspace, learner4, 5) << std::endl;
 
+		delete P;
+		delete Q;
 
 	}
 }

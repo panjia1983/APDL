@@ -488,7 +488,7 @@ namespace APDL
 					midpoint[k].value = 0.5 * (x[k].value + y[k].value);
 
 				double f_value = svm_predict_values_twoclass(model, midpoint);
-				if(abs(f_value) > 1) continue;
+				// if(abs(f_value) > 1) continue;
 
 				for(std::size_t k = 0; k < dim; ++k)
 					p[k] = midpoint[k].value;

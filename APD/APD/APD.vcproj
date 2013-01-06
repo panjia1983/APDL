@@ -235,6 +235,30 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="ccd"
+				>
+				<File
+					RelativePath=".\ccd\ccd.c"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\mpr.c"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\polytope.c"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\support.c"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\vec3.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -402,6 +426,50 @@
 				</File>
 				<File
 					RelativePath=".\hash\topk.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ccd"
+				>
+				<File
+					RelativePath=".\ccd\alloc.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\ccd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\compiler.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\dbg.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\list.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\polytope.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\quat.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\simplex.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\support.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ccd\vec3.h"
 					>
 				</File>
 			</Filter>
