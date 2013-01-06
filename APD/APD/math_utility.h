@@ -60,6 +60,10 @@ namespace APDL
 	void Euler2Rot(double R[3][3], double a, double b, double c);
 	
 	void Euler2Quat(Quaternion& quat, double a, double b, double c);
+
+	void Rot2Quat(Quaternion& quat, double R[3][3]);
+
+	void Rot2Euler(double& a, double& b, double& c, double R[3][3]);
 	
 	double angleTruncate(double angle);
 	

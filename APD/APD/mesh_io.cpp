@@ -1,6 +1,8 @@
 #include "mesh_io.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
+
 namespace APDL
 {
 	void readObjFiles(std::vector<C2A_Model*>& models, const std::string& obj_file)
@@ -201,11 +203,29 @@ namespace APDL
 			}
 			else if(type == "f")
 			{
-				int i1, i2, i3;
-				in >> i1 >> i2 >> i3;
-				id.push_back(i1 - 1);
-				id.push_back(i2 - 1);
-				id.push_back(i3 - 1);
+				for(int i = 0; i < 3; ++i)
+				{
+					std::string face;
+					std::string face2;
+					in >> face;
+					for(int k = 0; k < face.size(); ++k)
+					{
+						if(face[k] == '/') break;
+						face2.push_back(face[k]);
+					}
+					int fid;
+					std::istringstream convert(face2);
+					convert >> fid;
+					// std::cout << face << " " << fid << std::endl;
+					id.push_back(fid - 1);
+				}
+
+
+				//int i1, i2, i3;
+				//in >> i1 >> i2 >> i3;
+				//id.push_back(i1 - 1);
+				//id.push_back(i2 - 1);
+				//id.push_back(i3 - 1);
 			}
 
 			getline(in, type);

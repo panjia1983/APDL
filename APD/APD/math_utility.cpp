@@ -124,6 +124,83 @@ namespace APDL
 		}
 	}
 	
+	void Rot2Quat(Quaternion& quat, double R[3][3])
+	{
+		double a, b, c, d;
+		double trace = R[0][0] + R[1][1] + R[2][2];
+		double root;
+		if(trace > 0.0)
+		{
+			root = sqrt(trace + 1.0);
+			a = 0.5 * root;
+			root = 0.5 / root;
+			b = (R[2][1] - R[1][2]) * root;
+			c = (R[0][2] - R[2][0]) * root;
+			d = (R[1][0] - R[0][1]) * root;
+		}
+		else
+		{
+			int i = 0;
+			if (R[1][1] > R[0][0])
+				i = 1;
+			if (R[2][2] > R[i][i])
+				i = 2;
+
+			int j, k;
+			if (i == 0)
+			{
+				j = 1;
+				k = 2;
+			}
+			else if (i == 1)
+			{
+				j = 2;
+				k = 0;
+			}
+			else if (i == 2)
+			{
+				j = 0;
+				k = 1;
+			}
+
+			root = sqrt(R[i][i] - R[j][j] - R[k][k] + 1);
+
+			if (i == 0)
+			{
+				b = 0.5 * root;
+				root = 0.5 / root;
+				a = (R[k][j] - R[j][k]) * root;
+				c = (R[j][i] + R[i][j]) * root;
+				d = (R[k][i] + R[i][k]) * root;
+			}
+			else if (i == 1)
+			{
+				c = 0.5 * root;
+				root = 0.5 / root;
+				a = (R[k][j] - R[j][k]) * root;
+				d = (R[j][i] + R[i][j]) * root;
+				b = (R[k][i] + R[i][k]) * root;
+			}
+			else if (i == 2)
+			{
+				d = 0.5 * root;
+				root = 0.5 / root;
+				a = (R[k][j] - R[j][k]) * root;
+				b = (R[j][i] + R[i][j]) * root;
+				c = (R[k][i] + R[i][k]) * root;
+			}
+		}
+
+		quat = Quaternion(a, b, c, d);
+	}
+
+	void Rot2Euler(double& a, double& b, double& c, double R[3][3])
+	{
+		Quaternion q;
+		Rot2Quat(q, R);
+		Quat2Euler(a, b, c, q);
+	}
+
 	double angleTruncate(double angle)
 	{
 		if(angle > 0)

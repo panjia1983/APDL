@@ -10,6 +10,94 @@
 
 namespace APDL
 {
+	inline std::vector<std::vector<DataVector> > readAnimationFile(const std::string& filename, bool use_euler = true)
+	{
+		std::vector<std::vector<DataVector> > frames;
+		std::ifstream is(filename.c_str());
+
+		if(!is.is_open())
+		{
+			std::cerr << "!Error: Cannot open file (" << filename << ")" << std::endl;
+			return frames;
+		}
+
+		std::string line;
+
+
+		std::size_t n_frames;
+		{
+			while(!std::getline(is, line, '\n').eof())
+			{	
+				std::cout << line << std::endl;
+				if(line[line.size() - 1] == 'f')
+				{
+					std::istringstream reader(line.substr(0, line.size() - 1));
+					reader >> n_frames;
+					frames.resize(n_frames);
+					break;
+				}
+			}
+		}
+
+		int cur_frame_id;
+
+		while(!std::getline(is, line, '\n').eof())
+		{
+			if(line[line.size() - 1] == 'f')
+			{
+				std::istringstream reader(line.substr(0, line.size() - 1));
+				int frame_id;
+				reader >> frame_id;
+				cur_frame_id = frame_id;
+			}
+			else
+			{
+				std::istringstream reader(line);
+				double tmp;
+				double R[3][3];
+				double T[3];
+				for(int i = 0; i < 3; ++i)
+				{
+					for(int j = 0; j < 3; ++j)
+					{
+						
+						reader >> tmp;
+						R[i][j] = tmp;
+					}
+				}
+
+				for(int i = 0; i < 3; ++i)
+				{
+					reader >> tmp;
+					T[i] = tmp;
+				}
+
+				if(use_euler)
+				{
+					DataVector v(6);
+					v[0] = T[0]; v[1] = T[1]; v[2] = T[2];
+
+					double a, b, c;
+					Rot2Euler(a, b, c, R);
+					v[3] = a; v[4] = b; v[5] = c;
+					frames[cur_frame_id].push_back(v);
+				}
+				else
+				{
+					DataVector v(7);
+					v[0] = T[0]; v[1] = T[1]; v[2] = T[2];
+
+					Quaternion q;
+					Rot2Quat(q, R);
+					v[3] = q[0]; v[4] = q[1]; v[5] = q[2]; v[6] = q[3];
+					frames[cur_frame_id].push_back(v);
+				}
+			}
+		}
+
+		return frames;
+	}
+
 	inline std::vector<Polygon> readPolyFile(const std::string& filename)
 	{
 		std::vector<Polygon> polys;

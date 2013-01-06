@@ -293,6 +293,28 @@ namespace APDL
 		delete Q;
 	}
 
+	static void test_animation()
+	{
+		C2A_Model* P;
+		C2A_Model* Q;
+		readObjFile(P, "../data/models/Teeth/lo_03de_new.obj");
+		readObjFile(Q, "../data/models/Teeth/up_03de_new.obj");
+		std::cout << "here" << std::endl;
+		std::vector<std::vector<DataVector> > frames = readAnimationFile("../data/models/Teeth/teeth.ani");
+
+		std::cout << frames.size() << std::endl;
+		for(std::size_t i = 0; i < frames.size(); ++i)
+		{
+			for(std::size_t j = 0; j < frames[i].size(); ++j)
+			{
+				std::cout << j << ": ";
+				for(std::size_t k = 0; k < frames[i][j].dim(); ++k)
+					std::cout << frames[i][j][k] << " ";
+				std::cout << std::endl;
+			}
+		}
+	}
+
 	static void test_convex_decomposition_PD()
 	{
 		std::vector<C2A_Model*> model1;
@@ -320,25 +342,6 @@ namespace APDL
 			{
 				for(std::size_t k = 0; k < model2.size(); ++k)
 				{
-					//std::cout << j << " " << k  << std::endl;
-					//for(std::size_t n = 0; n < model1[j]->num_tris; ++n)
-					//{
-					//	std::cout << model1[j]->num_tris << " " << n << std::endl;
-					//	C2A_Tri* tri = model1[j]->GetTriangle(n);
-					//	std::cout << tri->id << " " << tri->p1[0] << " " << tri->p1[1] << " " << tri->p1[2] << " ";
-					//	std::cout << tri->p2[0] << " " << tri->p2[1] << " " << tri->p2[2] << " ";
-					//	std::cout << tri->p3[0] << " " << tri->p3[1] << " " << tri->p3[2] << std::endl;
-					//}
-
-					//for(std::size_t n = 0; n < model2[k]->num_tris; ++n)
-					//{
-					//	std::cout << model1[j]->num_tris << " " << n << std::endl;
-					//	C2A_Tri* tri = model2[k]->GetTriangle(n);
-					//	std::cout << tri->id << " " << tri->p1[0] << " " << tri->p1[1] << " " << tri->p1[2] << " ";
-					//	std::cout << tri->p2[0] << " " << tri->p2[1] << " " << tri->p2[2] << " ";
-					//	std::cout << tri->p3[0] << " " << tri->p3[1] << " " << tri->p3[2] << std::endl;
-					//}
-
 					Collider3D collider(model1[j], model2[k]);
 					if(collider.isCollide(samples[i]))
 						col2 = true;
@@ -410,7 +413,8 @@ void main()
 	// APDL::test_collide_3d_rotation();
 	// APDL::test_continuous_collide_3d();
 
-	APDL::test_convex_decomposition_PD();
+	// APDL::test_convex_decomposition_PD();
+	APDL::test_animation();
 
 	APDL::tools::Profiler::Stop();
 	APDL::tools::Profiler::Status();
