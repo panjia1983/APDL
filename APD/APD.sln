@@ -103,11 +103,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d", "
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_svm_learner_3d_rotation", "test_svm_learner_3d_rotation\test_svm_learner_3d_rotation.vcproj", "{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d", "APD_test_conlitron_learner_3d\APD_test_conlitron_learner_3d.vcproj", "{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
@@ -132,6 +127,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_sv
 	ProjectSection(ProjectDependencies) = postProject
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d_rotation", "APD_test_svm_learner_3d_rotation\APD_test_svm_learner_3d_rotation.vcproj", "{A99DD6D4-2E30-4FEE-B650-EB0662261E67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -223,10 +220,6 @@ Global
 		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Debug|Win32.Build.0 = Debug|Win32
 		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Release|Win32.ActiveCfg = Release|Win32
 		{062BF53A-CF19-4247-BA4D-7BFB3C986037}.Release|Win32.Build.0 = Release|Win32
-		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Debug|Win32.Build.0 = Debug|Win32
-		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.ActiveCfg = Release|Win32
-		{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}.Release|Win32.Build.0 = Release|Win32
 		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Debug|Win32.Build.0 = Debug|Win32
 		{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}.Release|Win32.ActiveCfg = Release|Win32
@@ -247,6 +240,10 @@ Global
 		{3A359010-9E8B-48AA-9EAF-B012A8D0E1BE}.Debug|Win32.Build.0 = Debug|Win32
 		{3A359010-9E8B-48AA-9EAF-B012A8D0E1BE}.Release|Win32.ActiveCfg = Release|Win32
 		{3A359010-9E8B-48AA-9EAF-B012A8D0E1BE}.Release|Win32.Build.0 = Release|Win32
+		{A99DD6D4-2E30-4FEE-B650-EB0662261E67}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A99DD6D4-2E30-4FEE-B650-EB0662261E67}.Debug|Win32.Build.0 = Debug|Win32
+		{A99DD6D4-2E30-4FEE-B650-EB0662261E67}.Release|Win32.ActiveCfg = Release|Win32
+		{A99DD6D4-2E30-4FEE-B650-EB0662261E67}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

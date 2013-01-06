@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="test_svm_learner_3d_rotation"
-	ProjectGUID="{18E5474F-CD19-4E75-A107-1CBEF8F32DCB}"
-	RootNamespace="test_svm_learner_3d_rotation"
+	Name="APD_test_svm_learner_3d_rotation"
+	ProjectGUID="{A99DD6D4-2E30-4FEE-B650-EB0662261E67}"
+	RootNamespace="APD_test_svm_learner_3d_rotation"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
