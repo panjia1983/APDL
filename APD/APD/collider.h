@@ -105,6 +105,8 @@ namespace APDL
 		return out;
 	}
 	
+
+
 	class Collider2D
 	{
 	public:
@@ -311,12 +313,20 @@ namespace APDL
 			
 			Transform2D tf1;
 			Transform2D tf2(Mat2D(c, -s, s, c), Vec2D(q[0], q[1]));
+
+			DistanceResult dist_res;
 			
 			for(std::size_t i = 0; i < model1_convex.size(); ++i)
 			{
 				for(std::size_t j = 0; j < model2_convex.size(); ++j)
 				{
-				
+					const std::pair<Vec2D, double>& c1 = model1_convex[i].getCircle();
+					const std::pair<Vec2D, double>& c2 = model2_convex[j].getCircle();
+					if((tf1.transform(c1.first) - tf2.transform(c2.first)).length() - (c1.second + c2.second) > global_res.distance)
+					{
+						continue;
+					}
+
 					GJKResult res = doGJK(model1_convex[i], tf1,
 					                      model2_convex[j], tf2);
 					                      
@@ -325,7 +335,6 @@ namespace APDL
 				}
 			}
 			
-			DistanceResult dist_res;
 			
 			dist_res.point1 = global_res.point1;
 			dist_res.point2 = global_res.point2;
@@ -348,6 +357,13 @@ namespace APDL
 			{
 				for(std::size_t j = 0; j < model2_convex.size(); ++j)
 				{
+					const std::pair<Vec2D, double>& c1 = model1_convex[i].getCircle();
+					const std::pair<Vec2D, double>& c2 = model2_convex[j].getCircle();
+					if((tf1.transform(c1.first) - tf2.transform(c2.first)).sqrLength() > (c1.second + c2.second) * (c1.second + c2.second))
+					{
+						continue;
+					}
+
 					EPAResult epa_res = doGJKEPA(model1_convex[i], tf1,
 											     model2_convex[j], tf2);
 
@@ -393,7 +409,13 @@ namespace APDL
 			{
 				for(std::size_t j = 0; j < model2_convex.size(); ++j)
 				{
-				
+					const std::pair<Vec2D, double>& c1 = model1_convex[i].getCircle();
+					const std::pair<Vec2D, double>& c2 = model2_convex[j].getCircle();
+					if((tf1.transform(c1.first) - tf2.transform(c2.first)).sqrLength() > (c1.second + c2.second) * (c1.second + c2.second))
+					{
+						continue;
+					}		
+
 					GJKResult res = doGJK(model1_convex[i], tf1,
 					                      model2_convex[j], tf2);
 					                      
@@ -507,6 +529,13 @@ namespace APDL
 			{
 				for(std::size_t j = 0; j < model2_convex.size(); ++j)
 				{
+					const std::pair<Vec2D, double>& c1 = model1_convex[i].getCircle();
+					const std::pair<Vec2D, double>& c2 = model2_convex[j].getCircle();
+					if((tf1.transform(c1.first) - tf2.transform(c2.first)).sqrLength() > (c1.second + c2.second) * (c1.second + c2.second))
+					{
+						continue;
+					}
+					
 					EPAResult epa_res = doGJKEPA(model1_convex[i], tf1,
 						model2_convex[j], tf2);
 
@@ -523,6 +552,9 @@ namespace APDL
 
 			return max_PD;
 		}
+
+		std::size_t num_convex_pieces1() const { return model1_convex.size(); }
+		std::size_t num_convex_pieces2() const { return model2_convex.size(); }
 		
 	protected:
 	
@@ -535,8 +567,68 @@ namespace APDL
 	};
 
 
-	
-	
+	inline double area(const Polygon& polygon)
+	{
+		double A = 0;
+		for(int i = 0; i < polygon.points.size(); ++i)
+		{
+			int i_next = i + 1; if(i_next >= polygon.points.size()) i_next = 0;
+			int i_prev = i - 1; if(i_prev < 0) i_prev = polygon.points.size() - 1;
+			A += polygon.points[i].x * (polygon.points[i_next].y - polygon.points[i_prev].y);
+		}
+
+		return 0.5 * A;
+	}
+
+
+	inline void inertia(const Polygon& polygon, double& a, double& b)
+	{
+		double A = area(polygon);
+
+		double Ix = 0, Iy = 0;
+		for(int i = 0; i < polygon.points.size() - 1; ++i)
+		{
+			double xi = polygon.points[i].x;
+			double yi = polygon.points[i].y;
+			double xiplus = polygon.points[i+1].x;
+			double yiplus = polygon.points[i+1].y;
+			Ix += (xi * xi + xi * xiplus + xiplus * xiplus) * (xi * yiplus - xiplus * yi);
+			Iy += (yi * yi + yi * yiplus + yiplus * yiplus) * (xi * yiplus - xiplus * yi);
+		}
+
+		a = Ix / (12 * A);
+		b = Iy / (12 * A);
+	}
+
+	inline void convert(const Collider2D::Polygon_2& in, Polygon& out)
+	{
+		Collider2D::ToInexact to_inexact;
+		double A = 0;
+		for(Collider2D::Polygon_2::Vertex_const_iterator v_it = in.vertices_begin();
+			v_it != in.vertices_end();
+			++v_it)
+		{
+			double x = to_inexact(v_it->x());
+			double y = to_inexact(v_it->y());
+			out.points.push_back(Vec2D(x, y));
+		}
+	}
+
+	inline double area(const Collider2D::Polygon_2& polygon)
+	{
+		Polygon p;
+		convert(polygon, p);
+		return area(p);
+	}
+
+
+	inline void inertia(const Collider2D::Polygon_2& polygon, double& a, double& b)
+	{
+		Polygon p;
+		convert(polygon, p);
+		return inertia(p, a, b);
+	}
+
 	class Collider3D
 	{
 	public:
@@ -973,6 +1065,72 @@ namespace APDL
 	};
 	
 	
+	inline double volume(C2A_Model* model)
+	{
+		double vol = 0;
+		Coord3D com(model->com[0], model->com[1], model->com[2]);
+		for(int i = 0; i < model->num_tris; ++i)
+		{
+			Coord3D v1(model->GetTriangle(i)->p1[0], model->GetTriangle(i)->p1[1], model->GetTriangle(i)->p1[2]);
+			Coord3D v2(model->GetTriangle(i)->p2[0], model->GetTriangle(i)->p2[1], model->GetTriangle(i)->p2[2]);
+			Coord3D v3(model->GetTriangle(i)->p3[0], model->GetTriangle(i)->p3[1], model->GetTriangle(i)->p3[2]);
+			double v = (v1 - com) * ((v2 - com) % (v3 - com)) / 6;
+			vol += v;
+		}
+
+		return vol;
+	}
+
+	inline void inertia(C2A_Model* model, double I[3][3])
+	{
+		double tmp[3][3]; // [x^2, xy, xz, xy, y^2, yz, xz, yz, z^2]
+		for(int i = 0; i < 3; ++i)
+			for(int j = 0; j < 3; ++j)
+				tmp[i][j] = 0;
+
+		Coord3D com(model->com[0], model->com[1], model->com[2]);
+		for(int i = 0; i < model->num_tris; ++i)
+		{
+			Coord3D v1(model->GetTriangle(i)->p1[0], model->GetTriangle(i)->p1[1], model->GetTriangle(i)->p1[2]);
+			Coord3D v2(model->GetTriangle(i)->p2[0], model->GetTriangle(i)->p2[1], model->GetTriangle(i)->p2[2]);
+			Coord3D v3(model->GetTriangle(i)->p3[0], model->GetTriangle(i)->p3[1], model->GetTriangle(i)->p3[2]);
+
+			v1 = v1 - com;
+			v2 = v2 - com;
+			v3 = v3 - com;
+			double coeff = v1 * (v2 % v3) / 120;
+			Coord3D sum = v1 + v2 + v3;
+			
+			for(int j = 0; j < 3; ++j)
+			{
+				for(int k = 0; k < 3; ++k)
+				{
+					tmp[j][k] += coeff * (sum[j] * sum[k] + v1[j] * v1[k] + v2[j] * v2[k] + v3[j] * v3[k]);
+				}
+			}
+		}
+
+		I[0][0] = tmp[1][1] + tmp[2][2];
+		I[0][1] = -tmp[0][1];
+		I[0][2] = -tmp[0][2];
+		I[1][0] = -tmp[1][0];
+		I[1][1] = tmp[0][0] + tmp[2][2];
+		I[1][2] = -tmp[1][2];
+		I[2][0] = -tmp[2][0];
+		I[2][1] = -tmp[2][1];
+		I[2][2] = tmp[0][0] + tmp[1][1];
+	}
+
+	inline void inertia_weight(C2A_Model* model, double& a, double& b, double& c)
+	{
+		double I[3][3];
+		inertia(model, I);
+		double vol = volume(model);
+		a = I[0][0] / vol;
+		b = I[1][1] / vol;
+		c = I[2][2] / vol;
+	}
+
 	struct AABB3D
 	{
 		double b_min[3];

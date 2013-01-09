@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="APD_test_online_query"
-	ProjectGUID="{3769DF9F-1B43-4099-8DCC-A7A9BE493357}"
-	RootNamespace="APD_test_online_query"
+	Name="APD_test_online_query_svm_3d_rotation"
+	ProjectGUID="{07A3E2E9-A50B-4301-B367-D3A81F61343A}"
+	RootNamespace="APD_test_online_query_svm_3d_rotation"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -175,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\test_online_query.cpp"
+				RelativePath=".\test_online_query_svm_3d_rotation.cpp"
 				>
 			</File>
 		</Filter>

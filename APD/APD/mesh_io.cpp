@@ -38,11 +38,27 @@ namespace APDL
 			}
 			else if(type == "f")
 			{
-				int i1, i2, i3;
-				in >> i1 >> i2 >> i3;
-				id.push_back(i1 - start_id);
-				id.push_back(i2 - start_id);
-				id.push_back(i3 - start_id);
+				//int i1, i2, i3;
+				//in >> i1 >> i2 >> i3;
+				//id.push_back(i1 - start_id);
+				//id.push_back(i2 - start_id);
+				//id.push_back(i3 - start_id);
+				for(int i = 0; i < 3; ++i)
+				{
+					std::string face;
+					std::string face2;
+					in >> face;
+					for(int k = 0; k < face.size(); ++k)
+					{
+						if(face[k] == '/') break;
+						face2.push_back(face[k]);
+					}
+					int fid;
+					std::istringstream convert(face2);
+					convert >> fid;
+					// std::cout << face << " " << fid << std::endl;
+					id.push_back(fid - start_id);
+				}
 			}
 			else if(type == "o")
 			{
@@ -279,6 +295,40 @@ namespace APDL
 		model->com[1] = center[1];
 		model->com[2] = center[2];
 		model->radius = radius;
+	}
+
+	void readSE3Model(std::vector<std::pair<C2A_Model*, Quaternion> >& cspace, const std::string& model_file)
+	{
+		std::string rotation_file = model_file + "_rotations.txt";
+		std::ifstream is(rotation_file.c_str());
+		if(!is.is_open())
+		{
+			std::cout << "Failed to open the file " << rotation_file << std::endl;
+			return;
+		}
+
+		std::vector<Quaternion> rotations;
+		std::string line;
+		while(!std::getline(is, line, '\n').eof())
+		{
+			std::istringstream reader(line);
+			double a, b, c, d;
+			reader >> a >> b >> c >> d;
+			Quaternion q(a, b, c, d);
+			rotations.push_back(q);
+		}
+
+		for(std::size_t i = 0; i < rotations.size(); ++i)
+		{
+			std::ostringstream  convert;
+			convert << i;
+			std::string obj_file_name = model_file + "_" + convert.str() + ".obj";
+
+			C2A_Model* model;
+			readObjFile(model, obj_file_name);
+
+			cspace.push_back(std::make_pair(model, rotations[i]));
+		}
 	}
 	
 	void readOffFile(C2A_Model*& model, const std::string& off_file)

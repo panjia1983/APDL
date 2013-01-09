@@ -1,4 +1,4 @@
-function svmvisualize2drot(label_matrix, instance_matrix, model_name, scaler_name, downsample_level)
+function svmvisualize2drot(label_matrix, instance_matrix, model_name, scaler_name, use_scale, mesh_name, downsample_level)
 %% svmtoy(label_matrix, instance_matrix, options, contour_level)
 %% label_matrix: N by 1, has to be two-class
 %% instance_matrix: N by 3
@@ -12,23 +12,28 @@ function svmvisualize2drot(label_matrix, instance_matrix, model_name, scaler_nam
 %%
 %% Hsuan-Tien Lin, htlin at caltech.edu, 2006/04/07
 
-if nargin <= 3
-    scaler_name = '';
+if nargin <= 4
+    use_scale = 0;
 end
 
-if nargin <= 4
+if nargin <= 5
+    mesh_name = 'model.obj';
+end
+
+if nargin <= 6
   downsample_level = 1;
 end
 
 N = size(label_matrix, 1);
 if N <= 0
   fprintf(2, 'number of data should be positive\n');
-  return;
 end
 
-if size(label_matrix, 2) ~= 1
-  fprintf(2, 'the label matrix should have only one column\n');
-  return;
+if N > 0
+    if size(label_matrix, 2) ~= 1
+        fprintf(2, 'the label matrix should have only one column\n');
+        return;
+    end
 end
 
 if size(instance_matrix, 1) ~= N
@@ -37,12 +42,16 @@ if size(instance_matrix, 1) ~= N
   return;
 end
 
-if size(instance_matrix, 2) ~= 3
-  fprintf(2, 'svmvisualize2drot only works for 3-D data\n');
-  return;
+if N > 0
+    if size(instance_matrix, 2) ~= 3
+        fprintf(2, 'svmvisualize2drot only works for 3-D data\n');
+        return;
+    end
 end
 
 mdl = loadmodel(model_name, 3);
+
+scaler_matrix = load(scaler_name);
 
 nclass = mdl.nr_class;
 svmtype = mdl.Parameters(1);
@@ -53,12 +62,18 @@ if nclass ~= 2 || svmtype >= 2
   return
 end
 
-minX = min(instance_matrix(:, 1));
-maxX = max(instance_matrix(:, 1));
-minY = min(instance_matrix(:, 2));
-maxY = max(instance_matrix(:, 2));
-minZ = min(instance_matrix(:, 3));
-maxZ = max(instance_matrix(:, 3));
+% minX = min(instance_matrix(:, 1));
+% maxX = max(instance_matrix(:, 1));
+% minY = min(instance_matrix(:, 2));
+% maxY = max(instance_matrix(:, 2));
+% minZ = min(instance_matrix(:, 3));
+% maxZ = max(instance_matrix(:, 3));
+minX = - scaler_matrix(1, 2) / scaler_matrix(1, 1);
+maxX = minX + 1 / scaler_matrix(1, 1);
+minY = - scaler_matrix(2, 2) / scaler_matrix(2, 1);
+maxY = minY + 1 / scaler_matrix(2, 1);
+minZ = - scaler_matrix(3, 2) / scaler_matrix(3, 1);
+maxZ = minZ + 1 / scaler_matrix(3, 1);
 
 gridX = (maxX - minX) / 100;
 gridY = (maxY - minY) / 100;
@@ -77,7 +92,7 @@ mdl.Parameters(1) = 3; % the trick to get the decision values
 ntest=size(bigX, 1) * size(bigX, 2) * size(bigX, 3);
 instance_test=[reshape(bigX, ntest, 1), reshape(bigY, ntest, 1), reshape(bigZ, ntest, 1)];
 
-if ~strcmp(scaler_name, '')
+if use_scale
     scaler_matrix = load(scaler_name);
     instance_test(:, 1) = instance_test(:, 1) .* scaler_matrix(1, 1) + scaler_matrix(1, 2);
     instance_test(:, 2) = instance_test(:, 2) .* scaler_matrix(2, 1) + scaler_matrix(2, 2);
@@ -97,24 +112,29 @@ p = patch(isosurface(bigX, bigY, bigZ, bigV, 0));
 isonormals(bigX, bigY, bigZ, bigV, p);
 alpha(0.5);
 
+% save obj model 
+[f,v] = isosurface(bigX, bigY, bigZ, bigV, 0);
+vertface2obj(v,f,mesh_name);
+
 set(p,'FaceColor','red','EdgeColor','none');
 
 view(3); daspect([1 1 1]); axis tight
 camlight;  camlight(-80,-10); lighting phong; 
 
+if N > 0
+    label_matrix = downsample(label_matrix, downsample_level);
+    instance_matrix = downsample(instance_matrix, downsample_level);
 
-label_matrix = downsample(label_matrix, downsample_level);
-instance_matrix = downsample(instance_matrix, downsample_level);
-
-ispos = (label_matrix == label_matrix(1));
-if label_matrix(1) == 1
-    pos = find(ispos);
-    neg = find(~ispos);
-else
-    pos = find(~ispos);
-    neg = find(ispos);
+    ispos = (label_matrix == label_matrix(1));
+    if label_matrix(1) == 1
+        pos = find(ispos);
+        neg = find(~ispos);
+    else
+        pos = find(~ispos);
+        neg = find(ispos);
+    end
+    
+    scatter3(instance_matrix(pos, 1), instance_matrix(pos, 2), instance_matrix(pos, 3), 'ko');
+    scatter3(instance_matrix(neg, 1), instance_matrix(neg, 2), instance_matrix(neg, 3), 'gx');
 end
-
-scatter3(instance_matrix(pos, 1), instance_matrix(pos, 2), instance_matrix(pos, 3), 'ko');
-scatter3(instance_matrix(neg, 1), instance_matrix(neg, 2), instance_matrix(neg, 3), 'gx');
 

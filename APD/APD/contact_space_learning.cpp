@@ -65,8 +65,8 @@ namespace APDL
 		for(std::size_t i = 0; i < data.size(); ++i)
 		{
 			const DataVector& data_v = (scaler && use_scaler) ? scaler->scale(data[i].v) : data[i].v;
-			DataVector v(distancer.dim());
-			for(std::size_t j = 0; j < distancer.dim(); ++j)
+			DataVector v(feature_dim);
+			for(std::size_t j = 0; j < feature_dim; ++j)
 				v[j] = data_v[j];
 
 			if(data[i].col) 

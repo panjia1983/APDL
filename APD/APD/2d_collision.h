@@ -311,6 +311,8 @@ namespace APDL
 	{
 		double x_min, x_max;
 		double y_min, y_max;
+
+		AABB2D() {}
 		
 		AABB2D(double x1, double x2, double y1, double y2)
 		{
@@ -386,6 +388,8 @@ namespace APDL
 	public:
 		Polygon()
 		{
+			aabb_computed = false;
+			circle_computed = false;
 		}
 		
 		std::size_t size() const
@@ -410,7 +414,7 @@ namespace APDL
 			return std::make_pair(points[best_id], best_id);
 		}
 		
-		AABB2D getAABB() const
+		void computeAABB() const
 		{
 			double x_min, x_max, y_min, y_max;
 			x_min = x_max = points[0].x;
@@ -427,10 +431,17 @@ namespace APDL
 				else if(y > y_max) y_max = y;
 			}
 			
-			return AABB2D(x_min, x_max, y_min, y_max);
+			aabb = AABB2D(x_min, x_max, y_min, y_max);
+			aabb_computed = true;
+		}
+
+		AABB2D& getAABB() const
+		{
+			if(!aabb_computed) computeAABB();
+			return aabb;
 		}
 		
-		std::pair<Vec2D, double> getCircle() const
+		void computeCircle() const
 		{
 			Vec2D c = points[0];
 			for(std::size_t i = 1 ; i < points.size(); ++i)
@@ -446,7 +457,14 @@ namespace APDL
 				if(r > r_max) r_max = r;
 			}
 			
-			return std::make_pair(c, std::sqrt(r_max));
+			circle = std::make_pair(c, std::sqrt(r_max));
+			circle_computed = true;
+		}
+
+		std::pair<Vec2D, double>& getCircle() const
+		{
+			if(!circle_computed) computeCircle();
+			return circle;
 		}
 
 		double getMaxDistanceToOrigin() const
@@ -462,6 +480,13 @@ namespace APDL
 		}
 		
 		std::vector<Vec2D> points;
+
+		mutable AABB2D aabb;
+		mutable std::pair<Vec2D, double> circle;
+
+		mutable bool aabb_computed;
+		mutable bool circle_computed;
+
 	};
 
 	inline AABB2D getAABB(const std::vector<Polygon>& polys)

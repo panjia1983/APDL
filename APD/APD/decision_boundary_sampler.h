@@ -139,10 +139,14 @@ namespace APDL
 		// for filter
 		double filter_threshold;
 
+		// use filter
+		bool enable_filter;
+
 		FilterParam()
 		{
 			clustering_max_iter = 10;
 			filter_threshold = (std::numeric_limits<double>::max)();
+			enable_filter = true;
 		}
 	};
 
@@ -218,7 +222,10 @@ namespace APDL
 		{
 			std::vector<DataVector> samples;
 			sample_decision_boundary_interpolation(learner, samples, knn_param);
-			return sampleSelectionKCentroids(filter(evaluator, samples, fparam.filter_threshold), n, fparam.clustering_max_iter);
+			if(fparam.enable_filter)
+				return sampleSelectionKCentroids(filter(evaluator, samples, fparam.filter_threshold), n, fparam.clustering_max_iter);
+			else
+				return sampleSelectionKCentroids(samples, n, fparam.clustering_max_iter);
 		}
 
 		std::size_t knn_param;
@@ -240,7 +247,10 @@ namespace APDL
 		{
 			std::vector<DataVector> samples;
 			sample_decision_boundary_interpolation2(learner, samples, knn_param);
-			return sampleSelectionKCentroids(filter(evaluator, samples, fparam.filter_threshold), n, fparam.clustering_max_iter);
+			if(fparam.enable_filter)
+				return sampleSelectionKCentroids(filter(evaluator, samples, fparam.filter_threshold), n, fparam.clustering_max_iter);
+			else
+				return sampleSelectionKCentroids(samples, n, fparam.clustering_max_iter);
 		}
 
 		std::size_t knn_param;

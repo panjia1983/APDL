@@ -19,10 +19,10 @@ namespace APDL
 	};
 
 	// only use support vector
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query(
 		const SVMLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const DataVector& query)
 	{
 		QueryResult res;
@@ -51,10 +51,10 @@ namespace APDL
 	}
 
 	// use extended model
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query(
 		const SVMLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const std::vector<DataVector>& index_samples,
 		const DataVector& query)
 	{
@@ -84,10 +84,10 @@ namespace APDL
 	}
 
 	// only use support vectors
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query2(
 		const SVMLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const DataVector& query)
 	{
 		QueryResult res;
@@ -139,10 +139,10 @@ namespace APDL
 	}
 
 	// use extended model
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query2(
 		const SVMLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const std::vector<DataVector>& index_samples,
 		const DataVector& query)
 	{
@@ -195,10 +195,10 @@ namespace APDL
 	}
 
 	// use support vectors
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query(
 		const MulticonlitronLearner& learner, const ContactSpace& contactspace,
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const DataVector& query)
 	{
 		QueryResult res;
@@ -227,10 +227,10 @@ namespace APDL
 	}
 
 	// use extended model
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query(
 		const MulticonlitronLearner& learner, const ContactSpace& contactspace,
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const std::vector<DataVector>& index_samples,
 		const DataVector& query)
 	{
@@ -258,10 +258,10 @@ namespace APDL
 	}
 
 	// use support vectors
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query2(
 		const MulticonlitronLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const DataVector& query)
 	{
 		QueryResult res;
@@ -312,10 +312,10 @@ namespace APDL
 	}
 
 	// use extended model
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	QueryResult PD_query2(
 		const MulticonlitronLearner& learner, const ContactSpace& contactspace, 
-		flann::Index<typename ContactSpace::DistanceType>* index,
+		IndexType<typename ContactSpace::DistanceType>* index,
 		const std::vector<DataVector>& index_samples,
 		const DataVector& query)
 	{

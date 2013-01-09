@@ -10,7 +10,7 @@
 
 namespace APDL
 {
-	extern double distance_weight[7];
+	extern double distance_weight[7]; // must be set for PDg
 
 	namespace FLANN_WRAPPER
 	{
@@ -56,7 +56,7 @@ namespace APDL
 			{
 				ResultType result = ResultType();
 				ResultType diff;
-				for(size_t i = 0; i < size - 1; ++i ) 
+				for(size_t i = 0; i < size - 1; ++i) 
 				{
 					diff = *a++ - *b++;
 					result += diff*diff * distance_weight[i];
@@ -189,7 +189,7 @@ namespace APDL
 	class DistanceProxySE2 : public DistanceProxyBase
 	{
 	public:
-		DistanceProxySE2(double angle_weight_ = 1) : angle_weight(angle_weight_)
+		DistanceProxySE2()
 		{}
 		
 		double sqrDistance(const DataVector& v1, const DataVector& v2) const
@@ -198,17 +198,13 @@ namespace APDL
 			double b = v1[1] - v2[1];
 			double c = angleTruncate(v1[2] - v2[2]);
 			
-			return a * a + b * b + angle_weight * c * c;
+			return a * a * distance_weight[0] + b * b * distance_weight[1] + c * c * distance_weight[2];
 		}
 		
 		std::size_t dim() const
 		{
 			return 3;
 		}
-		
-	protected:
-	
-		double angle_weight;
 	};
 	
 	class DistanceProxyR3 : public DistanceProxyBase
@@ -234,7 +230,7 @@ namespace APDL
 	class DistanceProxySE3EulerAngle : public DistanceProxyBase
 	{
 	public:
-		DistanceProxySE3EulerAngle(double angle_weight_ = 1) : angle_weight(angle_weight_)
+		DistanceProxySE3EulerAngle()
 		{}
 		
 		double sqrDistance(const DataVector& v1, const DataVector& v2) const
@@ -247,24 +243,21 @@ namespace APDL
 			double db = angleTruncate(v1[4] - v2[4]);
 			double dc = angleTruncate(v1[5] - v2[5]);
 			
-			return dx * dx + dy * dy + dz * dz + angle_weight * (da * da + db * db + dc * dc);
+			return dx * dx * distance_weight[0] + dy * dy * distance_weight[1] + dz * dz * distance_weight[2] + 
+				(da * da * distance_weight[3] + db * db * distance_weight[4] + dc * dc * distance_weight[5]);
 		}
 		
 		std::size_t dim() const
 		{
 			return 6;
 		}
-		
-	protected:
-	
-		double angle_weight;
 	};
 	
 	
 	class DistanceProxySE3Quaternion : public DistanceProxyBase
 	{
 	public:
-		DistanceProxySE3Quaternion(double q_weight_) : q_weight(q_weight_) {}
+		DistanceProxySE3Quaternion() {}
 		
 		double sqrDistance(const DataVector& v1, const DataVector& v2) const
 		{
@@ -278,7 +271,8 @@ namespace APDL
 			Quaternion q = q1 * q2.inverse();
 			
 			
-			double d = dx * dx + dy * dy + dz * dz + q_weight * (q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+			double d = dx * dx * distance_weight[0] + dy * dy * distance_weight[1] + dz * dz * distance_weight[2] + 
+				(q[1] * q[1] * distance_weight[3] + q[2] * q[2] * distance_weight[4] + q[3] * q[3] * distance_weight[5]);
 			return d;
 		}
 		
@@ -286,10 +280,6 @@ namespace APDL
 		{
 			return 7;
 		}
-		
-	protected:
-	
-		double q_weight;
 	};
 	
 }

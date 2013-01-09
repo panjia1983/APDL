@@ -11,14 +11,23 @@
 #include <CGAL/Cartesian_converter.h>
 #include <CGAL/Polygon_with_holes_2.h>
 
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/AABB_triangle_primitive.h>
+
 #include <limits>
 #include "data_vector.h"
 #include "math_utility.h"
 #include "distance_proxy.h"
 
+#include <C2A/C2A.h>
+#include <C2A/LinearMath.h>
+
 namespace APDL
 {
 
+	extern double distance_weight[7];
 //-----------------------------------------------------------------------------
 // Pretty-print a CGAL polygon.
 //
@@ -177,8 +186,9 @@ namespace APDL
 			return std::make_pair(PD_p, sqrt(best_d));
 		}
 		
-		static std::pair<DataVector, double> Exact_PD_SE2(const DataVector& q, const std::vector<std::pair<Polygon_with_holes_2, double> >& CSpace, double rotation_weight)
+		static std::pair<DataVector, double> Exact_PD_SE2(const DataVector& q, const std::vector<std::pair<Polygon_with_holes_2, double> >& CSpace)
 		{
+			DistanceProxySE2 metric;
 			DataVector q2(2);
 			q2[0] = q[0];
 			q2[1] = q[1];
@@ -188,14 +198,19 @@ namespace APDL
 			{
 				std::pair<DataVector, double> res = Exact_PD_R2(q2, CSpace[i].first);
 				double angle = CSpace[i].second;
-				double d = res.second + rotation_weight * (angle - q[2]) * (angle - q[2]);
+				DataVector q_cur(3);
+				q_cur[0] = res.first[0];
+				q_cur[1] = res.first[1];
+				q_cur[2] = angle;
+
+				double d = metric.sqrDistance(q, q_cur);
 				
 				if((i == 0) || (d < best_d))
 				{
 					best_d = d;
-					best_p[0] = res.first[0];
-					best_p[1] = res.first[1];
-					best_p[2] = angle;
+					best_p[0] = q_cur[0];
+					best_p[1] = q_cur[1];
+					best_p[2] = q_cur[2];
 				}
 			}
 			
@@ -361,11 +376,11 @@ namespace APDL
 			return std::make_pair(PD_p, sqrt(best_d));
 		}
 		
-		static std::pair<DataVector, double> Exact_PD_SE3(const DataVector& q, const std::vector<std::pair<Polyhedron, Quaternion> >& CSpace, double rotation_weight)
+		static std::pair<DataVector, double> Exact_PD_SE3(const DataVector& q, const std::vector<std::pair<Polyhedron, Quaternion> >& CSpace)
 		{
 			if(q.dim() == 6)
 			{
-				DistanceProxySE3EulerAngle metric(rotation_weight);
+				DistanceProxySE3EulerAngle metric;
 				DataVector q_trans(3);
 				q_trans[0] = q[0];
 				q_trans[1] = q[1];
@@ -399,7 +414,7 @@ namespace APDL
 			}
 			else if(q.dim() == 7)
 			{
-				DistanceProxySE3Quaternion metric(rotation_weight);
+				DistanceProxySE3Quaternion metric;
 				DataVector q_trans(3);
 				q_trans[0] = q[0];
 				q_trans[1] = q[1];
@@ -437,7 +452,119 @@ namespace APDL
 				return std::make_pair(q, -1);
 		}
 		
-		
+		static std::pair<DataVector, double> Exact_PD_R3(const DataVector& q, C2A_Model* CSpace)
+		{
+			typedef CGAL::Simple_cartesian<double> K;
+
+			typedef K::FT FT;
+			typedef K::Ray_3 Ray;
+			typedef K::Line_3 Line;
+			typedef K::Point_3 Point;
+			typedef K::Triangle_3 Triangle;
+
+			typedef std::list<Triangle>::iterator Iterator;
+			typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
+			typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
+			typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;			 
+			
+			std::list<Triangle> triangles;
+			for(std::size_t i = 0; i < CSpace->num_tris; ++i)
+			{
+				C2A_Tri* tri = CSpace->GetTriangle(i);
+				Point a(tri->p1[0], tri->p1[1], tri->p1[2]);
+				Point b(tri->p2[0], tri->p2[1], tri->p2[2]);
+				Point c(tri->p3[0], tri->p3[1], tri->p3[2]);
+				triangles.push_back(Triangle(a, b, c));
+			}
+
+			Tree tree(triangles.begin(), triangles.end());
+			Point query(q[0], q[1], q[2]);
+			Point closest_point = tree.closest_point(query);
+			
+			DataVector PD_p(3);
+			PD_p[0] = closest_point.x();
+			PD_p[1] = closest_point.y();
+			PD_p[2] = closest_point.z();
+
+			double dist = tree.squared_distance(query);
+			return std::make_pair(PD_p, sqrt(dist));
+		}
+
+		static std::pair<DataVector, double> Exact_PD_SE3(const DataVector& q, const std::vector<std::pair<C2A_Model*, Quaternion> >& CSpace)
+		{
+			if(q.dim() == 6)
+			{
+				DistanceProxySE3EulerAngle metric;
+				DataVector q_trans(3);
+				q_trans[0] = q[0];
+				q_trans[1] = q[1];
+				q_trans[2] = q[2];
+				
+				DataVector best_p(6);
+				double best_d = (std::numeric_limits<double>::max)();
+				for(std::size_t i = 0; i < CSpace.size(); ++i)
+				{
+					std::pair<DataVector, double> res_trans = Exact_PD_R3(q_trans, CSpace[i].first);
+					double a, b, c;
+					Quat2Euler(a, b, c, CSpace[i].second);
+					
+					DataVector res(6);
+					res[0] = res_trans.first[0];
+					res[1] = res_trans.first[1];
+					res[2] = res_trans.first[2];
+					res[3] = a;
+					res[4] = b;
+					res[5] = c;
+					
+					double d = metric.sqrDistance(q, res);
+					if((i == 0) || (d < best_d))
+					{
+						best_d = d;
+						best_p = res;
+					}
+				}
+				
+				return std::make_pair(best_p, sqrt(best_d));
+			}
+			else if(q.dim() == 7)
+			{
+				DistanceProxySE3Quaternion metric;
+				DataVector q_trans(3);
+				q_trans[0] = q[0];
+				q_trans[1] = q[1];
+				q_trans[2] = q[2];
+				
+				DataVector best_p(7);
+				double best_d = (std::numeric_limits<double>::max)();
+				for(std::size_t i = 0; i < CSpace.size(); ++i)
+				{
+					std::pair<DataVector, double> res_trans = Exact_PD_R3(q_trans, CSpace[i].first);
+					
+					DataVector res(7);
+					res[0] = res_trans.first[0];
+					res[1] = res_trans.first[1];
+					res[2] = res_trans.first[2];
+					
+					const Quaternion& r = CSpace[i].second;
+					res[3] = r[0];
+					res[4] = r[1];
+					res[5] = r[2];
+					res[6] = r[3];
+					
+					double d = metric.sqrDistance(q, res);
+					
+					if((i == 0) || (d < best_d))
+					{
+						best_d = d;
+						best_p = res;
+					}
+				}
+				
+				return std::make_pair(best_p, sqrt(best_d));
+			}
+			else
+				return std::make_pair(q, -1);
+		}
 	};
 	
 	

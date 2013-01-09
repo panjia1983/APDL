@@ -2,6 +2,7 @@
 #define ACTIVE_LEARNING_H
 
 #include "contact_space_learning.h"
+#include <APD/profile.h>
 
 extern std::ofstream test_file;
 
@@ -151,7 +152,12 @@ namespace APDL
 			num_grid = 100;
 
 			debug = false;
+			debug_os = NULL;
 		}
+
+		std::string model_name;
+
+		std::ofstream* debug_os;
 	};
 
 
@@ -161,15 +167,23 @@ namespace APDL
 		std::size_t num_uniform_samples = param.num_init_uniform_samples;
 		std::size_t num_exploit = param.num_exploit_samples_per_iter;
 		std::size_t num_explore = param.num_explore_samples_per_iter;
+
+		tools::Profiler::Begin(param.model_name + "_init");
 		std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(num_uniform_samples); // initial_sample
 		learner.learn(samples, contactspace.active_data_dim());
+		tools::Profiler::End(param.model_name + "_init");
 
-		if(param.debug)
-			std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+		if(param.debug && param.debug_os)
+		{
+			*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+			std::string model_file_name = param.model_name + "_base.txt";
+			learner.save(model_file_name);
+		}
 
 
 		for(std::size_t i = 0; i < param.num_iter; ++i)
 		{
+			tools::Profiler::Begin(param.model_name + "_iteration");
 			std::vector<DataVector> exploitation_samples = decision_boundary_sampler.sample(num_exploit);
 			std::vector<ContactSpaceSampleData> exploration_samples = contactspace.uniform_sample(num_explore);
 
@@ -184,31 +198,34 @@ namespace APDL
 				for(std::size_t k = 0; k < contactspace.active_data_dim(); ++k) v[k] = unscaled_exploitation_sample[k];
 				bool col = contactspace.collider.isCollide(v);
 				samples.push_back(ContactSpaceSampleData(v, col));
-				// test_file << "[" << v[0] << "," << v[1] << "](" << col << "," << (learner.predict(v).label > 0) << ")";
-				// if((learner.predict(v).label > 0) != col) n_exploitation_error++;
 			}
-			// test_file << std::endl;
-
 
 			for(std::size_t j = 0; j < exploration_samples.size(); ++j)
 				samples.push_back(exploration_samples[j]);
 
-
-			//for(std::size_t j = 0; j < exploration_samples.size(); ++j)
-			//{
-			//	test_file << "[" << exploration_samples[j].v[0] << "," << exploration_samples[j].v[1] << "](" << exploration_samples[j].col << "," << (learner.predict(exploration_samples[j].v).label > 0) << ")";
-			//	if(exploration_samples[j].col != (learner.predict(exploration_samples[j].v).label > 0))
-			//		n_exploration_error++;
-			//}
-			//test_file << std::endl;
-
-			//std::cout << "**" << n_exploitation_error / (double)exploration_samples.size() << " " << n_exploration_error / (double)exploration_samples.size() << std::endl;
-
 			learner.learn(samples, contactspace.active_data_dim());
 
-			if(param.debug)
-				std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+			tools::Profiler::End(param.model_name + "_iteration");
+
+			SVMLearner* plearner = dynamic_cast<SVMLearner*>(&learner);
+			if(plearner) 
+			{
+				plearner->setC(plearner->param.C + 1);
+				//plearner->setGamma(plearner->param.gamma + 2);
+			}
+
+			if(param.debug && param.debug_os)
+			{
+				*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+				std::ostringstream  convert;
+				convert << i;
+				std::string model_file_name = param.model_name + "_" + convert.str() + ".txt";
+				learner.save(model_file_name);
+			}
 		}
+
+		if(param.debug && param.debug_os)
+			*(param.debug_os) << std::endl;
 	}
 
 	template<typename ContactSpace, typename Learner, typename DecisionBoundarySampler>
@@ -217,11 +234,17 @@ namespace APDL
 		std::size_t num_uniform_samples = param.num_init_uniform_samples;
 		std::size_t num_exploit = param.num_exploit_samples_per_iter;
 		std::size_t num_explore = param.num_explore_samples_per_iter;
+		tools::Profiler::Begin(param.model_name + "_init");
 		std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(num_uniform_samples); // initial_sample
 		learner.learn(samples, contactspace.active_data_dim());
+		tools::Profiler::End(param.model_name + "_init");
 
-		if(param.debug)
-			std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+		if(param.debug && param.debug_os)
+		{
+			*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+			std::string model_file_name = param.model_name + "_base.txt";
+			learner.save(model_file_name);
+		}
 
 
 		double p = 0.5;
@@ -230,6 +253,7 @@ namespace APDL
 		RNG rng;
 		for(std::size_t i = 0; i < param.num_iter; ++i)
 		{
+			tools::Profiler::Begin(param.model_name + "_iteration");
 			double ps = rng.uniform01();
 			if(ps < p)
 			{
@@ -265,10 +289,27 @@ namespace APDL
 			}
 
 			learner.learn(samples, contactspace.active_data_dim());
+			tools::Profiler::End(param.model_name + "_iteration");
 
-			if(param.debug)
-				std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+			SVMLearner* plearner = dynamic_cast<SVMLearner*>(&learner);
+			if(plearner) 
+			{
+				// plearner->setC(plearner->param.C + 5);
+				// plearner->setGamma(plearner->param.gamma + 1);
+			}
+
+			if(param.debug && param.debug_os)
+			{
+				*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+				std::ostringstream  convert;
+				convert << i;
+				std::string model_file_name = param.model_name + "_" + convert.str() + ".txt";
+				learner.save(model_file_name);
+			}
 		}
+
+		if(param.debug && param.debug_os)
+			*(param.debug_os) << std::endl;
 	}
 
 
@@ -278,16 +319,25 @@ namespace APDL
 		std::size_t num_uniform_samples = param.num_init_uniform_samples;
 		std::size_t num_exploit = param.num_exploit_samples_per_iter;
 		std::size_t num_explore = param.num_explore_samples_per_iter;
+		tools::Profiler::Begin(param.model_name + "_init");
 		std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(num_uniform_samples); // initial_sample
 		learner.learn(samples, contactspace.active_data_dim());
+		tools::Profiler::End(param.model_name + "_init");
 
-		if(param.debug)
-			std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+		if(param.debug && param.debug_os)
+		{
+			*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+			std::string model_file_name = param.model_name + "_base.txt";
+			learner.save(model_file_name);
+		}
 
 		for(std::size_t i = 0; i < param.num_iter; ++i)
 		{
+			tools::Profiler::Begin(param.model_name + "_iteration");
 			samples.clear();
+			tools::Profiler::Begin("decision sampler");
 			std::vector<DataVector> exploitation_samples = decision_boundary_sampler.sample(num_exploit);
+			tools::Profiler::End("decision sampler");
 			std::vector<ContactSpaceSampleData> exploration_samples = contactspace.uniform_sample(num_explore);
 			for(std::size_t j = 0; j < exploitation_samples.size(); ++j)
 			{
@@ -308,9 +358,20 @@ namespace APDL
 
 			learner.incremental_learn(samples, contactspace.active_data_dim());
 
-			if(param.debug)
-				std::cout << samples.size() << ": " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << std::endl;
+			tools::Profiler::End(param.model_name + "_iteration");
+
+			if(param.debug && param.debug_os)
+			{
+				*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+				std::ostringstream  convert;
+				convert << i;
+				std::string model_file_name = param.model_name + "_" + convert.str() + ".txt";
+				learner.save(model_file_name);
+			}
 		}
+
+		if(param.debug && param.debug_os)
+			*(param.debug_os) << std::endl;
 	}
 	
 }

@@ -55,8 +55,8 @@ namespace APDL
 		return index;
 	}
 
-	template<typename ContactSpace, typename IndexParams>
-	flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<ContactSpaceSampleData>& samples)
+	template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+	IndexType<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<ContactSpaceSampleData>& samples)
 	{
 		if(samples.size() == 0) return NULL;
 
@@ -71,14 +71,14 @@ namespace APDL
 			}
 		}
 
-		flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+		IndexType<typename ContactSpace::DistanceType>* index = new IndexType<typename ContactSpace::DistanceType>(dataset, IndexParams());
 		index->buildIndex();
 
 		return index;
 	}
 
-	template<typename ContactSpace, typename IndexParams>
-	flann::Index<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<DataVector>& samples)
+	template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+	IndexType<typename ContactSpace::DistanceType>* constructIndexForQuery(std::vector<DataVector>& samples)
 	{
 		if(samples.size() == 0) return NULL;
 
@@ -93,7 +93,7 @@ namespace APDL
 			}
 		}
 
-		flann::Index<typename ContactSpace::DistanceType>* index = new flann::Index<typename ContactSpace::DistanceType>(dataset, IndexParams());
+		IndexType<typename ContactSpace::DistanceType>* index = new IndexType<typename ContactSpace::DistanceType>(dataset, IndexParams());
 		index->buildIndex();
 
 		return index;
@@ -186,10 +186,10 @@ namespace APDL
 		}
 	};
 
-	template<typename ContactSpace>
+	template<typename ContactSpace, template <typename> class IndexType>
 	struct ExtendedModel
 	{
-		flann::Index<typename ContactSpace::DistanceType>* index;
+		IndexType<typename ContactSpace::DistanceType>* index;
 		std::vector<DataVector> samples; // samples should be of active dim
 		std::vector<typename ContactSpace::ColliderType::CollisionResult> contacts; // contact info for each sample
 
@@ -199,20 +199,19 @@ namespace APDL
 		}
 	};
 
-	template<typename ContactSpace, typename Learner, typename IndexParams>
-	ExtendedModel<ContactSpace> constructExtendedModelForModelDecisionBoundary(
+	template<typename ContactSpace, typename Learner, template <typename> class IndexType, typename IndexParams>
+	ExtendedModel<ContactSpace, IndexType> constructExtendedModelForModelDecisionBoundary(
 		const ContactSpace& contactspace, const Learner& learner, 
 		std::vector<ContactSpaceSampleData> model_samples, double push_delta_t)
 	{
-		ExtendedModel<ContactSpace> extended_model;
+		ExtendedModel<ContactSpace, IndexType> extended_model;
 
 		std::vector<DataVector> supportClass0, supportClass1;
 		learner.collectSupportVectorsClass0(supportClass0);
 		learner.collectSupportVectorsClass1(supportClass1);
 
-		flann::Index<typename ContactSpace::DistanceType>* index0 = constructIndexForQuery<ContactSpace, IndexParams>(supportClass0);
-		flann::Index<typename ContactSpace::DistanceType>* index1 = constructIndexForQuery<ContactSpace, IndexParams>(supportClass1);
-
+		IndexType<typename ContactSpace::DistanceType>* index0 = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(supportClass0);
+		IndexType<typename ContactSpace::DistanceType>* index1 = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(supportClass1);
 
 		std::vector<DataVector> pushed_samples;
 
@@ -271,7 +270,7 @@ namespace APDL
 			pushed_samples.push_back(contact_q);
 		}
 
-		extended_model.index = constructIndexForQuery<ContactSpace, IndexParams>(pushed_samples);
+		extended_model.index = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(pushed_samples);
 		extended_model.samples = pushed_samples;
 
 		delete index0;
@@ -595,29 +594,29 @@ namespace APDL
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass0() const;
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectors(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass0(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass1(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
 		svm_parameter param;
@@ -895,28 +894,28 @@ namespace APDL
 		flann::Index<FLANN_WRAPPER::DistanceRN>* constructIndexOfSupportVectorsClass1() const;
 
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQuery() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectors(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass0() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass0(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
-		template<typename ContactSpace, typename IndexParams>
-		flann::Index<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
+		template<typename ContactSpace, template <typename> class IndexType, typename IndexParams>
+		IndexType<typename ContactSpace::DistanceType>* constructIndexOfSupportVectorsForQueryClass1() const
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass1(samples);
-			return constructIndexForQuery<ContactSpace, IndexParams>(samples);
+			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
 

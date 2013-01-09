@@ -45,6 +45,19 @@ namespace APDL
 		Polygon p1 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(P);
 		Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
+		{
+			std::cout << area(p1) << " " << std::endl;
+			double Ix, Iy;
+			inertia(p1, Ix, Iy);
+			std::cout << Ix << " " << Iy << std::endl;
+		}
+		{
+			std::cout << area(p2) << " " << std::endl;
+			double Ix, Iy;
+			inertia(p2, Ix, Iy);
+			std::cout << Ix << " " << Iy << std::endl;
+		}
+
 		ContactSpaceR2 contactspace(p1, p2, 2);
 
 		std::vector<DataVector> samples = contactspace.uniform_sample0(1000);
@@ -315,6 +328,17 @@ namespace APDL
 		}
 	}
 
+	static void test_open_Cspace_file()
+	{
+		std::vector<std::pair<C2A_Model*, Quaternion> > model;
+		readSE3Model(model, "../data/cspaces/ballcube/ballcube");
+		for(std::size_t i = 0; i < model.size(); ++i)
+		{
+			std::cout << model[i].first->num_tris << std::endl;
+			std::cout << model[i].second[0] << " " << model[i].second[1] << " " << model[i].second[2] << " " << model[i].second[3] << std::endl; 
+		}
+	}
+
 	static void test_convex_decomposition_PD()
 	{
 		std::vector<C2A_Model*> model1;
@@ -327,6 +351,12 @@ namespace APDL
 		C2A_Model* Q;
 		readObjFile(P, "../data/models/Bullet/ringz.obj");
 		readObjFile(Q, "../data/models/Bullet/ringz.obj");
+
+		std::cout << volume(P) << std::endl;
+		double Pa, Pb, Pc;
+		inertia_weight(P, Pa, Pb, Pc);
+		std::cout << Pa << " " << Pb << " " << Pc << std::endl;
+
 
 		ContactSpaceSE3Euler2 contactspace(P, Q, 0.1);
 
@@ -414,7 +444,9 @@ void main()
 	// APDL::test_continuous_collide_3d();
 
 	// APDL::test_convex_decomposition_PD();
-	APDL::test_animation();
+	// APDL::test_animation();
+
+	APDL::test_open_Cspace_file();
 
 	APDL::tools::Profiler::Stop();
 	APDL::tools::Profiler::Status();

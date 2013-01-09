@@ -27,6 +27,12 @@ namespace APDL
 		Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
 		ContactSpaceR2 contactspace(p1, p2, 2);
+		std::ofstream scaler_file("scaler_2d.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+
+		std::ofstream active_learning_stat_file("stat.txt");
+
+		std::cout << contactspace.collider.num_convex_pieces1() << " " << contactspace.collider.num_convex_pieces2() << std::endl;
 
 		// original learner, not scaled
 		{
@@ -35,6 +41,7 @@ namespace APDL
 			
 			for(int i = 0; i < n_iter; ++i)
 			{
+				tools::Profiler::Begin("original learner");
 				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
 				for(std::size_t j = 0; j < samples.size(); ++j)
 					contactspace_samples.push_back(samples[j]);
@@ -47,17 +54,11 @@ namespace APDL
 
 				learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-				std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+				tools::Profiler::End("original learner");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
 			}
-
-
-			// std::vector<PredictResult> results = learner.predict(contactspace_samples);
-
-			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			//std::cout << std::endl;
-
-			
+			active_learning_stat_file << std::endl;			
 		}
 
 		// active learner, not scaled
@@ -83,6 +84,8 @@ namespace APDL
 
 			ActiveLearningParam aparam(100, 50, 50, 9);
 			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_active";
 			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 
@@ -102,13 +105,14 @@ namespace APDL
 			param.epsilon = 0;
 			param.result_eps = 0;
 
-
 			SVMEvaluator evaluator(learner);
 			FilterParam fparam;
 			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
 
 			ActiveLearningParam aparam(100, 50, 50, 18);
 			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_activeb";
 			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 
@@ -121,6 +125,7 @@ namespace APDL
 
 			for(int i = 0; i < n_iter; ++i)
 			{
+				tools::Profiler::Begin("original learner scaled");
 				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
 				for(std::size_t j = 0; j < samples.size(); ++j)
 					contactspace_samples.push_back(samples[j]);
@@ -136,8 +141,11 @@ namespace APDL
 
 				learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-				std::cout << contactspace_samples.size() << ": " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
 			}
+			active_learning_stat_file << std::endl;
 		}
 
 
@@ -173,6 +181,8 @@ namespace APDL
 
 			ActiveLearningParam aparam(100, 50, 50, 9);
 			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_active";
 			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 
@@ -208,6 +218,8 @@ namespace APDL
 
 			ActiveLearningParam aparam(100, 50, 50, 18);
 			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_activeb";
 			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 	}
@@ -235,33 +247,36 @@ namespace APDL
 		Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
 
 		ContactSpaceR2 contactspace(p1, p2, 2);
-		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
+		std::ofstream scaler_file("scaler_2d.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
 
-		std::ofstream out("space_test_2d.txt");
-		asciiWriter(out, contactspace_samples);
+		std::ofstream active_learning_stat_file("stat_inc.txt");
 
 		// original learner, not scaled
 		{
-			SVMLearner learner;
-			learner.setDim(contactspace.active_data_dim());
-			learner.setC(10);
-			learner.setProbability(true);
-			learner.setScaler(contactspace.getScaler());
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
 
-			std::ofstream scaler_file("scaler_2d.txt");
-			scaler_file << contactspace.getScaler() << std::endl;
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner");
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
 
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(10);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
 
-			learner.learn(contactspace_samples, contactspace.active_data_dim());
-			learner.save("model_2d.txt");
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
+				tools::Profiler::End("original learner");
 
-			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			//std::cout << std::endl;
-
-			std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
 		}
 
 
@@ -283,50 +298,57 @@ namespace APDL
 
 			SVMEvaluator evaluator(learner);
 			FilterParam fparam;
-			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
 
 			ActiveLearningParam aparam(100, 50, 50, 9);
 			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_active_inc";
 			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 
 		// original learner, scaled
 		{
-			SVMLearner learner;
-			learner.setDim(contactspace.active_data_dim());
-			learner.setC(10);
-			learner.setProbability(true);
-			learner.setScaler(contactspace.getScaler());
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
 
-			learner.setUseScaler(true);
-			learner.setGamma(5);
-			
-			std::ofstream scaler_file("scaler_2d.txt");
-			scaler_file << contactspace.getScaler() << std::endl;
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner scaled");
 
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
 
-			learner.learn(contactspace_samples, contactspace.active_data_dim());
-			learner.save("model_2d.txt");
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
 
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
+				learner.setUseScaler(true);
+				learner.setGamma(50);
 
-			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			//std::cout << std::endl;
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-			std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
 		}
 
 		// active learner, scaled
 		{
 			SVMLearner learner;
 			learner.setDim(contactspace.active_data_dim());
-			learner.setC(10);
+			learner.setC(50);
 			learner.setProbability(true);
 			learner.setScaler(contactspace.getScaler());
 
 			learner.setUseScaler(true);
-			learner.setGamma(5);
+			learner.setGamma(50);
 
 			SpatialTreeEParam param;
 			//param.max_depth = 8;
@@ -346,10 +368,13 @@ namespace APDL
 
 			SVMEvaluator evaluator(learner);
 			FilterParam fparam;
-			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
 
 			ActiveLearningParam aparam(100, 50, 50, 9);
 			aparam.debug = true;
+			aparam.model_name = "model_2d_scaled_active_inc";
+			aparam.debug_os = &active_learning_stat_file;
 			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 	}
@@ -358,42 +383,45 @@ namespace APDL
 
 
 
-	void test_svm_active_learning_poly_spider()
+	void test_svm_active_learning_poly_monkey()
 	{
-		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/tooth.polys");
-		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/nazca_monkey550.polys");
+		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_monkey550.polys");
 
 
 		ContactSpaceR2 contactspace(polys1, polys2, 2);
+		std::ofstream scaler_file("scaler_2d_monkey.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
 
-		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(1000);
-
-		std::ofstream out("space_test_2d.txt");
-		asciiWriter(out, contactspace_samples);
+		std::ofstream active_learning_stat_file("monkey_stat.txt");
 
 		// original learner, not scaled
 		{
-			SVMLearner learner;
-			learner.setDim(contactspace.active_data_dim());
-			learner.setC(20);
-			learner.setGamma(50);
-			learner.setProbability(true);
-			learner.setScaler(contactspace.getScaler());
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+			
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner");
 
-			std::ofstream scaler_file("scaler_2d.txt");
-			scaler_file << contactspace.getScaler() << std::endl;
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
 
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(20);
+				learner.setGamma(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
 
-			learner.learn(contactspace_samples, contactspace.active_data_dim());
-			learner.save("model_2d.txt");
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
 
-			std::vector<PredictResult> results = learner.predict(contactspace_samples);
+				tools::Profiler::End("original learner");
 
-			//for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
-			//	std::cout << "(" << results[i].label << "," << contactspace_samples[i].col << ")";
-			//std::cout << std::endl;
-
-			std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;		
 		}
 
 		// active learner, not scaled
@@ -420,17 +448,658 @@ namespace APDL
 
 			ActiveLearningParam aparam(100, 50, 50, 9);
 			aparam.debug = true;
+			aparam.model_name = "model_2d_active";
+			aparam.debug_os = &active_learning_stat_file;
 			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
 		}
 
+		// active learner2, not scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(20);
+			learner.setGamma(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
 
+			SpatialTreeEParam param;
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 18);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_activeb";
+			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+
+		// original learner, scaled
+		{
+
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner scaled");
+
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.setUseScaler(true);
+				learner.setGamma(50);
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+
+		// active learner, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_active";
+			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+		// active learner2, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 18);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_activeb";
+			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
+		}
 	}
+
+
+	void test_svm_active_learning_inc_poly_monkey()
+	{
+		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/nazca_monkey550.polys");
+		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_monkey550.polys");
+
+
+		ContactSpaceR2 contactspace(polys1, polys2, 2);
+		std::ofstream scaler_file("scaler_2d_monkey.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+
+		std::ofstream active_learning_stat_file("monkey_stat_inc.txt");
+
+		// original learner, not scaled
+		{
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner");
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(20);
+				learner.setGamma(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+
+		// active learner, not scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(20);
+			learner.setGamma(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			SpatialTreeEParam param;
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_active_inc";
+			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+		// original learner, scaled
+		{
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner scaled");
+
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.setUseScaler(true);
+				learner.setGamma(50);
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+		// active learner, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 1e-3;
+
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.model_name = "model_2d_scaled_active_inc";
+			aparam.debug_os = &active_learning_stat_file;
+			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+	}
+
+
+
+	void test_svm_active_learning_poly_spider()
+	{
+		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+
+
+		ContactSpaceR2 contactspace(polys1, polys2, 0.2 * (getCircle(polys1).second + getCircle(polys2).second));
+		std::ofstream scaler_file("scaler_2d_spider.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+
+		std::ofstream active_learning_stat_file("spider_stat.txt");
+
+		// original learner, not scaled
+		{
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+			
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner");
+
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(20);
+				learner.setGamma(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;		
+		}
+
+		// active learner, not scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(20);
+			learner.setGamma(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			SpatialTreeEParam param;
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;
+			param.result_eps = 0;
+
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.model_name = "model_2d_active";
+			aparam.debug_os = &active_learning_stat_file;
+			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+		// active learner2, not scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(20);
+			learner.setGamma(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			SpatialTreeEParam param;
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 18);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_activeb";
+			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+
+		// original learner, scaled
+		{
+
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner scaled");
+
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.setUseScaler(true);
+				learner.setGamma(50);
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+
+		// active learner, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_active";
+			active_learning(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+		// active learner2, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 18);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_scaled_activeb";
+			active_learning2(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+	}
+
+
+	void test_svm_active_learning_inc_poly_spider()
+	{
+		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_spider77.polys");
+
+
+		ContactSpaceR2 contactspace(polys1, polys2, 0.2 * (getCircle(polys1).second + getCircle(polys2).second));
+		std::ofstream scaler_file("scaler_2d_monkey.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+
+		std::ofstream active_learning_stat_file("monkey_stat_inc.txt");
+
+		// original learner, not scaled
+		{
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner");
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(20);
+				learner.setGamma(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+
+		// active learner, not scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(20);
+			learner.setGamma(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			SpatialTreeEParam param;
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 0.2;
+			param.stop_related_diff = 0.1;
+			param.epsilon = 0;
+			param.result_eps = 0;
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.debug_os = &active_learning_stat_file;
+			aparam.model_name = "model_2d_active_inc";
+			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+
+		// original learner, scaled
+		{
+			std::vector<ContactSpaceSampleData> contactspace_samples;
+			int n_iter = 10;
+
+			for(int i = 0; i < n_iter; ++i)
+			{
+				tools::Profiler::Begin("original learner scaled");
+
+				std::vector<ContactSpaceSampleData> samples = contactspace.uniform_sample(100);
+				for(std::size_t j = 0; j < samples.size(); ++j)
+					contactspace_samples.push_back(samples[j]);
+
+				SVMLearner learner;
+				learner.setDim(contactspace.active_data_dim());
+				learner.setC(50);
+				learner.setProbability(true);
+				learner.setScaler(contactspace.getScaler());
+
+				learner.setUseScaler(true);
+				learner.setGamma(50);
+
+				learner.learn(contactspace_samples, contactspace.active_data_dim());
+
+				tools::Profiler::End("original learner scaled");
+
+				active_learning_stat_file << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << " ";
+			}
+			active_learning_stat_file << std::endl;
+		}
+
+		// active learner, scaled
+		{
+			SVMLearner learner;
+			learner.setDim(contactspace.active_data_dim());
+			learner.setC(50);
+			learner.setProbability(true);
+			learner.setScaler(contactspace.getScaler());
+
+			learner.setUseScaler(true);
+			learner.setGamma(50);
+
+			SpatialTreeEParam param;
+			//param.max_depth = 8;
+			//param.initial_depth = 4;
+			//param.stop_abs_diff = 0.2;
+			//param.stop_related_diff = 0.1;
+			//param.epsilon = 0;
+			//param.result_eps = 0;
+
+			param.max_depth = 8;
+			param.initial_depth = 4;
+			param.stop_abs_diff = 1e-4;
+			param.stop_related_diff = 0.02;
+			param.epsilon = 0.002;
+			param.result_eps = 1e-3;
+
+
+			SVMEvaluator evaluator(learner);
+			FilterParam fparam;
+			// DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
+			DecisionBoundaryInterpolationSampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(10, fparam, evaluator, learner);
+
+			ActiveLearningParam aparam(100, 50, 50, 9);
+			aparam.debug = true;
+			aparam.model_name = "model_2d_scaled_active_inc";
+			aparam.debug_os = &active_learning_stat_file;
+			active_learning_incremental(contactspace, learner, decision_boundary_sampler, aparam);
+		}
+	}
+
+
 }
 
 void main()
 {
+	APDL::tools::Profiler::Start();
+
 	test_file.open("active_test.txt");
 	// APDL::test_svm_active_learning_poly_spider();
+	// APDL::test_svm_active_learning_inc_poly_spider();
+	// APDL::test_svm_active_learning_poly_monkey();
+	// APDL::test_svm_active_learning_inc_poly_monkey();
 	APDL::test_svm_active_learning();
 	// APDL::test_svm_active_learning_inc();
+
+
+	APDL::tools::Profiler::Stop();
+
+	APDL::tools::Profiler::Status();
 }
