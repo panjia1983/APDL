@@ -218,8 +218,8 @@ namespace APDL
 		std::vector<std::vector<int> > indices;
 		std::vector<std::vector<double> > dists;
 
-		DataVector qs(contactspace.data_dim()); // for collision
-		DataVector qt(contactspace.data_dim());
+		DataVector qs(contactspace.zeroDataVector()); // for collision
+		DataVector qt(contactspace.zeroDataVector());
 
 		std::size_t feature_dim = learner.feature_dim;
 
@@ -236,15 +236,35 @@ namespace APDL
 			if(model_samples[i].col)
 			{
 				index0->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+				DataVector vt(feature_dim);
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					vt[j] = model_samples[i].v[j];
+				DataVector vs(supportClass0[indices[0][0]]);
+				if(learner.scaler && learner.use_scaler)
+				{
+					vt = learner.scaler->unscale(vt);
+					vs = learner.scaler->unscale(vs);
+				}
+
 				for(std::size_t j = 0; j < feature_dim; ++j)
 				{
-					qt[j] = model_samples[i].v[j];               // collision
-					qs[j] = supportClass0[indices[0][0]][j];   // collision-free
+					qt[j] = vt[j];               // collision
+					qs[j] = vs[j];   // collision-free
 				}
 			}
 			else
 			{
 				index1->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
+				Datavector vs(feature_dim);
+				for(std::size_t j = 0; j < feature_dim; ++j)
+					vs[j] = model_samples[i].v[j];
+				DataVector vt(supportClass1[indices[0][0]]);
+				if(learner.scaler && learner.use_scaler)
+				{
+					vt = learner.scaler->unscale(vt);
+					vs = learner.scaler->unscale(vs);
+				}
+
 				for(std::size_t j = 0; j < feature_dim; ++j)
 				{
 					qs[j] = model_samples[i].v[j];               // collision
@@ -599,6 +619,14 @@ namespace APDL
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectors(samples);
+			if(scaler && use_scaler)
+			{
+				for(std::size_t i = 0; i < samples.size(); ++i)
+				{
+					samples[i] = scaler->unscale(samples[i]);
+				}
+			}
+
 			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
@@ -608,6 +636,13 @@ namespace APDL
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass0(samples);
+			if(scaler && use_scaler)
+			{
+				for(std::size_t i = 0; i < samples.size(); ++i)
+				{
+					samples[i] = scaler->unscale(samples[i]);
+				}
+			}
 			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 
@@ -616,6 +651,13 @@ namespace APDL
 		{
 			std::vector<DataVector> samples;
 			collectSupportVectorsClass1(samples);
+			if(scaler && use_scaler)
+			{
+				for(std::size_t i = 0; i < samples.size(); ++i)
+				{
+					samples[i] = scaler->unscale(samples[i]);
+				}
+			}
 			return constructIndexForQuery<ContactSpace, IndexType, IndexParams>(samples);
 		}
 

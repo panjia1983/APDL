@@ -1,4 +1,5 @@
 #include "math_utility.h"
+#include <iostream>
 
 namespace APDL
 {
@@ -84,44 +85,7 @@ namespace APDL
 		R[2][2] = cj * ci;
 		
 		// R to quaternion
-		const int next[3] = {1, 2, 0};
-		
-		double trace = R[0][0] + R[1][1] + R[2][2];
-		double root;
-		
-		if(trace > 0.0)
-		{
-			// |w| > 1/2, may as well choose w > 1/2
-			root = sqrt(trace + 1.0);  // 2w
-			quat[0] = 0.5 * root;
-			root = 0.5 / root;  // 1/(4w)
-			quat[1] = (R[2][1] - R[1][2]) * root;
-			quat[2] = (R[0][2] - R[2][0]) * root;
-			quat[3] = (R[1][0] - R[0][1]) * root;
-		}
-		else
-		{
-			// |w| <= 1/2
-			int i = 0;
-			if(R[1][1] > R[0][0])
-			{
-				i = 1;
-			}
-			if(R[2][2] > R[i][i])
-			{
-				i = 2;
-			}
-			int j = next[i];
-			int k = next[j];
-			
-			root = sqrt(R[i][i] - R[j][j] - R[k][k] + 1.0);
-			double* q[3] = { &quat[4], &quat[5], &quat[6] };
-			*q[i] = 0.5 * root;
-			root = 0.5 / root;
-			quat[3] = (R[k][j] - R[j][k]) * root;
-			*q[j] = (R[j][i] + R[i][j]) * root;
-			*q[k] = (R[k][i] + R[i][k]) * root;
-		}
+		Rot2Quat(quat, R);
 	}
 	
 	void Rot2Quat(Quaternion& quat, double R[3][3])
@@ -417,6 +381,69 @@ namespace APDL
 		T[0] = 0;
 		T[1] = 0;
 		T[2] = 0;
+	}
+
+	DataVector relative2D(const DataVector& q1, const DataVector& q2)
+	{
+		DataVector q(3);
+		q[0] = q2[0] - q1[0];
+		q[1] = q2[1] - q1[1];
+		q[2] = angleTruncate(q2[2] - q1[2]);
+
+		return q;
+	}
+
+	DataVector relative3D(const DataVector& q1, const DataVector& q2)
+	{
+		if(q1.dim() == 6)
+		{
+			DataVector q(6);
+			q[0] = q2[0] - q1[0];
+			q[1] = q2[1] - q1[1];
+			q[2] = q2[2] - q1[2];
+
+			Quaternion quat1, quat2;
+			Euler2Quat(quat1, q1[3], q1[4], q1[5]);
+			Euler2Quat(quat2, q2[3], q2[4], q2[5]);
+
+			Quaternion quat = quat2 * inverse(quat1);
+
+			//std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
+			//std::cout << quat2[0] << " " << quat2[1] << " " << quat2[2] << " " << quat2[3] << std::endl;
+			//std::cout << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3] << std::endl;
+
+			double a, b, c;
+			Quat2Euler(a, b, c, quat);
+			q[3] = a;
+			q[4] = b;
+			q[5] = c;
+
+			return q;
+		}
+		else if(q2.dim() == 7)
+		{
+			DataVector q(7);
+			q[0] = q2[0] - q1[0];
+			q[1] = q2[1] - q1[1];
+			q[2] = q2[2] - q1[2];
+
+			Quaternion quat1(q1[3], q1[4], q1[5], q1[6]);
+			Quaternion quat2(q2[3], q2[4], q2[5], q2[6]);
+
+			Quaternion quat = quat2 * inverse(quat1);
+
+			q[3] = quat[0];
+			q[4] = quat[1];
+			q[5] = quat[2];
+			q[6] = quat[3];
+
+			return q;
+		}
+		else
+		{
+			std::cout << "dim not correct" << std::endl;
+			return DataVector();
+		}
 	}
 	
 }

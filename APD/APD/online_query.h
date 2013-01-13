@@ -39,9 +39,16 @@ namespace APDL
 		std::vector<std::vector<double> > dists;
 		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
 
-		DataVector v(contactspace.data_dim());
+		DataVector v_(dim);
 		for(std::size_t i = 0; i < dim; ++i)
-			v[i] = learner.model->SV[indices[0][0]][i].value;
+			v_[i] = learner.model->SV[indices[0][0]][i].value;
+
+		if(learner.scaler && learner.use_scaler)
+			v_ = learner.scaler->unscale(v_);
+
+		DataVector v(contactspace.zeroDataVector());
+		for(std::size_t i = 0; i < dim; ++i)
+			v[i] = v_[i];
 
 		res.v = v;
 		res.col = true;
@@ -72,7 +79,7 @@ namespace APDL
 		std::vector<std::vector<double> > dists;
 		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
 
-		DataVector v(contactspace.data_dim());
+		DataVector v(contactspace.zeroDataVector());
 		for(std::size_t i = 0; i < dim; ++i)
 			v[i] = index_samples[indices[0][0]][i];
 
@@ -104,12 +111,16 @@ namespace APDL
 		std::vector<std::vector<double> > dists;
 		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
 
+		DataVector scaled_query(query);
+		if(learner.scaler && learner.use_scaler)
+			scaled_query = learner.scaler->scale(query);
+
 		svm_node* query_node = new svm_node[dim + 1];
 		svm_node* closest_node = new svm_node[dim + 1];
 		for(std::size_t i = 0; i < dim; ++i)
 		{
 			query_node[i].index = i + 1;
-			query_node[i].value = query[i];
+			query_node[i].value = scaled_query[i];
 			closest_node[i].index = i + 1;
 		}
 		query_node[dim].index = -1;
@@ -121,9 +132,15 @@ namespace APDL
 
 		double d = dist_to_decision_boundary_with_gradient(learner.model, query_node, initial_guess, NULL, NULL, closest_node);
 
-		DataVector v(contactspace.data_dim());
+		DataVector v_(dim);
 		for(std::size_t i = 0; i < dim; ++i)
-			v[i] = closest_node[i].value;
+			v_[i] = closest_node[i].value;
+		if(learner.scaler && learner.use_scaler)
+			v_ = learner.scaler->unscale(v_);
+
+		DataVector v(contactspace.zeroDataVector());
+		for(std::size_t i = 0; i < dim; ++i)
+			v[i] = v_[i];
 
 		ContactSpace::DistanceType metric;
 		res.v = v;
@@ -160,12 +177,20 @@ namespace APDL
 		std::vector<std::vector<double> > dists;
 		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
 
+		DataVector scaled_query(query);
+		DataVector scaled_init_guess(index_samples[initial_guess[0][0]]);
+		if(learner.scaler && learner.use_scaler)
+		{
+			scaled_query = learner.scaler->scale(scaled_query);
+			scaled_init_guess = learner.scaler->scale(scaled_init_guess);
+		}
+
 		svm_node* query_node = new svm_node[dim + 1];
 		svm_node* closest_node = new svm_node[dim + 1];
 		for(std::size_t i = 0; i < dim; ++i)
 		{
 			query_node[i].index = i + 1;
-			query_node[i].value = query[i];
+			query_node[i].value = scaled_query[i];
 			closest_node[i].index = i + 1;
 		}
 		query_node[dim].index = -1;
@@ -173,13 +198,19 @@ namespace APDL
 
 		double* initial_guess = new double[dim];
 		for(std::size_t i = 0; i < dim; ++i)
-			initial_guess[i] = index_samples[indices[0][0]][i];
+			initial_guess[i] = scaled_init_guess[i];
 
 		double d = dist_to_decision_boundary_with_gradient(learner.model, query_node, initial_guess, NULL, NULL, closest_node);
 
-		DataVector v(contactspace.data_dim());
+		DataVector v_(dim);
 		for(std::size_t i = 0; i < dim; ++i)
-			v[i] = closest_node[i].value;
+			v_[i] = closest_node[i].value;
+		if(learner.scaler && learner.use_scaler)
+			v_ = learner.scaler->unscale(v_);
+
+		DataVector v(contactspace.zeroDataVector());
+		for(std::size_t i = 0; i < dim; ++i)
+			v[i] = v_[i];
 
 		ContactSpace::DistanceType metric;
 		res.v = v;

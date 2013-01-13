@@ -47,11 +47,11 @@ namespace APDL
 			asciiWriter(out, contactspace_samples);
 
 			SVMLearner learner;
-			learner.setC(10);
-			// learner.setGamma(20);
+			learner.setC(50);
 			learner.setScaler(contactspace.getScaler());
 
-			// learner.setUseScaler(true);
+			learner.setUseScaler(true);
+			learner.setGamma(50);
 
 			std::ofstream scaler_file("scaler_2d_rotation.txt");
 			scaler_file << contactspace.getScaler() << std::endl;
@@ -61,6 +61,7 @@ namespace APDL
 
 			std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 100) << std::endl;
 
+			std::ofstream query_file("query_results.txt");
 
 			std::vector<ContactSpaceSampleData> query_samples = contactspace.uniform_sample(40);
 
@@ -81,7 +82,7 @@ namespace APDL
 			//std::cout << "number of boundary samples " << boundary_samples.size() << std::endl;
 
 			//flann::HierarchicalClusteringIndex<ContactSpaceSE2::DistanceType>* query_index = constructIndexForQuery<ContactSpaceSE2, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(boundary_samples);
-			
+
 			flann::HierarchicalClusteringIndex<ContactSpaceSE2::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE2, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
 
 			for(std::size_t i = 0; i < query_samples.size(); ++i)
@@ -90,10 +91,10 @@ namespace APDL
 				QueryResult apprx_PD2 = PD_query2(learner, contactspace, query_index, query_samples[i].v);
 				std::pair<DataVector, double> exact_PD = Minkowski_Cspace_2D::Exact_PD_SE2(query_samples[i].v, cspace_SE2);
 
-				std::cout << apprx_PD.v[0] << " " << apprx_PD.v[1] << " " << apprx_PD.v[2] << " " << apprx_PD.PD << std::endl;
-				std::cout << apprx_PD2.v[0] << " " << apprx_PD2.v[1] << " " << apprx_PD2.v[2] << " " << apprx_PD2.PD << std::endl;
-				std::cout << exact_PD.first[0] << " " << exact_PD.first[1] << " " << exact_PD.first[2] << " " << exact_PD.second << std::endl;
-				std::cout << std::endl;
+				query_file << apprx_PD.v[0] << " " << apprx_PD.v[1] << " " << apprx_PD.v[2] << " " << apprx_PD.PD << std::endl;
+				query_file << apprx_PD2.v[0] << " " << apprx_PD2.v[1] << " " << apprx_PD2.v[2] << " " << apprx_PD2.PD << std::endl;
+				query_file << exact_PD.first[0] << " " << exact_PD.first[1] << " " << exact_PD.first[2] << " " << exact_PD.second << std::endl;
+				query_file << std::endl;
 			}
 
 			delete query_index;
@@ -104,7 +105,6 @@ namespace APDL
 			//	constructExtendedModelForModelDecisionBoundary<ContactSpaceSE2, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(contactspace, learner, support_samples, 0.01);
 
 
-			//std::ofstream test_file("test.txt");
 
 			//for(std::size_t i = 0; i < query_samples.size(); ++i)
 			//{

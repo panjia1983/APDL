@@ -16,9 +16,9 @@ for i = 2 : size(A, 2)
     end
 end
 
-a = 1;
-b = 2; % 6
-plot(A{a}(1:3:size(A{a},1)), A{a}(3:3:size(A{a},1)), 'r', A{b}(1:3:size(A{b},1)), A{b}(3:3:size(A{b},1)));
+a = 4;
+b = 5; % 6
+plot(A{a}(1:3:size(A{a},1)), A{a}(3:3:size(A{a},1)), 'r', A{b}(1:6:size(A{b},1)), A{b}(3:6:size(A{b},1)));
 
 %plot(x, A(1, :), 'r', x, A(2, :), 'g', x, A(3, :), 'b', x, A(4, :), 'c', x, A(5, :), 'm', x, A(6, :), 'y');
 %plot(x, A(1, :), 'r', x, A(6, :), 'y');

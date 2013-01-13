@@ -173,6 +173,31 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_sv
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_3d_rotation", "APD_test_active_learning_svm_3d_rotation\APD_test_active_learning_svm_3d_rotation.vcproj", "{F990532A-CCE5-4664-8D11-201959F33CF8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_teeth", "APD_playback_teeth\APD_playback_teeth.vcproj", "{8AE34926-0905-4B96-8A5A-002F1637F12D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_angrybirds", "APD_playback_angrybirds\APD_playback_angrybirds.vcproj", "{3710B47E-F21C-4BCE-9497-45F7DCB61A67}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_spiders", "APD_playback_spiders\APD_playback_spiders.vcproj", "{2256F342-6B98-4840-AD87-82498C688368}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_cupspoon", "APD_playback_cupspoon\APD_playback_cupspoon.vcproj", "{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -319,6 +344,26 @@ Global
 		{86A4DFE5-AA37-4B4A-8492-3C950D92D6B6}.Debug|Win32.Build.0 = Debug|Win32
 		{86A4DFE5-AA37-4B4A-8492-3C950D92D6B6}.Release|Win32.ActiveCfg = Release|Win32
 		{86A4DFE5-AA37-4B4A-8492-3C950D92D6B6}.Release|Win32.Build.0 = Release|Win32
+		{F990532A-CCE5-4664-8D11-201959F33CF8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F990532A-CCE5-4664-8D11-201959F33CF8}.Debug|Win32.Build.0 = Debug|Win32
+		{F990532A-CCE5-4664-8D11-201959F33CF8}.Release|Win32.ActiveCfg = Release|Win32
+		{F990532A-CCE5-4664-8D11-201959F33CF8}.Release|Win32.Build.0 = Release|Win32
+		{8AE34926-0905-4B96-8A5A-002F1637F12D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8AE34926-0905-4B96-8A5A-002F1637F12D}.Debug|Win32.Build.0 = Debug|Win32
+		{8AE34926-0905-4B96-8A5A-002F1637F12D}.Release|Win32.ActiveCfg = Release|Win32
+		{8AE34926-0905-4B96-8A5A-002F1637F12D}.Release|Win32.Build.0 = Release|Win32
+		{3710B47E-F21C-4BCE-9497-45F7DCB61A67}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3710B47E-F21C-4BCE-9497-45F7DCB61A67}.Debug|Win32.Build.0 = Debug|Win32
+		{3710B47E-F21C-4BCE-9497-45F7DCB61A67}.Release|Win32.ActiveCfg = Release|Win32
+		{3710B47E-F21C-4BCE-9497-45F7DCB61A67}.Release|Win32.Build.0 = Release|Win32
+		{2256F342-6B98-4840-AD87-82498C688368}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2256F342-6B98-4840-AD87-82498C688368}.Debug|Win32.Build.0 = Debug|Win32
+		{2256F342-6B98-4840-AD87-82498C688368}.Release|Win32.ActiveCfg = Release|Win32
+		{2256F342-6B98-4840-AD87-82498C688368}.Release|Win32.Build.0 = Release|Win32
+		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Debug|Win32.Build.0 = Debug|Win32
+		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Release|Win32.ActiveCfg = Release|Win32
+		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,12 +4,53 @@
 #include "collider.h"
 #include "sampler.h"
 #include <vector>
+#include <map>
 #include "distance_proxy.h"
 #include <C2A/LinearMath.h>
 #include "libm3d_wrapper.h"
 
 namespace APDL
 {
+	inline std::vector<std::vector<std::pair<std::string, DataVector> > > readDumpFile(const std::string& filename)
+	{
+		std::vector<std::vector<std::pair<std::string, DataVector> > > frames;
+		std::ifstream is(filename.c_str());
+
+		if(!is.is_open())
+		{
+			std::cerr << "!Error: Cannot open file (" << filename << ")" << std::endl;
+			return frames;
+		}
+
+		std::map<std::string, int> name_object_map;
+		std::string line;
+
+		std::vector<std::pair<std::string, DataVector> > frame;
+
+		while(!std::getline(is, line, '\n').eof())
+		{
+			if(line.size() == 0) continue;
+
+			std::istringstream reader(line);
+
+			int id;
+			std::string name;
+			double x, y, angle;
+			DataVector v(3);
+
+		
+			reader >> id >> name >> x >> y >> angle;
+			v[0] = x; v[1] = y; v[2] = angle;
+			frame.push_back(std::make_pair(name, v));
+
+			if(frame.size() == 2)
+			{
+				frames.push_back(frame);
+				frame.clear();
+			}
+		}
+	}
+
 	inline std::vector<std::vector<DataVector> > readAnimationFile(const std::string& filename, bool use_euler = true)
 	{
 		std::vector<std::vector<DataVector> > frames;
@@ -98,7 +139,7 @@ namespace APDL
 		return frames;
 	}
 
-	inline std::vector<Polygon> readPolyFile(const std::string& filename)
+	inline std::vector<Polygon> readPolyFile(const std::string& filename, double scale = 1)
 	{
 		std::vector<Polygon> polys;
 
@@ -121,15 +162,9 @@ namespace APDL
 			{
 				fscanf(fp, "%f", &x);
 				fscanf(fp, "%f", &y);
-				polys[i].points.push_back(Vec2D(x, y));
+				polys[i].points.push_back(Vec2D(x * scale, y * scale));
 			}
 		}
-
-		//for(std::size_t i = 0; i < polys.size(); ++i)
-		//{
-		//	for(std::size_t j = 0; j < polys[i].points.size(); ++j)
-		//		std::cout << polys[i].points[j].x << " " << polys[i].points[j].y << std::endl;
-		//}
 
 		return polys;
 	}
@@ -399,6 +434,12 @@ namespace APDL
 			v_max[0] = x_max; v_max[1] = y_max;
 			return Scaler(v_min, v_max, 2);
 		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(3);
+			return v;
+		}
 		
 		SamplerR2 sampler;
 		
@@ -473,6 +514,12 @@ namespace APDL
 			v_max[0] = x_center + r2; v_max[1] = y_center + r2; v_max[2] = boost::math::constants::pi<double>();
 			
 			return Scaler(v_min, v_max, 3);
+		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(3);
+			return v;
 		}
 		
 		SamplerSE2_disk sampler;
@@ -561,6 +608,12 @@ namespace APDL
 			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = boost::math::constants::pi<double>();
 
 			return Scaler(v_min, v_max, 3);
+		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(3);
+			return v;
 		}
 		
 		SamplerSE2 sampler;
@@ -691,6 +744,12 @@ namespace APDL
 			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = z_max;
 			return Scaler(v_min, v_max, 3);
 		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(6);
+			return v;
+		}
 		
 		SamplerR3 sampler;
 		
@@ -784,6 +843,12 @@ namespace APDL
 			v_max[0] = center_x + r2; v_max[1] = center_y + r2; v_max[2] = center_z + r2; v_max[3] = boost::math::constants::pi<double>(); v_max[4] = boost::math::constants::pi<double>(); v_max[5] = boost::math::constants::pi<double>();
 			return Scaler(v_min, v_max, 6);
 		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(6);
+			return v;
+		}
 		
 		SamplerSE3Euler_ball sampler;
 		
@@ -857,6 +922,13 @@ namespace APDL
 			v_min[0] = center_x - r2; v_min[1] = center_y - r2; v_min[2] = center_z - r2; v_min[3] = -1; v_min[4] = -1; v_min[5] = -1; v_min[6] = -1;
 			v_max[0] = center_x + r2; v_max[1] = center_y + r2; v_max[2] = center_z + r2; v_max[3] = 1; v_max[4] = 1; v_max[5] = 1; v_max[6] = 1;
 			return Scaler(v_min, v_max, 7);
+		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(7);
+			v[3] = 1;
+			return v;
 		}
 		
 		SamplerSE3Quat_ball sampler;
@@ -993,6 +1065,12 @@ namespace APDL
 			v_min[0] = x_min; v_min[1] = y_min; v_min[2] = z_min; v_min[3] = -boost::math::constants::pi<double>(); v_min[4] = -boost::math::constants::pi<double>(); v_min[5] = -boost::math::constants::pi<double>();
 			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = z_max; v_max[3] = boost::math::constants::pi<double>(); v_max[4] = boost::math::constants::pi<double>(); v_max[5] = boost::math::constants::pi<double>();
 			return Scaler(v_min, v_max, 6);
+		}
+
+		static DataVector zeroDataVector()
+		{
+			DataVector v(6);
+			return v;
 		}
 		
 		mutable SamplerR3 sampler;
@@ -1140,6 +1218,8 @@ namespace APDL
 			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = z_max; v_min[3] = 1; v_min[4] = 1; v_min[5] = 1; v_min[6] = 1;
 			return Scaler(v_min, v_max, 7);
 		}
+
+
 		
 		mutable SamplerR3 sampler;
 		

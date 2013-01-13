@@ -20,6 +20,7 @@
 #include "data_vector.h"
 #include "math_utility.h"
 #include "distance_proxy.h"
+#include "2d_collision.h"
 
 #include <C2A/C2A.h>
 #include <C2A/LinearMath.h>
@@ -86,6 +87,11 @@ namespace APDL
 		typedef CGAL::Aff_transformation_2<Kernel> Transformation;
 		typedef CGAL::Cartesian<double> InExactKernel;
 		typedef CGAL::Cartesian_converter<Kernel, InExactKernel> ToInexact;
+
+		typedef Polygon_2::Container Container;
+		typedef CGAL::Arr_segment_traits_2<Kernel>             Arr_segment_traits;
+		typedef CGAL::Gps_segment_traits_2<Kernel,Container,Arr_segment_traits>  Traits_2;
+		typedef CGAL::General_polygon_set_2<Traits_2>          General_polygon_set_2;
 		
 		static Polygon_2 rotate(const Polygon_2& in, double angle)
 		{
@@ -97,6 +103,66 @@ namespace APDL
 		{
 			Transformation reflect(CGAL::SCALING, -1);
 			return CGAL::minkowski_sum_2(P, CGAL::transform(reflect, Q));
+		}
+
+		static Polygon_with_holes_2 Minkowski_Cobstacle_R2(const std::vector<Polygon>& P_, const std::vector<Polygon>& Q_)
+		{
+			std::vector<Polygon_2> P, Q;
+
+			for(std::size_t i = 0; i < P_.size(); ++i)
+			{
+				std::size_t num_p = P_[i].points.size(); 
+				Point_2* p = new Point_2[num_p];
+				for(std::size_t j = 0; j < num_p; ++j)
+				{
+					p[j] = Point_2(P_[i].points[j].x, P_[i].points[j].y);
+				}
+
+				Polygon_2 poly(p, p + num_p);
+				delete [] p;
+
+				P.push_back(poly);
+			}
+
+			for(std::size_t i = 0; i < Q_.size(); ++i)
+			{
+				std::size_t num_p = Q_[i].points.size(); 
+				Point_2* p = new Point_2[num_p];
+				for(std::size_t j = 0; j < num_p; ++j)
+				{
+					p[j] = Point_2(Q_[i].points[j].x, Q_[i].points[j].y);
+				}
+
+				Polygon_2 poly(p, p + num_p);
+				delete [] p;
+
+				Q.push_back(poly);
+			}
+
+			return Minkowski_Cobstacle_R2(P, Q);
+		}
+
+		static Polygon_with_holes_2 Minkowski_Cobstacle_R2(const std::vector<Polygon_2>& P, const std::vector<Polygon_2>& Q)
+		{
+			std::list<Polygon_2> sub_sum_polygons;
+
+			for(std::size_t i = 0; i < P.size(); ++i)
+			{
+				for(std::size_t j = 0; j < Q.size(); ++j)
+				{
+					Polygon_with_holes_2 sub_sum = Minkowski_Cobstacle_R2(P[i], Q[j]);
+					sub_sum_polygons.push_back(sub_sum.outer_boundary());
+				}
+			}
+
+			General_polygon_set_2 gps;
+
+			gps.join(sub_sum_polygons.begin(), sub_sum_polygons.end());
+
+			std::list<Polygon_with_holes_2> sum;
+			gps.polygons_with_holes(std::back_inserter(sum));
+
+			return (*(sum.begin()));
 		}
 		
 		static std::vector<std::pair<Polygon_with_holes_2, double> > Minkowski_CObstacle_SE2(const Polygon_2& P, const Polygon_2& Q, std::size_t n)
@@ -114,6 +180,63 @@ namespace APDL
 			}
 			
 			return ms;
+		}
+
+		static std::vector<std::pair<Polygon_with_holes_2, double> > Minkowski_CObstacle_SE2(const std::vector<Polygon_2>& P, const std::vector<Polygon_2>& Q, std::size_t n)
+		{
+			std::vector<std::pair<Polygon_with_holes_2, double> > ms;
+			for(std::size_t i = 0; i < n; ++i)
+			{
+				if(i == 0)
+					ms.push_back(std::make_pair(Minkowski_Cobstacle_R2(P, Q), 0));
+				else
+				{
+					double angle = 2 * boost::math::constants::pi<double>() * i / (double)n;
+					std::vector<Polygon_2> rotated_Q;
+					for(std::size_t j = 0; j < Q.size(); ++j)
+						rotated_Q.push_back(rotate(Q[j], angle));
+					ms.push_back(std::make_pair(Minkowski_Cobstacle_R2(P, rotated_Q), angle));
+				}
+			}
+			
+			return ms;
+		}
+
+		static std::vector<std::pair<Polygon_with_holes_2, double> > Minkowski_CObstacle_SE2(const std::vector<Polygon>& P_, const std::vector<Polygon>& Q_, std::size_t n)
+		{
+			std::vector<Polygon_2> P, Q; 
+
+			for(std::size_t i = 0; i < P_.size(); ++i)
+			{
+				std::size_t num_p = P_[i].points.size(); 
+				Point_2* p = new Point_2[num_p];
+				for(std::size_t j = 0; j < num_p; ++j)
+				{
+					p[j] = Point_2(P_[i].points[j].x, P_[i].points[j].y);
+				}
+
+				Polygon_2 poly(p, p + num_p);
+				delete [] p;
+
+				P.push_back(poly);
+			}
+
+			for(std::size_t i = 0; i < Q_.size(); ++i)
+			{
+				std::size_t num_p = Q_[i].points.size(); 
+				Point_2* p = new Point_2[num_p];
+				for(std::size_t j = 0; j < num_p; ++j)
+				{
+					p[j] = Point_2(Q_[i].points[j].x, Q_[i].points[j].y);
+				}
+
+				Polygon_2 poly(p, p + num_p);
+				delete [] p;
+
+				Q.push_back(poly);
+			}
+
+			return Minkowski_CObstacle_SE2(P, Q, n);
 		}
 		
 		static bool inside(const Point_2& p, const Polygon_with_holes_2& CSpace)

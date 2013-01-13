@@ -543,8 +543,8 @@ namespace APDL
 					{
 						for(std::size_t k = 0; k < epa_res.contacts.size(); ++k)
 						{
-							if(-epa_res.contacts[k].penetration > max_PD)
-								max_PD = -epa_res.contacts[k].penetration;
+							if(abs(-epa_res.contacts[k].penetration) > max_PD)
+								max_PD = abs(-epa_res.contacts[k].penetration);
 						}
 					}
 				}
@@ -580,6 +580,15 @@ namespace APDL
 		return 0.5 * A;
 	}
 
+	inline double area(const std::vector<Polygon>& polygon)
+	{
+		double A = 0;
+		for(std::size_t i = 0; i < polygon.size(); ++i)
+			A += area(polygon[i]);
+
+		return A;
+	}
+
 
 	inline void inertia(const Polygon& polygon, double& a, double& b)
 	{
@@ -595,6 +604,31 @@ namespace APDL
 			Ix += (xi * xi + xi * xiplus + xiplus * xiplus) * (xi * yiplus - xiplus * yi);
 			Iy += (yi * yi + yi * yiplus + yiplus * yiplus) * (xi * yiplus - xiplus * yi);
 		}
+
+		a = Ix / (12 * A);
+		b = Iy / (12 * A);
+	}
+
+
+	inline void inertia(const std::vector<Polygon>& polygon, double& a, double& b)
+	{
+		double A = area(polygon);
+
+		double Ix = 0, Iy = 0;
+
+		for(std::size_t n = 0; n < polygon.size(); ++n)
+		{
+			for(int i = 0; i < polygon[n].points.size() - 1; ++i)
+			{
+				double xi = polygon[n].points[i].x;
+				double yi = polygon[n].points[i].y;
+				double xiplus = polygon[n].points[i+1].x;
+				double yiplus = polygon[n].points[i+1].y;
+				Ix += (xi * xi + xi * xiplus + xiplus * xiplus) * (xi * yiplus - xiplus * yi);
+				Iy += (yi * yi + yi * yiplus + yiplus * yiplus) * (xi * yiplus - xiplus * yi);
+			}
+		}
+
 
 		a = Ix / (12 * A);
 		b = Iy / (12 * A);

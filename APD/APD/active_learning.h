@@ -24,6 +24,8 @@ namespace APDL
 		return n_error / (double)data.size();
 	}
 
+	extern std::ofstream wrong_file;
+
 	template<typename ContactSpace>
 	double errorRatioOnGrid(const ContactSpace& contactspace, const SVMLearner& learner, std::size_t grid_n, bool input_scaled = false)
 	{
@@ -35,14 +37,15 @@ namespace APDL
 		{
 			for(std::size_t i = 0; i < dim; ++i)
 			{
-				upper[i] = 1;
-				lower[i] = 0;
+				upper[i] = 1 - 0.02;
+				lower[i] = 0 + 0.02;
 			}
 		}
 		else
 		{
-			upper = contactspace.getScaler().v_max;
-			lower = contactspace.getScaler().v_min;
+			DataVector range = contactspace.getScaler().v_max - contactspace.getScaler().v_min;
+			upper = contactspace.getScaler().v_max - 0.02 * range;
+			lower = contactspace.getScaler().v_min + 0.02 * range;
 		}
 
 
@@ -51,7 +54,7 @@ namespace APDL
 			n *= grid_n;
 
 		std::size_t* ids = new std::size_t[dim];
-		DataVector v_col(contactspace.data_dim()); // cache for collision
+		DataVector v_col(contactspace.zeroDataVector()); // cache for collision
 		DataVector v_pred(dim); // cache for predict
 		std::size_t n_error = 0;
 		for(std::size_t i = 0; i < n; ++i)
@@ -63,17 +66,27 @@ namespace APDL
 				i_ = i_ / grid_n;
 			}
 
+			bool bug = false;
 			for(std::size_t j = 0; j < dim; ++j)
 			{
 				v_col[j] = (upper[j] - lower[j]) * ids[j] / (double)grid_n + lower[j];
 				v_pred[j] = v_col[j];
 			}
+			
 
 			bool exact_col = contactspace.collider.isCollide(v_col);
 			bool approx_col = ((learner.predict(v_pred)).label > 0);
 			if(exact_col != approx_col)
+			{
 				n_error++;
+				for(std::size_t j = 0; j < dim; ++j)
+					wrong_file << v_pred[j] << " ";
+				wrong_file << std::endl;
+			}
 		}
+
+
+		wrong_file << "----------------------------" << std::endl;
 
 
 		delete [] ids;
@@ -96,7 +109,7 @@ namespace APDL
 			n *= grid_n;
 
 		std::size_t* ids = new std::size_t[dim];
-		DataVector v_col(contactspace.data_dim()); // cache for collision
+		DataVector v_col(contactspace.zeroDataVector()); // cache for collision
 		DataVector v_pred(dim); // cache for predict
 		std::size_t n_error = 0;
 		for(std::size_t i = 0; i < n; ++i)

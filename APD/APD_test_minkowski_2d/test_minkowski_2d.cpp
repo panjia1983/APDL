@@ -1,10 +1,45 @@
 #include <APD/minkowski_cspace.h>
+#include <APD/contact_space.h>
+#include <APD/2d_collision.h>
 
 namespace APDL
 {
 
+	double distance_weight[7] = {1, 1, 1, 1, 1, 1, 1};
+
 	static void test_Minkowskiw_2D()
 	{
+		{
+			std::vector<Polygon> P = readPolyFile("../data/models/Box2D/BigRedBird17.polys");
+			std::vector<Polygon> Q = readPolyFile("../data/models/Box2D/GreenPig32.polys");
+			
+			
+			Minkowski_Cspace_2D::Polygon_with_holes_2 cspace_R2 = Minkowski_Cspace_2D::Minkowski_Cobstacle_R2(P, Q);
+			
+			std::cout << "P - Q = ";
+			print_polygon_with_holes(cspace_R2);
+			
+			DataVector query(2);
+			query[0] = 0;
+			query[1] = 0;
+			
+			std::pair<DataVector, double> PD_result = Minkowski_Cspace_2D::Exact_PD_R2(query, cspace_R2);
+			DataVector PD_point = PD_result.first;
+			std::cout << PD_point[0] << " " << PD_point[1] << " " << PD_result.second << std::endl;
+			
+			std::vector<std::pair<Minkowski_Cspace_2D::Polygon_with_holes_2, double> > cspace_SE2 = Minkowski_Cspace_2D::Minkowski_CObstacle_SE2(P, Q, 30);
+			
+			DataVector query2(3);
+			query2[0] = 0;
+			query2[1] = 0;
+			query2[2] = 0;
+			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_2D::Exact_PD_SE2(query2, cspace_SE2);
+			DataVector PD_point2 = PD_result2.first;
+			std::cout << PD_point2[0] << " " << PD_point2[1] << " " << PD_point2[2] << " " << PD_result2.second << std::endl;
+		}
+
+		return;
+
 		{
 			Minkowski_Cspace_2D::Polygon_2 P;
 			P.push_back(Minkowski_Cspace_2D::Point_2(0, 0));
@@ -45,7 +80,7 @@ namespace APDL
 			query2[0] = 0;
 			query2[1] = 0;
 			query2[2] = 0;
-			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_2D::Exact_PD_SE2(query2, cspace_SE2, 1);
+			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_2D::Exact_PD_SE2(query2, cspace_SE2);
 			DataVector PD_point2 = PD_result2.first;
 			std::cout << PD_point2[0] << " " << PD_point2[1] << " " << PD_point2[2] << " " << PD_result2.second << std::endl;
 		}
@@ -84,7 +119,7 @@ namespace APDL
 			query2[0] = 0;
 			query2[1] = 0;
 			query2[2] = 0;
-			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_2D::Exact_PD_SE2(query2, cspace_SE2, 1);
+			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_2D::Exact_PD_SE2(query2, cspace_SE2);
 			DataVector PD_point2 = PD_result2.first;
 			std::cout << PD_point2[0] << " " << PD_point2[1] << " " << PD_point2[2] << " " << PD_result2.second << std::endl;
 		}

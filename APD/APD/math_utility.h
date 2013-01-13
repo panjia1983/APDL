@@ -13,10 +13,11 @@ namespace APDL
 	public:
 		Quaternion(double a, double b, double c, double d)
 		{
-			data[0] = a;
-			data[1] = b;
-			data[2] = c;
-			data[3] = d;
+			double inv_len = 1.0 / sqrt(a * a + b * b + c * c + d * d);
+			data[0] = a * inv_len;
+			data[1] = b * inv_len;
+			data[2] = c * inv_len;
+			data[3] = d * inv_len;
 		}
 		
 		Quaternion()
@@ -52,6 +53,11 @@ namespace APDL
 			return data[i];
 		}
 	};
+
+	inline Quaternion inverse(const Quaternion& q)
+	{
+		return Quaternion(q[0], -q[1], -q[2], -q[3]);
+	}
 	
 	void Quat2Euler(double& a, double& b, double& c, const Quaternion& quat);
 	
@@ -86,6 +92,10 @@ namespace APDL
 	void ConfigQuat2RotTrans(double R[3][3], double T[3], const DataVector& q);
 	
 	void IdentityRotTrans(double R[3][3], double T[3]);
+
+	DataVector relative2D(const DataVector& q1, const DataVector& q2);
+
+	DataVector relative3D(const DataVector& q1, const DataVector& q2);
 	
 }
 
