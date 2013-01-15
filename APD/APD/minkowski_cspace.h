@@ -640,6 +640,7 @@ namespace APDL
 					res[5] = c;
 					
 					double d = metric.sqrDistance(q, res);
+
 					if((i == 0) || (d < best_d))
 					{
 						best_d = d;

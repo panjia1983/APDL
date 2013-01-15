@@ -11,6 +11,8 @@ namespace APDL
 
 	void readObjFiles(std::vector<C2A_Model*>& models, const std::string& obj_file);
 
+	void readObjFiles2(std::vector<C2A_Model*>& models, const std::string& obj_file);
+
 	void readSE3Model(std::vector<std::pair<C2A_Model*, Quaternion> >& cspace, const std::string& model_file);
 	
 	void readOffFile(C2A_Model*& model, const std::string& off_file);

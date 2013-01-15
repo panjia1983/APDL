@@ -5,6 +5,142 @@
 
 namespace APDL
 {
+	void readObjFiles2(std::vector<C2A_Model*>& models, const std::string& obj_file)
+	{
+		std::ifstream in(obj_file.c_str());
+		if(!in.is_open())
+		{
+			std::cout << "Failed to open the file " << obj_file << std::endl;
+			return;
+		}
+
+		std::string type;
+		std::vector<std::vector<double> > vs;
+		std::vector<std::vector<int> > ids;
+
+		bool read_v = true;
+		int cur_obj = -1;
+
+		std::vector<double> v;
+		std::vector<int> id;
+		while(!in.eof())
+		{
+			in >> type;
+			if(type == "v")
+			{
+				double a, b, c;
+				in >> a >> b >> c;
+				v.push_back(a);
+				v.push_back(b);
+				v.push_back(c);
+			}
+			else if(type == "f")
+			{
+				if(read_v)
+				{
+					cur_obj = 0;
+					read_v = false;
+				}
+
+				//int i1, i2, i3;
+				//in >> i1 >> i2 >> i3;
+				//id.push_back(i1 - start_id);
+				//id.push_back(i2 - start_id);
+				//id.push_back(i3 - start_id);
+				for(int i = 0; i < 3; ++i)
+				{
+					std::string face;
+					std::string face2;
+					in >> face;
+					for(int k = 0; k < face.size(); ++k)
+					{
+						if(face[k] == '/') break;
+						face2.push_back(face[k]);
+					}
+					int fid;
+					std::istringstream convert(face2);
+					convert >> fid;
+					// std::cout << face << " " << fid << std::endl;
+					id.push_back(fid);
+				}
+			}
+			else if(type == "o")
+			{
+				if(read_v)
+				{
+					cur_obj++;
+					if(cur_obj != 0)
+						vs.push_back(v);
+					v.clear();
+				}
+				else
+				{
+					cur_obj++;
+					ids.push_back(id);
+					id.clear();
+				}
+			}
+
+			getline(in, type);
+		}
+		
+		vs.pop_back();
+
+		//for(std::size_t n = 0; n < vs.size(); ++n)
+		//{
+		//	std::cout << "(" << vs[n].size() << " " << ids[n].size() << ")";
+		//}
+		//std::cout << std::endl;
+
+		int offset = 1;
+		for(std::size_t n = 0; n < vs.size(); ++n)
+		{
+			int num_v = vs[n].size() / 3;
+			int num_f = ids[n].size() / 3;
+			// std::cout << num_v << " " << num_f << std::endl;
+
+			const std::vector<double>& v = vs[n];
+			const std::vector<int>& id = ids[n];
+
+			if(n > 0) offset += vs[n - 1].size() / 3;
+
+			C2A_Model* model = new C2A_Model;
+
+			model->BeginModel();
+
+			PQP_REAL p1[3], p2[3], p3[3];
+			int i1, i2, i3;
+			for(int i = 0; i < num_f; ++i)
+			{
+				i1 = id[3 * i + 0] - offset;
+				i2 = id[3 * i + 1] - offset;
+				i3 = id[3 * i + 2] - offset;
+				// std::cout << v.size() << " " << i1 << " " << i2 << " " << i3 << std::endl;
+				p1[0] = v[i1 * 3];
+				p1[1] = v[i1 * 3 + 1];
+				p1[2] = v[i1 * 3 + 2];
+
+				p2[0] = v[i2 * 3];
+				p2[1] = v[i2 * 3 + 1];
+				p2[2] = v[i2 * 3 + 2];
+
+				p3[0] = v[i3 * 3];
+				p3[1] = v[i3 * 3 + 1];
+				p3[2] = v[i3 * 3 + 2];
+
+				model->AddTri(p1, p2, p3, i, i1, i2, i3);
+			}
+
+			model->EndModel();
+
+			model->ComputeCenterOfMass();
+			model->ComputeRadius();
+
+			models.push_back(model);
+
+		}
+	}
+
 	void readObjFiles(std::vector<C2A_Model*>& models, const std::string& obj_file)
 	{
 		std::ifstream in(obj_file.c_str());

@@ -4,8 +4,6 @@
 #include "contact_space_learning.h"
 #include <APD/profile.h>
 
-extern std::ofstream test_file;
-
 namespace APDL
 {
 	template<typename Learner>
@@ -23,8 +21,6 @@ namespace APDL
 
 		return n_error / (double)data.size();
 	}
-
-	extern std::ofstream wrong_file;
 
 	template<typename ContactSpace>
 	double errorRatioOnGrid(const ContactSpace& contactspace, const SVMLearner& learner, std::size_t grid_n, bool input_scaled = false)
@@ -77,17 +73,8 @@ namespace APDL
 			bool exact_col = contactspace.collider.isCollide(v_col);
 			bool approx_col = ((learner.predict(v_pred)).label > 0);
 			if(exact_col != approx_col)
-			{
 				n_error++;
-				for(std::size_t j = 0; j < dim; ++j)
-					wrong_file << v_pred[j] << " ";
-				wrong_file << std::endl;
-			}
 		}
-
-
-		wrong_file << "----------------------------" << std::endl;
-
 
 		delete [] ids;
 
@@ -189,6 +176,7 @@ namespace APDL
 		if(param.debug && param.debug_os)
 		{
 			*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
+			param.debug_os->flush();
 			std::string model_file_name = param.model_name + "_base.txt";
 			learner.save(model_file_name);
 		}
@@ -223,7 +211,7 @@ namespace APDL
 			SVMLearner* plearner = dynamic_cast<SVMLearner*>(&learner);
 			if(plearner) 
 			{
-				plearner->setC(plearner->param.C + 1);
+				//plearner->setC(plearner->param.C + 1);
 				//plearner->setGamma(plearner->param.gamma + 2);
 			}
 
@@ -238,7 +226,10 @@ namespace APDL
 		}
 
 		if(param.debug && param.debug_os)
+		{
 			*(param.debug_os) << std::endl;
+			param.debug_os->flush();
+		}
 	}
 
 	template<typename ContactSpace, typename Learner, typename DecisionBoundarySampler>

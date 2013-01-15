@@ -367,6 +367,18 @@ namespace APDL
 			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
 		}
 
+		ContactSpaceR2(const Polygon& p1, const Polygon& p2, double delta_x, double delta_y) : collider(&p1, &p2)
+		{
+			AABB2D aabb1 = p1.getAABB();
+			AABB2D aabb2 = p2.getAABB();
+			
+			double delta_x_min = aabb1.x_min - aabb2.x_max - delta_x;
+			double delta_x_max = aabb1.x_max - aabb2.x_min + delta_x;
+			double delta_y_min = aabb1.y_min - aabb2.y_max - delta_y;
+			double delta_y_max = aabb1.y_max - aabb2.y_min + delta_y;
+			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
+		}
+
 		ContactSpaceR2(const std::vector<Polygon>& p1s, const std::vector<Polygon>& p2s, double delta = 0) : collider(p1s, p2s)
 		{
 			AABB2D aabb1 = getAABB(p1s);
@@ -376,6 +388,18 @@ namespace APDL
 			double delta_x_max = aabb1.x_max - aabb2.x_min + delta;
 			double delta_y_min = aabb1.y_min - aabb2.y_max - delta;
 			double delta_y_max = aabb1.y_max - aabb2.y_min + delta;
+			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
+		}
+
+		ContactSpaceR2(const std::vector<Polygon>& p1s, const std::vector<Polygon>& p2s, double delta_x, double delta_y) : collider(p1s, p2s)
+		{
+			AABB2D aabb1 = getAABB(p1s);
+			AABB2D aabb2 = getAABB(p2s);
+
+			double delta_x_min = aabb1.x_min - aabb2.x_max - delta_x;
+			double delta_x_max = aabb1.x_max - aabb2.x_min + delta_x;
+			double delta_y_min = aabb1.y_min - aabb2.y_max - delta_y;
+			double delta_y_max = aabb1.y_max - aabb2.y_min + delta_y;
 			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max);
 		}
 		
@@ -641,6 +665,23 @@ namespace APDL
 			
 			double delta_z_min = aabb1.b_min[2] - aabb2.b_max[2] - delta;
 			double delta_z_max = aabb1.b_max[2] - aabb2.b_min[2] + delta;
+			
+			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
+		}
+
+		ContactSpaceR3(C2A_Model* model1, C2A_Model* model2, double delta_x, double delta_y, double delta_z) : collider(model1, model2)
+		{
+			AABB3D aabb1 = computeAABB(model1);
+			AABB3D aabb2 = computeAABB(model2);
+			
+			double delta_x_min = aabb1.b_min[0] - aabb2.b_max[0] - delta_x;
+			double delta_x_max = aabb1.b_max[0] - aabb2.b_min[0] + delta_x;
+			
+			double delta_y_min = aabb1.b_min[1] - aabb2.b_max[1] - delta_y;
+			double delta_y_max = aabb1.b_max[1] - aabb2.b_min[1] + delta_y;
+			
+			double delta_z_min = aabb1.b_min[2] - aabb2.b_max[2] - delta_z;
+			double delta_z_max = aabb1.b_max[2] - aabb2.b_min[2] + delta_z;
 			
 			sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 		}
@@ -948,7 +989,18 @@ namespace APDL
 		{
 			aabb1 = computeAABB(model1);
 			aabb2 = computeAABB(model2);
-			delta = delta_;
+			delta_x = delta_;
+			delta_y = delta_;
+			delta_z = delta_;
+		}
+
+		ContactSpaceSE3Euler2(C2A_Model* model1, C2A_Model* model2, double delta_x_, double delta_y_, double delta_z_) : collider(model1, model2)
+		{
+			aabb1 = computeAABB(model1);
+			aabb2 = computeAABB(model2);
+			delta_x = delta_x_;
+			delta_y = delta_y_;
+			delta_z = delta_z_;
 		}
 		
 		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
@@ -968,14 +1020,14 @@ namespace APDL
 
 				AABB3D new_aabb2 = rotate(aabb2, R);
 
-				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta_x;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta_x;
 
-				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta_y;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta_y;
 
-				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta_z;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta_z;
 
 				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 				DataVector t = sampler.sample();
@@ -1012,14 +1064,14 @@ namespace APDL
 
 				AABB3D new_aabb2 = rotate(aabb2, R);
 
-				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta_x;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta_x;
 
-				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta_y;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta_y;
 
-				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta_z;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta_z;
 
 				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 				DataVector t = sampler.sample();
@@ -1081,7 +1133,8 @@ namespace APDL
 		
 		AABB3D aabb1, aabb2;
 		
-		double delta;
+		// double delta;
+		double delta_x, delta_y, delta_z;
 	};
 	
 	class ContactSpaceSE3Quat2
@@ -1095,7 +1148,18 @@ namespace APDL
 		{
 			aabb1 = computeAABB(model1);
 			aabb2 = computeAABB(model2);
-			delta = delta_;
+			delta_x = delta_;
+			delta_y = delta_;
+			delta_z = delta_;
+		}
+
+		ContactSpaceSE3Quat2(C2A_Model* model1, C2A_Model* model2, double delta_x_, double delta_y_, double delta_z_) : collider(model1, model2)
+		{
+			aabb1 = computeAABB(model1);
+			aabb2 = computeAABB(model2);
+			delta_x = delta_x_;
+			delta_y = delta_y_;
+			delta_z = delta_z_;
 		}
 		
 		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
@@ -1116,14 +1180,14 @@ namespace APDL
 
 				AABB3D new_aabb2 = rotate(aabb2, R);
 
-				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta_x;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta_x;
 
-				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta_y;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta_y;
 
-				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta_z;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta_z;
 
 				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 				DataVector t = sampler.sample();
@@ -1162,14 +1226,14 @@ namespace APDL
 
 				AABB3D new_aabb2 = rotate(aabb2, R);
 
-				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta;
-				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta;
+				double delta_x_min = aabb1.b_min[0] - new_aabb2.b_max[0] - delta_x;
+				double delta_x_max = aabb1.b_max[0] - new_aabb2.b_min[0] + delta_x;
 
-				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta;
-				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta;
+				double delta_y_min = aabb1.b_min[1] - new_aabb2.b_max[1] - delta_y;
+				double delta_y_max = aabb1.b_max[1] - new_aabb2.b_min[1] + delta_y;
 
-				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta;
-				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta;
+				double delta_z_min = aabb1.b_min[2] - new_aabb2.b_max[2] - delta_z;
+				double delta_z_max = aabb1.b_max[2] - new_aabb2.b_min[2] + delta_z;
 
 				sampler.setBound(delta_x_min, delta_x_max, delta_y_min, delta_y_max, delta_z_min, delta_z_max);
 				DataVector t = sampler.sample();
@@ -1219,7 +1283,13 @@ namespace APDL
 			return Scaler(v_min, v_max, 7);
 		}
 
-
+		static DataVector zeroDataVector()
+		{
+			DataVector v(7);
+			v[3] = 1;
+			return v;
+		}
+		
 		
 		mutable SamplerR3 sampler;
 		
@@ -1229,7 +1299,7 @@ namespace APDL
 		
 		AABB3D aabb1, aabb2;
 		
-		double delta;
+		double delta_x, delta_y, delta_z;
 	};
 	
 	inline std::ofstream& asciiWriter(std::ofstream& os, const std::vector<ContactSpaceSampleData>& samples)

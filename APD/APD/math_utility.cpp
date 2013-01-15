@@ -6,18 +6,18 @@ namespace APDL
 
 	void Quat2Rot(double R[3][3], const Quaternion& quat)
 	{
-		double twoX  = 2.0 * quat[0];
-		double twoY  = 2.0 * quat[1];
-		double twoZ  = 2.0 * quat[2];
-		double twoWX = twoX * quat[3];
-		double twoWY = twoY * quat[3];
-		double twoWZ = twoZ * quat[3];
-		double twoXX = twoX * quat[0];
-		double twoXY = twoY * quat[0];
-		double twoXZ = twoZ * quat[0];
-		double twoYY = twoY * quat[1];
-		double twoYZ = twoZ * quat[1];
-		double twoZZ = twoZ * quat[2];
+		double twoX  = 2.0 * quat[1];
+		double twoY  = 2.0 * quat[2];
+		double twoZ  = 2.0 * quat[3];
+		double twoWX = twoX * quat[0];
+		double twoWY = twoY * quat[0];
+		double twoWZ = twoZ * quat[0];
+		double twoXX = twoX * quat[1];
+		double twoXY = twoY * quat[1];
+		double twoXZ = twoZ * quat[1];
+		double twoYY = twoY * quat[2];
+		double twoYZ = twoZ * quat[2];
+		double twoZZ = twoZ * quat[3];
 		
 		R[0][0] = 1.0 - (twoYY + twoZZ);
 		R[0][1] = twoXY - twoWZ;
@@ -35,54 +35,51 @@ namespace APDL
 		double R[3][3];
 		
 		Quat2Rot(R, quat);
-		
-		if(R[0][2] < 1.0)
+		//
+		//if(R[0][2] < 1.0)
+		//{
+		//	if(R[0][2] > -1.0)
+		//	{
+		//		b = asin(R[0][2]);
+		//		a = atan2(-R[1][2], R[2][2]);
+		//		c = atan2(-R[0][1], R[0][0]);
+		//	}
+		//	else
+		//	{
+		//		b = -0.5 * boost::math::constants::pi<double>();
+		//		a = -atan2(R[1][0], R[1][1]);
+		//		c = 0.0;
+		//	}
+		//}
+		//else
+		//{
+		//	b = boost::math::constants::pi<double>();
+		//	a = atan2(R[1][0], R[1][1]);
+		//	c = 0.0;
+		//}
+		a = atan2(R[1][0], R[0][0]);
+		b = asin(-R[2][0]);
+		c = atan2(R[2][1], R[2][2]);
+
+		if(b == boost::math::constants::pi<double>() * 0.5)
 		{
-			if(R[0][2] > -1.0)
-			{
-				b = asin(R[0][2]);
-				a = atan2(-R[1][2], R[2][2]);
-				c = atan2(-R[0][1], R[0][0]);
-			}
+			if(a > 0)
+				a -= boost::math::constants::pi<double>();
+			else 
+				a += boost::math::constants::pi<double>();
+
+			if(c > 0)
+				c -= boost::math::constants::pi<double>();
 			else
-			{
-				b = -0.5 * boost::math::constants::pi<double>();
-				a = -atan2(R[1][0], R[1][1]);
-				c = 0.0;
-			}
+				c += boost::math::constants::pi<double>();
 		}
-		else
-		{
-			b = boost::math::constants::pi<double>();
-			a = atan2(R[1][0], R[1][1]);
-			c = 0.0;
-		}
+
 	}
 	
 	void Euler2Quat(Quaternion& quat, double a, double b, double c)
 	{
 		double R[3][3];
-		
-		double ci(cos(a));
-		double cj(cos(b));
-		double ch(cos(c));
-		double si(sin(a));
-		double sj(sin(b));
-		double sh(sin(c));
-		double cc = ci * ch;
-		double cs = ci * sh;
-		double sc = si * ch;
-		double ss = si * sh;
-		
-		R[0][0] = cj * ch;
-		R[0][1] = sj * sc - cs;
-		R[0][2] = sj * cc + ss;
-		R[1][0] = cj * sh;
-		R[1][1] = sj * ss + cc;
-		R[1][2] = sj * cs - sc;
-		R[2][0] = -sj;
-		R[2][1] = cj * si;
-		R[2][2] = cj * ci;
+		Euler2Rot(R, a, b, c);
 		
 		// R to quaternion
 		Rot2Quat(quat, R);
@@ -321,9 +318,14 @@ namespace APDL
 	}
 	
 	
-	
 	void Euler2Rot(double R[3][3], double a, double b, double c)
 	{
+		Euler2RotZYX(R, c, b, a);
+	}
+
+	void Euler2RotZYX(double R[3][3], double a, double b, double c)
+	{
+
 		double ci(cos(a));
 		double cj(cos(b));
 		double ch(cos(c));
@@ -389,8 +391,75 @@ namespace APDL
 		q[0] = q2[0] - q1[0];
 		q[1] = q2[1] - q1[1];
 		q[2] = angleTruncate(q2[2] - q1[2]);
-
 		return q;
+
+		//DataVector q(3);
+
+		//Mat2D m(-q1[2]);
+		//Vec2D v(q2[0] - q1[0], q2[1] - q1[1]);
+		//v = m * v;
+		//q[0] = v.x;
+		//q[1] = v.y;
+		//q[2] = angleTruncate(q2[2] - q1[2]);
+		//
+		//return q;
+	}
+
+	DataVector unrelative3D(const DataVector& q1, const DataVector q)
+	{
+		if(q1.dim() == 6)
+		{
+			DataVector q2(6);
+
+			double t1 = q1[0];
+			double t2 = q1[1];
+			double t3 = q1[2];
+
+			Quaternion quat1, quat;
+			Euler2Quat(quat1, q1[3], q1[4], q1[5]);
+			Euler2Quat(quat, q[3], q[4], q[5]);
+
+			Quaternion r = quat1 * Quaternion(0, t1, t2, t3, false) * inverse(quat1);
+			q2[0] = r[1] + q[0];
+			q2[1] = r[2] + q[1];
+			q2[2] = r[3] + q[2];
+
+			Quaternion quat2 = quat1 * quat;
+
+			double a, b, c;
+			Quat2Euler(a, b, c, quat2);
+			q2[3] = a;
+			q2[4] = b;
+			q2[5] = c;
+
+			return q2;
+
+		}
+		else if(q1.dim() == 7)
+		{
+			DataVector q2(7);
+
+			double t1 = q1[0];
+			double t2 = q1[1];
+			double t3 = q1[2];
+
+			Quaternion quat1(q1[3], q1[4], q1[5], q1[6]);
+			Quaternion quat(q[3], q[4], q[5], q[6]);
+
+			Quaternion r = quat1 * Quaternion(0, t1, t2, t3, false) * inverse(quat1);
+			q2[0] = r[1] + q[0];
+			q2[1] = r[2] + q[1];
+			q2[2] = r[3] + q[2];
+
+			Quaternion quat2 = quat1 * quat;
+
+			q2[3] = quat2[0];
+			q2[4] = quat2[1];
+			q2[5] = quat2[2];
+			q2[6] = quat2[3];
+
+			return q2;
+		}
 	}
 
 	DataVector relative3D(const DataVector& q1, const DataVector& q2)
@@ -398,19 +467,61 @@ namespace APDL
 		if(q1.dim() == 6)
 		{
 			DataVector q(6);
-			q[0] = q2[0] - q1[0];
-			q[1] = q2[1] - q1[1];
-			q[2] = q2[2] - q1[2];
+			double t1 = q2[0] - q1[0];
+			double t2 = q2[1] - q1[1];
+			double t3 = q2[2] - q1[2];
 
 			Quaternion quat1, quat2;
 			Euler2Quat(quat1, q1[3], q1[4], q1[5]);
 			Euler2Quat(quat2, q2[3], q2[4], q2[5]);
 
-			Quaternion quat = quat2 * inverse(quat1);
+			std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
+			Quaternion q_ = Quaternion(0, t1, t2, t3, false);
+			Quaternion q2_ = inverse(quat1);
 
-			//std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
-			//std::cout << quat2[0] << " " << quat2[1] << " " << quat2[2] << " " << quat2[3] << std::endl;
-			//std::cout << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3] << std::endl;
+			std::cout << q_[0] << " " << q_[1] << " " << q_[2] << " " << q_[3] << std::endl;
+			std::cout << q2_[0] << " " << q2_[1] << " " << q2_[2] << " " << q2_[3] << std::endl;
+	
+
+
+			Quaternion r = inverse(quat1) * Quaternion(0, t1, t2, t3, false) * quat1;
+			std::cout << t1 << " " << t2 << " " << t3 << std::endl;
+			std::cout << r[1] << " " << r[2] << " " << r[3] << std::endl;
+			q[0] = r[1];
+			q[1] = r[2];
+			q[2] = r[3];
+
+			Quaternion quat = inverse(quat1) * quat2;
+
+			std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
+			std::cout << quat2[0] << " " << quat2[1] << " " << quat2[2] << " " << quat2[3] << std::endl;
+			std::cout << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3] << std::endl;
+
+			double R[3][3];
+			Quat2Rot(R, quat2);
+			for(int j = 0; j < 3; ++j)
+			{
+				for(int k = 0; k < 3; ++k)
+					std::cout << R[j][k] << " ";
+				std::cout << std::endl;
+			}
+
+			Quat2Rot(R, quat1);
+			for(int j = 0; j < 3; ++j)
+			{
+				for(int k = 0; k < 3; ++k)
+					std::cout << R[j][k] << " ";
+				std::cout << std::endl;
+			}
+
+			Quat2Rot(R, quat);
+			for(int j = 0; j < 3; ++j)
+			{
+				for(int k = 0; k < 3; ++k)
+					std::cout << R[j][k] << " ";
+				std::cout << std::endl;
+			}
+
 
 			double a, b, c;
 			Quat2Euler(a, b, c, quat);
@@ -423,14 +534,19 @@ namespace APDL
 		else if(q2.dim() == 7)
 		{
 			DataVector q(7);
-			q[0] = q2[0] - q1[0];
-			q[1] = q2[1] - q1[1];
-			q[2] = q2[2] - q1[2];
+			double t1 = q2[0] - q1[0];
+			double t2 = q2[1] - q1[1];
+			double t3 = q2[2] - q1[2];
 
 			Quaternion quat1(q1[3], q1[4], q1[5], q1[6]);
 			Quaternion quat2(q2[3], q2[4], q2[5], q2[6]);
 
-			Quaternion quat = quat2 * inverse(quat1);
+			Quaternion r = inverse(quat1) * Quaternion(0, t1, t2, t3) * quat1;
+			q[0] = r[1];
+			q[1] = r[2];
+			q[2] = r[3];
+
+			Quaternion quat = inverse(quat1) * quat2;
 
 			q[3] = quat[0];
 			q[4] = quat[1];

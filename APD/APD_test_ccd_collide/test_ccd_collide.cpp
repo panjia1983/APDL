@@ -381,6 +381,62 @@ namespace APDL
 		}
 	}
 
+	static void test_convex_decomposition2_PD()
+	{
+		std::vector<C2A_Model*> model1;
+		std::vector<C2A_Model*> model2;
+
+		readObjFiles2(model1, "../data/models/Teeth/lo_03de_new_convex.obj");
+		readObjFiles2(model2, "../data/models/Teeth/up_03de_new_convex.obj");
+
+		C2A_Model* P;
+		C2A_Model* Q;
+		readObjFile(P, "../data/models/Teeth/lo_03de_new.obj");
+		readObjFile(Q, "../data/models/Teeth/up_03de_new.obj");
+
+		std::cout << volume(P) << std::endl;
+		double Pa, Pb, Pc;
+		inertia_weight(P, Pa, Pb, Pc);
+
+
+
+		ContactSpaceSE3Euler2 contactspace(P, Q, 0.1);
+
+		std::vector<DataVector> samples = contactspace.uniform_sample0(1000);
+
+		for(std::size_t i = 0; i < samples.size(); ++i)
+		{
+			double PD = Collider3D::PDt(model1, model2, samples[i]);
+			bool col = contactspace.collider.isCollide(samples[i]);
+
+			bool col2 = false;
+			for(std::size_t j = 0; j < model1.size(); ++j)
+			{
+				for(std::size_t k = 0; k < model2.size(); ++k)
+				{
+					Collider3D collider(model1[j], model2[k]);
+					if(collider.isCollide(samples[i]))
+						col2 = true;
+				}
+			}
+			std::cout << PD << " " << col2 << " " << col << std::endl;
+		}
+
+		std::cout << Pa << " " << Pb << " " << Pc << std::endl;
+
+		//for(std::size_t j = 0; j < model1.size(); ++j)
+		//{
+		//	std::cout << model1[j]->num_tris << " ";
+		//}
+		//std::cout << std::endl;
+
+		//for(std::size_t j = 0; j < model2.size(); ++j)
+		//{
+		//	std::cout << model2[j]->num_tris << " ";
+		//}
+		//std::cout << std::endl;
+	}
+
 	static void test_continuous_collide_3d()
 	{
 		C2A_Model* P = NULL;
@@ -445,8 +501,9 @@ void main()
 
 	// APDL::test_convex_decomposition_PD();
 	// APDL::test_animation();
+	APDL::test_convex_decomposition2_PD();
 
-	APDL::test_open_Cspace_file();
+	// APDL::test_open_Cspace_file();
 
 	APDL::tools::Profiler::Stop();
 	APDL::tools::Profiler::Status();

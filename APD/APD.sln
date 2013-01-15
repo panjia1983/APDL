@@ -198,6 +198,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_cupspoon", "AP
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_tool", "APD_playback_tool\APD_playback_tool.vcproj", "{2A2ACD50-0672-48D4-85F4-022CC52DF688}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -364,6 +369,10 @@ Global
 		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Debug|Win32.Build.0 = Debug|Win32
 		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Release|Win32.ActiveCfg = Release|Win32
 		{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}.Release|Win32.Build.0 = Release|Win32
+		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Debug|Win32.Build.0 = Debug|Win32
+		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Release|Win32.ActiveCfg = Release|Win32
+		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
