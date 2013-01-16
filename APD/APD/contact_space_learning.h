@@ -199,16 +199,27 @@ namespace APDL
 		}
 	};
 
+	// model_samples must be unscaled!!
 	template<typename ContactSpace, typename Learner, template <typename> class IndexType, typename IndexParams>
 	ExtendedModel<ContactSpace, IndexType> constructExtendedModelForModelDecisionBoundary(
 		const ContactSpace& contactspace, const Learner& learner, 
-		std::vector<ContactSpaceSampleData> model_samples, double push_delta_t)
+		std::vector<ContactSpaceSampleData> model_samples, double push_delta_t,
+		std::size_t knn_n = 1,
+		bool model_samples_scaled = true)
 	{
 		ExtendedModel<ContactSpace, IndexType> extended_model;
 
 		std::vector<DataVector> supportClass0, supportClass1;
 		learner.collectSupportVectorsClass0(supportClass0);
 		learner.collectSupportVectorsClass1(supportClass1);
+
+		if(learner.scaler && learner.use_scaler)
+		{
+			for(std::size_t i = 0; i < supportClass0.size(); ++i)
+				supportClass0[i] = learner.scaler->unscale(supportClass0[i]);
+			for(std::size_t i = 0; i < supportClass1.size(); ++i)
+				supportClass1[i] = learner.scaler->unscale(supportClass1[i]);
+		}
 
 		IndexType<typename ContactSpace::DistanceType>* index0 = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(supportClass0);
 		IndexType<typename ContactSpace::DistanceType>* index1 = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(supportClass1);
@@ -218,7 +229,7 @@ namespace APDL
 		std::vector<std::vector<int> > indices;
 		std::vector<std::vector<double> > dists;
 
-		DataVector qs(contactspace.zeroDataVector()); // for collision
+		DataVector qs(contactspace.zeroDataVector()); 
 		DataVector qt(contactspace.zeroDataVector());
 
 		std::size_t feature_dim = learner.feature_dim;
@@ -227,67 +238,79 @@ namespace APDL
 
 		for(std::size_t i = 0; i < model_samples.size(); ++i)
 		{
+			DataVector unscaled_v(feature_dim);
 			for(std::size_t j = 0; j < feature_dim; ++j)
-				queryset[0][j] = model_samples[i].v[j];
+				unscaled_v[j] = model_samples[i].v[j];
+			if(learner.scaler && learner.use_scaler && model_samples_scaled)
+				unscaled_v = learner.scaler->unscale(unscaled_v);
+
+			for(std::size_t j = 0; j < feature_dim; ++j)
+				queryset[0][j] = unscaled_v[j];
 
 			indices.clear();
 			dists.clear();
 
+			std::vector<DataVector> qs_vec, qt_vec;
+
 			if(model_samples[i].col)
 			{
-				index0->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
-				DataVector vt(feature_dim);
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					vt[j] = model_samples[i].v[j];
-				DataVector vs(supportClass0[indices[0][0]]);
-				if(learner.scaler && learner.use_scaler)
-				{
-					vt = learner.scaler->unscale(vt);
-					vs = learner.scaler->unscale(vs);
-				}
+				index0->knnSearch(queryset, indices, dists, knn_n, flann::SearchParams());
 
-				for(std::size_t j = 0; j < feature_dim; ++j)
+				DataVector vt = unscaled_v;
+				for(std::size_t j = 0; j < indices[0].size(); ++j)
 				{
-					qt[j] = vt[j];               // collision
-					qs[j] = vs[j];   // collision-free
+					DataVector vs(supportClass0[indices[0][j]]);
+
+					for(std::size_t k = 0; k < feature_dim; ++k)
+					{
+						qt[k] = vt[k];   // collision
+						qs[k] = vs[k];   // collision-free
+					}
+
+					qs_vec.push_back(qs);
+					qt_vec.push_back(qt);
 				}
 			}
 			else
 			{
-				index1->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
-				Datavector vs(feature_dim);
-				for(std::size_t j = 0; j < feature_dim; ++j)
-					vs[j] = model_samples[i].v[j];
-				DataVector vt(supportClass1[indices[0][0]]);
-				if(learner.scaler && learner.use_scaler)
-				{
-					vt = learner.scaler->unscale(vt);
-					vs = learner.scaler->unscale(vs);
-				}
+				index1->knnSearch(queryset, indices, dists, knn_n, flann::SearchParams());
 
-				for(std::size_t j = 0; j < feature_dim; ++j)
+				DataVector vs = unscaled_v;
+				for(std::size_t j = 0; j < indices[0].size(); ++j)
 				{
-					qs[j] = model_samples[i].v[j];               // collision
-					qt[j] = supportClass1[indices[0][0]][j];   // collision-free
+					DataVector vt(supportClass1[indices[0][j]]);
+
+					for(std::size_t k = 0; k < feature_dim; ++k)
+					{
+						qs[k] = vs[k];               // collision
+						qt[k] = vt[k];   // collision-free
+					}
+
+					qs_vec.push_back(qs);
+					qt_vec.push_back(qt);
 				}
 			}
 
-			std::pair<bool, double> res = contactspace.collider.isCCDCollide(qs, qt, 100);
-			if(res.first == false)
-				std::cout << "Should not happen" << std::endl;
+			for(std::size_t j = 0; j < qs_vec.size(); ++j)
+			{
+				std::pair<bool, double> res = contactspace.collider.isCCDCollide(qs_vec[j], qt_vec[j], 100);
+				if(res.first == false)
+					std::cout << "Should not happen" << std::endl;
 
-			DataVector pushed_q = contactspace.collider.interpolate(qs, qt, res.second);
+				DataVector pushed_q = contactspace.collider.interpolate(qs_vec[j], qt_vec[j], res.second);
 
-			typename ContactSpace::ColliderType::CollisionResult collision_result = contactspace.collider.collide(pushed_q);
+				typename ContactSpace::ColliderType::CollisionResult collision_result = contactspace.collider.collide(pushed_q);
 
-			extended_model.contacts.push_back(collision_result);
+				extended_model.contacts.push_back(collision_result);
 
-			DataVector contact_q_ = contactspace.collider.interpolate(qs, qt, res.second);
-			DataVector contact_q(contactspace.active_data_dim());
-			for(std::size_t j = 0 ; j < contactspace.active_data_dim(); ++j)
-				contact_q[j] = contact_q_[j];
+				DataVector contact_q_ = contactspace.collider.interpolate(qs_vec[j], qt_vec[j], res.second);
+				DataVector contact_q(contactspace.active_data_dim());
+				for(std::size_t k = 0 ; k < contactspace.active_data_dim(); ++k)
+					contact_q[k] = contact_q_[k];
 
-			pushed_samples.push_back(contact_q);
+				pushed_samples.push_back(contact_q);
+			}
+
 		}
 
 		extended_model.index = constructIndexForQuery<ContactSpace, IndexType, IndexParams>(pushed_samples);

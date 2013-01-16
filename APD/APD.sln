@@ -203,6 +203,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_tool", "APD_pl
 		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_small_teeth", "APD_playback_small_teeth\APD_playback_small_teeth.vcproj", "{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_rings", "APD_playback_rings\APD_playback_rings.vcproj", "{2B483719-905F-41E8-BCF2-FA4CAF59E97A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -373,6 +377,14 @@ Global
 		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Debug|Win32.Build.0 = Debug|Win32
 		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Release|Win32.ActiveCfg = Release|Win32
 		{2A2ACD50-0672-48D4-85F4-022CC52DF688}.Release|Win32.Build.0 = Release|Win32
+		{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}.Debug|Win32.Build.0 = Debug|Win32
+		{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}.Release|Win32.ActiveCfg = Release|Win32
+		{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}.Release|Win32.Build.0 = Release|Win32
+		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Debug|Win32.Build.0 = Debug|Win32
+		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Release|Win32.ActiveCfg = Release|Win32
+		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

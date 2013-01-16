@@ -475,53 +475,14 @@ namespace APDL
 			Euler2Quat(quat1, q1[3], q1[4], q1[5]);
 			Euler2Quat(quat2, q2[3], q2[4], q2[5]);
 
-			std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
-			Quaternion q_ = Quaternion(0, t1, t2, t3, false);
-			Quaternion q2_ = inverse(quat1);
-
-			std::cout << q_[0] << " " << q_[1] << " " << q_[2] << " " << q_[3] << std::endl;
-			std::cout << q2_[0] << " " << q2_[1] << " " << q2_[2] << " " << q2_[3] << std::endl;
-	
-
 
 			Quaternion r = inverse(quat1) * Quaternion(0, t1, t2, t3, false) * quat1;
-			std::cout << t1 << " " << t2 << " " << t3 << std::endl;
-			std::cout << r[1] << " " << r[2] << " " << r[3] << std::endl;
+
 			q[0] = r[1];
 			q[1] = r[2];
 			q[2] = r[3];
 
 			Quaternion quat = inverse(quat1) * quat2;
-
-			std::cout << quat1[0] << " " << quat1[1] << " " << quat1[2] << " " << quat1[3] << std::endl;
-			std::cout << quat2[0] << " " << quat2[1] << " " << quat2[2] << " " << quat2[3] << std::endl;
-			std::cout << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3] << std::endl;
-
-			double R[3][3];
-			Quat2Rot(R, quat2);
-			for(int j = 0; j < 3; ++j)
-			{
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-				std::cout << std::endl;
-			}
-
-			Quat2Rot(R, quat1);
-			for(int j = 0; j < 3; ++j)
-			{
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-				std::cout << std::endl;
-			}
-
-			Quat2Rot(R, quat);
-			for(int j = 0; j < 3; ++j)
-			{
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-				std::cout << std::endl;
-			}
-
 
 			double a, b, c;
 			Quat2Euler(a, b, c, quat);

@@ -103,7 +103,8 @@ namespace APDL
 					{
 						
 						reader >> tmp;
-						R[i][j] = tmp;
+						// R[i][j] = tmp;
+						R[j][i] = tmp;
 					}
 				}
 

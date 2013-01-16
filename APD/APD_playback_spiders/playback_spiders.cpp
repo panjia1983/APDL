@@ -142,67 +142,196 @@ namespace APDL
 	}
 
 
-	void playback()
+	void playback1()
 	{
-		std::vector<std::vector<std::pair<std::string, DataVector> > > frames;
+		std::ofstream timing_file("timing_APD.txt");
+		std::ofstream timing_construct_file("timing_construct_APD.txt");
 
 		std::string base_name = "../data/models/Box2D/spider_cinfigs/dump_transform";
 
-		// for(std::size_t i = 1001; i < 9999; ++i)
-		for(std::size_t i = 1001; i < 1101; ++i)
+		std::vector<Polygon> poly = readPolyFile("../data/models/Box2D/nazca_spider77.polys", 3);
+
+		for(std::size_t i = 0; i < 7; ++i)
+			distance_weight[i] = 1;
+
+		{
+			double Ix, Iy;
+			inertia(poly, Ix, Iy);
+			double rotation_weight = sqrt(Ix * Ix + Iy * Iy);
+			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = rotation_weight;
+		}
+
+
+		ContactSpaceSE2 contactspace(poly, poly, 0.2 * (getCircle(poly).second + getCircle(poly).second));
+
+		SVMLearner learner;
+
+		learner.setC(50);
+		learner.setScaler(contactspace.getScaler());
+		learner.setUseScaler(true);
+		learner.setGamma(50);
+		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(100000);
+		std::ofstream scaler_file("scaler.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+		learner.learn(contactspace_samples, contactspace.active_data_dim());
+		learner.save("model.txt");
+		std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 20) << std::endl;
+
+		Collider2D collider(poly, poly);
+
+		flann::HierarchicalClusteringIndex<ContactSpaceSE2::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE2, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
+
+
+		for(std::size_t i = 1001; i < 9999; ++i)
 		{
 			std::stringstream ss;
 			ss << i;
 			std::string ret;
 			ss >> ret;
 			std::size_t len = ret.length();
-			for(std::size_t i = 0; i < 4 - len; ++i)
+			for(std::size_t j = 0; j < 4 - len; ++j)
 				ret = "0" + ret;
 
 			std::string filename = base_name + ret + ".txt";
 
-			std::vector<std::vector<std::pair<std::string, DataVector> > > frames_ = readDumpFile(filename);
+			std::string PD_file_name= std::string("PD_APD") + ret + ".txt";
 
-			for(std::size_t i = 0; i < frames_.size(); ++i)
-				frames.push_back(frames_[i]);
+
+			std::ofstream PD_file(PD_file_name.c_str());
+
+			std::vector<std::vector<std::pair<std::string, DataVector> > > frame = readDumpFile(filename);
+
+			double timing_per_frame = 0;
+
+			for(std::size_t j = 0; j < frame.size(); ++j)
+			{
+				std::cout << i << " " << j << std::endl;
+
+				if(frame[j][0].first == "Wall" || frame[j][1].first == "Wall") continue;
+
+				boost::timer t;
+				DataVector q = relative2D(frame[j][0].second, frame[j][1].second);
+				if(collider.isCollide(q))
+				{
+					QueryResult PD_result = PD_query(learner, contactspace, query_index, q);
+					PD_file << PD_result.PD << " ";
+				}
+				else
+				{
+					PD_file << 0 << " ";
+				}
+
+				timing_per_frame += t.elapsed();
+			}
+
+			timing_file << timing_per_frame << " ";
+			timing_file.flush();
+
+			PD_file.flush();
 		}
+	}
 
-		std::vector<Polygon> polys1 = readPolyFile("../data/models/Box2D/nazca_spider77.polys", 3);
-		std::vector<Polygon> polys2 = readPolyFile("../data/models/Box2D/nazca_spider77.polys", 3);
+	void playback()
+	{
+		std::ofstream timing_file("timing_APD.txt");
+		std::ofstream timing_construct_file("timing_construct_APD.txt");
 
-		ContactSpaceSE2 contactspace(polys1, polys1, 0.2 * (getCircle(polys1).second + getCircle(polys1).second));
+		std::string base_name = "../data/models/Box2D/spider_cinfigs/dump_transform";
 
-		//ofstream test_file("test.txt");
+		std::vector<Polygon> poly = readPolyFile("../data/models/Box2D/nazca_spider77.polys", 3);
 
-		for(std::size_t i = 0; i < frames.size(); ++i)
+		for(std::size_t i = 0; i < 7; ++i)
+			distance_weight[i] = 1;
+
 		{
-			if(frames[i][0].first == "Wall" || frames[i][1].first == "Wall") continue;
-
-			//test_file << frames[i][0].first << " ";
-			//for(std::size_t j = 0; j < frames[i][0].second.dim(); ++j)
-			//	test_file << frames[i][0].second[j] << " ";
-			//test_file << std::endl;
-
-			//test_file << frames[i][1].first << " ";
-			//for(std::size_t j = 0; j < frames[i][1].second.dim(); ++j)
-			//	test_file << frames[i][1].second[j] << " ";
-			//test_file << std::endl;
-
-			//test_file << std::endl;
-
-			DataVector q = relative2D(frames[i][0].second, frames[i][1].second);
-
-			//std::cout << q[0] << " " << q[1] << " " << q[2] << std::endl;
-
+			double Ix, Iy;
+			inertia(poly, Ix, Iy);
+			double rotation_weight = sqrt(Ix * Ix + Iy * Iy);
+			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = rotation_weight;
 		}
 
+
+		ContactSpaceSE2 contactspace(poly, poly, 0.2 * (getCircle(poly).second + getCircle(poly).second));
+
+		SVMLearner learner;
+
+		learner.setC(50);
+		learner.setScaler(contactspace.getScaler());
+		learner.setUseScaler(true);
+		learner.setGamma(50);
+		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(100000);
+		std::ofstream scaler_file("scaler.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+		learner.learn(contactspace_samples, contactspace.active_data_dim());
+		learner.save("model.txt");
+		std::cout << empiricalErrorRatio(contactspace_samples, learner) << " " << errorRatioOnGrid(contactspace, learner, 20) << std::endl;
+
+		Collider2D collider(poly, poly);
+
+		// flann::HierarchicalClusteringIndex<ContactSpaceSE2::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE2, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
+
+
+		int knn_k = 50;
+
+		std::vector<ContactSpaceSampleData> support_samples;
+		learner.collectSupportVectors(support_samples);
+		ExtendedModel<ContactSpaceSE2, flann::HierarchicalClusteringIndex> extended_model = constructExtendedModelForModelDecisionBoundary<ContactSpaceSE2, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(contactspace, learner, support_samples, 0.01, knn_k);
+
+		for(std::size_t i = 1001; i < 9999; ++i)
+		{
+			std::stringstream ss;
+			ss << i;
+			std::string ret;
+			ss >> ret;
+			std::size_t len = ret.length();
+			for(std::size_t j = 0; j < 4 - len; ++j)
+				ret = "0" + ret;
+
+			std::string filename = base_name + ret + ".txt";
+
+			std::string PD_file_name= std::string("PD_APD") + ret + ".txt";
+
+
+			std::ofstream PD_file(PD_file_name.c_str());
+
+			std::vector<std::vector<std::pair<std::string, DataVector> > > frame = readDumpFile(filename);
+
+			double timing_per_frame = 0;
+
+			for(std::size_t j = 0; j < frame.size(); ++j)
+			{
+				std::cout << i << " " << j << std::endl;
+
+				if(frame[j][0].first == "Wall" || frame[j][1].first == "Wall") continue;
+
+				boost::timer t;
+				DataVector q = relative2D(frame[j][0].second, frame[j][1].second);
+				if(collider.isCollide(q))
+				{
+					// QueryResult PD_result = PD_query(learner, contactspace, query_index, q);
+					QueryResult PD_result = PD_query(learner, contactspace, extended_model.index, extended_model.samples, q);
+					PD_file << PD_result.PD << " ";
+				}
+				else
+				{
+					PD_file << 0 << " ";
+				}
+
+				timing_per_frame += t.elapsed();
+			}
+
+			timing_file << timing_per_frame << " ";
+			timing_file.flush();
+
+			PD_file.flush();
+		}
 	}
 }
 
 void main()
 {
-	// APDL::playback();
+	APDL::playback();
 
 	// APDL::playback_local_PD();
-	APDL::playback_exact_CSpace();
+	// APDL::playback_exact_CSpace();
 }

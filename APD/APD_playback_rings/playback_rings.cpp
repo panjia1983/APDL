@@ -19,8 +19,8 @@ namespace APDL
 
 		C2A_Model* P = NULL;
 		C2A_Model* Q = NULL;
-		readObjFile(P, "../data/models/Teeth/lo_03de_new.obj");
-		readObjFile(Q, "../data/models/Teeth/up_03de_new.obj");
+		readObjFile(P, "../data/models/ringz/ringz.obj");
+		readObjFile(Q, "../data/models/ringz/ringz.obj");
 
 		P->ComputeRadius();
 		Q->ComputeRadius();
@@ -44,9 +44,9 @@ namespace APDL
 
 		std::vector<std::pair<C2A_Model*, Quaternion> > CSpace;
 
-		int n_max = 100;
+		int n_max = 200;
 
-		std::ifstream rotation_stream("../data/teeth_exact_cspace/teeth_rotations.txt");
+		std::ifstream rotation_stream("../data/ringz_exact_cspace/ringz_rotations.txt");
 
 		int i = 0;
 		while(!rotation_stream.eof())
@@ -65,7 +65,7 @@ namespace APDL
 			ss << i;
 			std::string ret;
 			ss >> ret;
-			std::string obj_file_name = std::string("../data/teeth_exact_cspace/teeth_") + ret + ".obj";
+			std::string obj_file_name = std::string("../data/ringz_exact_cspace/ringz_") + ret + ".obj";
 
 			C2A_Model* model;
 			readObjFile(model, obj_file_name);
@@ -81,7 +81,7 @@ namespace APDL
 
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/Teeth/teeth.ani";
+		std::string frame_file_name = "../data/models/ringz/ringz.ani";
 
 		frames = readAnimationFile(frame_file_name, use_euler);
 
@@ -96,6 +96,7 @@ namespace APDL
 			if(!collider.isCollide(q)) 
 			{
 				pd_result.first = frames[i][1];
+
 				pd_result.second = 0;
 				result_qs.push_back(frames[i][1]);
 			}
@@ -133,7 +134,10 @@ namespace APDL
 
 			for(int j = 0; j < 3; ++j)
 				for(int k = 0; k < 3; ++k)
-					new_animation_stream << R[j][k] << " ";
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
 			for(int j = 0; j < 3; ++j)
 				new_animation_stream << T[j] << " ";
 			new_animation_stream << std::endl;
@@ -149,7 +153,10 @@ namespace APDL
 
 			for(int j = 0; j < 3; ++j)
 				for(int k = 0; k < 3; ++k)
-					new_animation_stream << R[j][k] << " ";
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
 			for(int j = 0; j < 3; ++j)
 				new_animation_stream << T[j] << " ";
 			new_animation_stream << std::endl;
@@ -163,7 +170,7 @@ namespace APDL
 
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/Teeth/teeth.ani";
+		std::string frame_file_name = "../data/models/ringz/ringz.ani";
 
 		bool use_euler = true;
 		frames = readAnimationFile(frame_file_name, use_euler);
@@ -171,8 +178,8 @@ namespace APDL
 		std::vector<C2A_Model*> P;
 		std::vector<C2A_Model*> Q;
 
-		readObjFiles2(P, "../data/models/Teeth/lo_03de_new_convex.obj");
-		readObjFiles2(Q, "../data/models/Teeth/up_03de_new_convex.obj");
+		readObjFiles(P, "../data/models/ringz/ringz.obj");
+		readObjFiles(Q, "../data/models/ringz/ringz.obj");
 
 		for(std::size_t i = 0; i < frames.size(); ++i)
 		{
@@ -193,15 +200,15 @@ namespace APDL
 	{
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/Teeth/teeth.ani";
+		std::string frame_file_name = "../data/models/ringz/ringz.ani";
 
 		bool use_euler = true;
 		frames = readAnimationFile(frame_file_name, use_euler);
 
 		C2A_Model* P = NULL;
 		C2A_Model* Q = NULL;
-		readObjFile(P, "../data/models/Teeth/lo_03de_0116.obj");
-		readObjFile(Q, "../data/models/Teeth/up_03de_0116.obj");
+		readObjFile(P, "../data/models/ringz/ringz.obj");
+		readObjFile(Q, "../data/models/ringz/ringz.obj");
 
 		P->ComputeRadius();
 		Q->ComputeRadius();
@@ -223,10 +230,18 @@ namespace APDL
 			}
 		}
 
-		ContactSpaceSE3Euler contactspace(P, Q, 0.05 * (P->radius + Q->radius));
-		std::ofstream scaler_file("scaler_3d_rotation_teeth.txt");
+
+		AABB3D aabb = computeAABB(P);
+
+		// ContactSpaceSE3Euler contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+		double scale_x = aabb.b_max[0] - aabb.b_min[0];
+		double scale_y = aabb.b_max[1] - aabb.b_min[1];
+		double scale_z = aabb.b_max[2] - aabb.b_min[2];
+		ContactSpaceSE3Euler2 contactspace(P, Q, scale_x, scale_y, scale_z);
+
+		std::ofstream scaler_file("scaler_3d_rotation_cupspoon.txt");
 		scaler_file << contactspace.getScaler() << std::endl;
-		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(500000);
+		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(50000);
 
 		SVMLearner learner;
 		learner.setDim(contactspace.active_data_dim());
@@ -238,12 +253,15 @@ namespace APDL
 		learner.learn(contactspace_samples, contactspace.active_data_dim());
 		learner.save("model.txt");
 
+		std::vector<ContactSpaceSampleData> test_samples = contactspace.uniform_sample(20000);
+		std::cout << contactspace_samples.size() << " " << empiricalErrorRatio(contactspace_samples, learner) << " " << empiricalErrorRatio(test_samples, learner) << std::endl;
+
 		// flann::HierarchicalClusteringIndex<ContactSpaceSE3Euler::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE3Euler, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
 
 		std::vector<ContactSpaceSampleData> support_samples;
 		learner.collectSupportVectors(support_samples);
-		ExtendedModel<ContactSpaceSE3Euler, flann::HierarchicalClusteringIndex> extended_model = 
-			constructExtendedModelForModelDecisionBoundary<ContactSpaceSE3Euler, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(contactspace, learner, support_samples, 0.01, 50);
+		ExtendedModel<ContactSpaceSE3Euler2, flann::HierarchicalClusteringIndex> extended_model = 
+			constructExtendedModelForModelDecisionBoundary<ContactSpaceSE3Euler2, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(contactspace, learner, support_samples, 0.01, 50);
 
 
 		std::ofstream timing_file("timing_APD.txt");
@@ -330,7 +348,7 @@ namespace APDL
 
 void main()
 {
-	APDL::playback();
-	// APDL::playback_local_PD();
+	// APDL::playback();
+	APDL::playback_local_PD();
 	// APDL::playback_exact_CSpace();
 }

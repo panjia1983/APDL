@@ -19,8 +19,8 @@ namespace APDL
 
 		C2A_Model* P = NULL;
 		C2A_Model* Q = NULL;
-		readObjFile(P, "../data/models/Teeth/lo_03de_new.obj");
-		readObjFile(Q, "../data/models/Teeth/up_03de_new.obj");
+		readObjFile(P, "../data/models/Teeth/lo_03de_new_small.obj");
+		readObjFile(Q, "../data/models/Teeth/up_03de_new_small.obj");
 
 		P->ComputeRadius();
 		Q->ComputeRadius();
@@ -200,8 +200,8 @@ namespace APDL
 
 		C2A_Model* P = NULL;
 		C2A_Model* Q = NULL;
-		readObjFile(P, "../data/models/Teeth/lo_03de_0116.obj");
-		readObjFile(Q, "../data/models/Teeth/up_03de_0116.obj");
+		readObjFile(P, "../data/models/Teeth/lo_03de_new_small.obj");
+		readObjFile(Q, "../data/models/Teeth/up_03de_new_small.obj");
 
 		P->ComputeRadius();
 		Q->ComputeRadius();

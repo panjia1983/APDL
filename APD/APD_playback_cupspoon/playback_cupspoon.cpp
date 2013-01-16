@@ -15,110 +15,6 @@ namespace APDL
 
 	void playback_exact_CSpace()
 	{
-		//{
-		//	Quaternion q(1, 3, 4, 5);
-		//	for(int i = 0; i < 4; ++i)
-		//		std::cout << q[i] << std::endl;
-		//	double R[3][3];
-		//	Quat2Rot(R, q);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-		//	Rot2Quat(q, R);
-		//	for(int i = 0; i < 4; ++i)
-		//		std::cout << q[i] << std::endl;
-		//	Quat2Rot(R, q);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-
-		//	return;
-
-		//}
-		//{
-		//	double a = 1, b = 2, c = 3;
-		//	double R[3][3];
-		//	Euler2Rot(R, a, b, c);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-		//	Rot2Euler(a, b, c, R);
-		//	std::cout << a << " " << b << " " << c << std::endl;
-
-		//	Euler2Rot(R, a, b, c);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-		//}
-
-		//{
-		//	Quaternion q(1, 2, 3, 4);
-		//	double a, b, c;
-		//	Quat2Euler(a, b, c, q);
-		//	double R[3][3];
-		//	Quat2Rot(R, q);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-
-		//	Euler2Rot(R, a, b, c);
-		//	for(int i = 0; i < 3; ++i)
-		//	{
-		//		for(int j = 0; j < 3; ++j)
-		//			std::cout << R[i][j] << " ";
-		//		std::cout << std::endl;
-		//	}
-		//}
-
-		{
-			double R[3][3];
-			R[0][0] = 0.0;
-			R[0][1] = -1.0;
-			R[0][2] = 0.0;
-			R[1][0] = 0.984808;
-			R[1][1] = 0.0;
-			R[1][2] = 0.173648;
-			R[2][0] = -0.173648;
-			R[2][1] = 0.0;
-			R[2][2] = 0.984808;
-
-			double a, b, c;
-			Rot2Euler(a, b, c, R);
-			Quaternion q;
-			Euler2Quat(q, a, b, c);
-
-			Euler2Rot(R, a, b, c);
-			for(int j = 0; j < 3; ++j)
-			{
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-				std::cout << std::endl;
-			}
-
-			Quat2Rot(R, q);
-			for(int j = 0; j < 3; ++j)
-			{
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-				std::cout << std::endl;
-			}
-		}
-		return;
 		bool use_euler = true;
 
 		C2A_Model* P = NULL;
@@ -195,30 +91,39 @@ namespace APDL
 		{
 			DataVector q = relative3D(frames[i][0], frames[i][1]);
 
-			double R[3][3];
-			double T[3];
+			//double R[3][3];
+			//double T[3];
 
-			if(q.dim() == 6)
-			{
-				ConfigEuler2RotTran(R, T, q);
-			}
-			else if(q.dim() == 7)
-			{
-				ConfigQuat2RotTrans(R, T, q);
-			}
+			//if(q.dim() == 6)
+			//{
+			//	ConfigEuler2RotTran(R, T, q);
+			//}
+			//else if(q.dim() == 7)
+			//{
+			//	ConfigQuat2RotTrans(R, T, q);
+			//}
 
-			for(int j = 0; j < 3; ++j)
-				for(int k = 0; k < 3; ++k)
-					std::cout << R[j][k] << " ";
-			for(int j = 0; j < 3; ++j)
-				std::cout << T[j] << " ";
-			std::cout << std::endl;
+			//for(int j = 0; j < 3; ++j)
+			//	for(int k = 0; k < 3; ++k)
+			//		std::cout << R[j][k] << " ";
+			//for(int j = 0; j < 3; ++j)
+			//	std::cout << T[j] << " ";
+			//std::cout << std::endl;
 
 			boost::timer t;
 			std::pair<DataVector, double> pd_result;
 			if(!collider.isCollide(q)) 
 			{
 				pd_result.first = frames[i][1];
+				
+				//DataVector q2 = unrelative3D(frames[i][0], q);
+				//for(int j = 0; j < q2.dim(); ++j)
+				//	std::cout << q2[j] << " ";
+				//std::cout << std::endl;
+				//for(int j = 0; j < q2.dim(); ++j)
+				//	std::cout << frames[i][1][j] << " ";
+				//std::cout << std::endl;
+
 				pd_result.second = 0;
 				result_qs.push_back(frames[i][1]);
 			}
@@ -256,7 +161,10 @@ namespace APDL
 
 			for(int j = 0; j < 3; ++j)
 				for(int k = 0; k < 3; ++k)
-					new_animation_stream << R[j][k] << " ";
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
 			for(int j = 0; j < 3; ++j)
 				new_animation_stream << T[j] << " ";
 			new_animation_stream << std::endl;
@@ -272,7 +180,10 @@ namespace APDL
 
 			for(int j = 0; j < 3; ++j)
 				for(int k = 0; k < 3; ++k)
-					new_animation_stream << R[j][k] << " ";
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
 			for(int j = 0; j < 3; ++j)
 				new_animation_stream << T[j] << " ";
 			new_animation_stream << std::endl;
@@ -329,15 +240,124 @@ namespace APDL
 		P->ComputeRadius();
 		Q->ComputeRadius();
 
-		ContactSpaceR3 contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+		Collider3D collider(P, Q);
+
+		{
+			double Ix, Iy, Iz;
+			inertia_weight(Q, Ix, Iy, Iz);
+			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = 1;
+			std::cout << Ix << " " << Iy << " " << Iz << std::endl;
+			if(use_euler)
+			{
+				distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
+			}
+			else
+			{
+				distance_weight[3] = 1; distance_weight[4] = Ix; distance_weight[5] = Iy; distance_weight[6] = Iz;
+			}
+		}
+
+
+		ContactSpaceSE3Euler contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+		std::ofstream scaler_file("scaler_3d_rotation_cupspoon.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(500000);
+
+		SVMLearner learner;
+		learner.setDim(contactspace.active_data_dim());
+		learner.setC(20);
+		learner.setScaler(contactspace.getScaler());
+		learner.setUseScaler(true);
+		learner.setGamma(50); 
+
+		learner.learn(contactspace_samples, contactspace.active_data_dim());
+		learner.save("model.txt");
+
+		// flann::HierarchicalClusteringIndex<ContactSpaceSE3Euler::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE3Euler, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
+
+		std::vector<ContactSpaceSampleData> support_samples;
+		learner.collectSupportVectors(support_samples);
+		ExtendedModel<ContactSpaceSE3Euler, flann::HierarchicalClusteringIndex> extended_model = 
+			constructExtendedModelForModelDecisionBoundary<ContactSpaceSE3Euler, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(contactspace, learner, support_samples, 0.01, 50);
+
+
+		std::ofstream timing_file("timing_APD.txt");
+		std::ofstream PD_file("PD_APD.txt");
+
+		std::vector<DataVector> result_qs;
 
 		for(std::size_t i = 0; i < frames.size(); ++i)
 		{
 			DataVector q = relative3D(frames[i][0], frames[i][1]);
 
-			for(int j = 0; j < q.dim(); ++j)
-				std::cout << q[j] << " ";
-			std::cout << std::endl;
+			boost::timer t;
+			if(!collider.isCollide(q)) 
+			{
+				result_qs.push_back(frames[i][1]);
+				PD_file << 0 << " ";
+			}
+			else
+			{
+				// QueryResult pd_result = PD_query(learner, contactspace, query_index, q);
+				QueryResult pd_result = PD_query(learner, contactspace, extended_model.index, extended_model.samples, q);
+				DataVector q2 = unrelative3D(frames[i][0], pd_result.v);
+				result_qs.push_back(q2);
+				PD_file << pd_result.PD << " ";
+			}
+
+			timing_file << t.elapsed() << " ";
+
+			
+			timing_file.flush();
+			PD_file.flush();
+		}
+
+		std::ofstream new_animation_stream("new_animation_APD.ani");
+		new_animation_stream << frames.size() << "f" << std::endl;
+		for(std::size_t i = 0; i < frames.size(); ++i)
+		{
+			new_animation_stream << i << "f" << std::endl;
+
+			double R[3][3];
+			double T[3];
+
+			if(frames[i][0].dim() == 6)
+			{
+				ConfigEuler2RotTran(R, T, frames[i][0]);
+			}
+			else if(frames[i][0].dim() == 7)
+			{
+				ConfigQuat2RotTrans(R, T, frames[i][0]);
+			}
+
+			for(int j = 0; j < 3; ++j)
+				for(int k = 0; k < 3; ++k)
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
+			for(int j = 0; j < 3; ++j)
+				new_animation_stream << T[j] << " ";
+			new_animation_stream << std::endl;
+
+			if(result_qs[i].dim() == 6)
+			{
+				ConfigEuler2RotTran(R, T, result_qs[i]);
+			}
+			else if(result_qs[i].dim() == 7)
+			{
+				ConfigQuat2RotTrans(R, T, result_qs[i]);
+			}
+
+			for(int j = 0; j < 3; ++j)
+				for(int k = 0; k < 3; ++k)
+				{
+					// new_animation_stream << R[j][k] << " ";
+					new_animation_stream << R[k][j] << " ";
+				}
+			for(int j = 0; j < 3; ++j)
+				new_animation_stream << T[j] << " ";
+			new_animation_stream << std::endl;
 		}
 
 	}
@@ -346,6 +366,6 @@ namespace APDL
 void main()
 {
 	// APDL::playback();
-	// APDL::playback_local_PD();
-	APDL::playback_exact_CSpace();
+	APDL::playback_local_PD();
+	// APDL::playback_exact_CSpace();
 }
