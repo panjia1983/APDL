@@ -271,7 +271,7 @@ namespace APDL
 		// flann::HierarchicalClusteringIndex<ContactSpaceSE2::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE2, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
 
 
-		int knn_k = 50;
+		int knn_k = 2; // 50;
 
 		std::vector<ContactSpaceSampleData> support_samples;
 		learner.collectSupportVectors(support_samples);

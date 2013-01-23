@@ -100,6 +100,47 @@ namespace APDL
 			}
 		};
 
+		struct DistanceSE3EulerAngle2
+		{
+			typedef double ElementType;
+			typedef double ResultType;
+
+			DistanceSE3EulerAngle2()
+			{}
+
+			/// size must be 6
+			template <typename Iterator1, typename Iterator2>
+			ResultType operator()(Iterator1 a, Iterator2 b, size_t size, ResultType /*worst_dist*/ = -1) const
+			{
+				ResultType result = ResultType();
+				ResultType diff;
+				for(size_t i = 0; i < size - 3; ++i ) 
+				{
+					diff = *a++ - *b++;
+					result += diff*diff * distance_weight[i];
+				}
+
+				Quaternion quat_a, quat_b;
+				double r1[3];
+				double r2[3];
+
+				for(size_t i = 0; i < 3; ++i)
+				{
+					r1[i] = *a++;
+					r2[i] = *b++;
+				}
+
+				Euler2Quat(quat_a, r1[0], r1[1], r1[2]);
+				Euler2Quat(quat_b, r2[0], r2[1], r2[2]);
+
+				Quaternion q = quat_a * inverse(quat_b);
+
+				result += (q[1] * q[1] * distance_weight[size - 3] + q[2] * q[2] * distance_weight[size - 2] + q[3] * q[3] * distance_weight[size - 1]);
+
+				return result;
+			}
+		};
+
 
 		struct DistanceSE3Quat
 		{

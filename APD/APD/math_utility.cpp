@@ -387,22 +387,22 @@ namespace APDL
 
 	DataVector relative2D(const DataVector& q1, const DataVector& q2)
 	{
-		DataVector q(3);
-		q[0] = q2[0] - q1[0];
-		q[1] = q2[1] - q1[1];
-		q[2] = angleTruncate(q2[2] - q1[2]);
-		return q;
-
 		//DataVector q(3);
-
-		//Mat2D m(-q1[2]);
-		//Vec2D v(q2[0] - q1[0], q2[1] - q1[1]);
-		//v = m * v;
-		//q[0] = v.x;
-		//q[1] = v.y;
+		//q[0] = q2[0] - q1[0];
+		//q[1] = q2[1] - q1[1];
 		//q[2] = angleTruncate(q2[2] - q1[2]);
-		//
 		//return q;
+
+		DataVector q(3);
+
+		Mat2D m(-q1[2]);
+		Vec2D v(q2[0] - q1[0], q2[1] - q1[1]);
+		v = m * v;
+		q[0] = v.x;
+		q[1] = v.y;
+		q[2] = angleTruncate(q2[2] - q1[2]);
+		
+		return q;
 	}
 
 	DataVector unrelative3D(const DataVector& q1, const DataVector q)

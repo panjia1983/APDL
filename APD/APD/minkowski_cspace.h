@@ -577,40 +577,90 @@ namespace APDL
 		
 		static std::pair<DataVector, double> Exact_PD_R3(const DataVector& q, C2A_Model* CSpace)
 		{
-			typedef CGAL::Simple_cartesian<double> K;
+			//typedef CGAL::Simple_cartesian<double> K;
 
-			typedef K::FT FT;
-			typedef K::Ray_3 Ray;
-			typedef K::Line_3 Line;
-			typedef K::Point_3 Point;
-			typedef K::Triangle_3 Triangle;
+			//typedef K::FT FT;
+			//typedef K::Ray_3 Ray;
+			//typedef K::Line_3 Line;
+			//typedef K::Point_3 Point;
+			//typedef K::Triangle_3 Triangle;
 
-			typedef std::list<Triangle>::iterator Iterator;
-			typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
-			typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
-			typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;			 
-			
-			std::list<Triangle> triangles;
+			//typedef std::list<Triangle>::iterator Iterator;
+			//typedef CGAL::AABB_triangle_primitive<K,Iterator> Primitive;
+			//typedef CGAL::AABB_traits<K, Primitive> AABB_triangle_traits;
+			//typedef CGAL::AABB_tree<AABB_triangle_traits> Tree;			 
+			//
+			//std::list<Triangle> triangles;
+			//for(std::size_t i = 0; i < CSpace->num_tris; ++i)
+			//{
+			//	C2A_Tri* tri = CSpace->GetTriangle(i);
+			//	Point a(tri->p1[0], tri->p1[1], tri->p1[2]);
+			//	Point b(tri->p2[0], tri->p2[1], tri->p2[2]);
+			//	Point c(tri->p3[0], tri->p3[1], tri->p3[2]);
+			//	triangles.push_back(Triangle(a, b, c));
+			//}
+
+			//Tree tree(triangles.begin(), triangles.end());
+			//Point query(q[0], q[1], q[2]);
+			//Point closest_point = tree.closest_point(query);
+			//
+			//DataVector PD_p(3);
+			//PD_p[0] = closest_point.x();
+			//PD_p[1] = closest_point.y();
+			//PD_p[2] = closest_point.z();
+
+			//double dist = tree.squared_distance(query);
+			//if(dist < 0) dist = 0;
+			//return std::make_pair(PD_p, sqrt(dist));
+
+			double min_dist = DBL_MAX;
+			DataVector best(3);
 			for(std::size_t i = 0; i < CSpace->num_tris; ++i)
-			{
+			{	
 				C2A_Tri* tri = CSpace->GetTriangle(i);
-				Point a(tri->p1[0], tri->p1[1], tri->p1[2]);
-				Point b(tri->p2[0], tri->p2[1], tri->p2[2]);
-				Point c(tri->p3[0], tri->p3[1], tri->p3[2]);
-				triangles.push_back(Triangle(a, b, c));
+				double a, b, c;
+				double dist;
+
+				a = tri->p1[0] - q[0];
+				b = tri->p1[1] - q[1];
+				c = tri->p1[2] - q[2];
+				dist = a * a + b * b + c * c;
+				if(dist < min_dist) 
+				{
+					min_dist = dist;
+					best[0] = tri->p1[0];
+					best[1] = tri->p1[1];
+					best[2] = tri->p1[2];
+				}
+
+
+				a = tri->p2[0] - q[0];
+				b = tri->p2[1] - q[1];
+				c = tri->p2[2] - q[2];
+				dist = a * a + b * b + c * c;
+				if(dist < min_dist) 
+				{
+					min_dist = dist;
+					best[0] = tri->p2[0];
+					best[1] = tri->p2[1];
+					best[2] = tri->p2[2];
+				}		
+
+				
+				a = tri->p3[0] - q[0];
+				b = tri->p3[1] - q[1];
+				c = tri->p3[2] - q[2];
+				dist = a * a + b * b + c * c;
+				if(dist < min_dist) 
+				{
+					min_dist = dist;
+					best[0] = tri->p3[0];
+					best[1] = tri->p3[1];
+					best[2] = tri->p3[2];
+				}		
 			}
-
-			Tree tree(triangles.begin(), triangles.end());
-			Point query(q[0], q[1], q[2]);
-			Point closest_point = tree.closest_point(query);
 			
-			DataVector PD_p(3);
-			PD_p[0] = closest_point.x();
-			PD_p[1] = closest_point.y();
-			PD_p[2] = closest_point.z();
-
-			double dist = tree.squared_distance(query);
-			return std::make_pair(PD_p, sqrt(dist));
+			return std::make_pair(best, sqrt(min_dist));
 		}
 
 		static std::pair<DataVector, double> Exact_PD_SE3(const DataVector& q, const std::vector<std::pair<C2A_Model*, Quaternion> >& CSpace)

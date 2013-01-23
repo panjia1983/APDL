@@ -51,6 +51,85 @@ namespace APDL
 		}
 	}
 
+
+	inline std::vector<std::vector<std::pair<std::string, DataVector> > > readDumpFile3D(const std::string& filename, bool use_euler)
+	{
+		std::vector<std::vector<std::pair<std::string, DataVector> > > frames;
+		std::ifstream is(filename.c_str());
+
+		if(!is.is_open())
+		{
+			std::cerr << "!Error: Cannot open file (" << filename << ")" << std::endl;
+			return frames;
+		}
+
+		std::map<std::string, int> name_object_map;
+		std::string line;
+
+		std::vector<std::pair<std::string, DataVector> > frame;
+
+		while(!std::getline(is, line, '\n').eof())
+		{
+			if(line.size() == 0) continue;
+
+			std::istringstream reader(line);
+
+			int id;
+			std::string name;
+			double R[3][3];
+			double T[3];
+			DataVector v(3);
+
+		
+			reader >> id;
+
+			for(int i = 0; i < 3; ++i)
+				for(int j = 0; j < 3; ++j)
+				{
+					double tmp;
+					reader >> tmp;
+					R[i][j] = tmp;
+				}
+
+			for(int i = 0; i < 3; ++i)
+			{
+				double tmp;
+				reader >> tmp;
+				T[i] = tmp;
+			}
+
+			std::ostringstream  convert;
+			convert << id;
+
+			
+			if(use_euler)
+			{
+				double a, b, c;
+				Rot2Euler(a, b, c, R);
+				DataVector v(6);
+				v[0] = T[0]; v[1] = T[1]; v[2] = T[2];
+				v[3] = a; v[4] = b; v[5] = c;
+				frame.push_back(std::make_pair(convert.str(), v));
+			}
+			else
+			{
+				Quaternion quat;
+				Rot2Quat(quat, R);
+				DataVector v(7);
+				v[0] = T[0]; v[1] = T[1]; v[2] = T[2];
+				v[3] = quat[0]; v[4] = quat[1]; v[5] = quat[2]; v[6] = quat[3];
+				frame.push_back(std::make_pair(convert.str(), v));
+			}
+			
+			
+			if(frame.size() == 2)
+			{
+				frames.push_back(frame);
+				frame.clear();
+			}
+		}
+	}
+
 	inline std::vector<std::vector<DataVector> > readAnimationFile(const std::string& filename, bool use_euler = true)
 	{
 		std::vector<std::vector<DataVector> > frames;
@@ -993,6 +1072,9 @@ namespace APDL
 			delta_x = delta_;
 			delta_y = delta_;
 			delta_z = delta_;
+
+			sampler_scaler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta_,
+									model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta_);
 		}
 
 		ContactSpaceSE3Euler2(C2A_Model* model1, C2A_Model* model2, double delta_x_, double delta_y_, double delta_z_) : collider(model1, model2)
@@ -1002,6 +1084,11 @@ namespace APDL
 			delta_x = delta_x_;
 			delta_y = delta_y_;
 			delta_z = delta_z_;
+
+			double delta = (std::max)((std::max)(delta_x, delta_y), delta_z);
+
+			sampler_scaler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta,
+									model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta);
 		}
 		
 		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
@@ -1112,11 +1199,12 @@ namespace APDL
 
 		Scaler getScaler() const
 		{
-			double x_min, y_min, z_min, x_max, y_max, z_max;
-			sampler.getBound(x_min, x_max, y_min, y_max, z_min, z_max);
+			double center_x, center_y, center_z, r1, r2;
+			sampler_scaler.getBound(center_x, center_y, center_z, r1, r2);
 			DataVector v_min(6), v_max(6);
-			v_min[0] = x_min; v_min[1] = y_min; v_min[2] = z_min; v_min[3] = -boost::math::constants::pi<double>(); v_min[4] = -boost::math::constants::pi<double>(); v_min[5] = -boost::math::constants::pi<double>();
-			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = z_max; v_max[3] = boost::math::constants::pi<double>(); v_max[4] = boost::math::constants::pi<double>(); v_max[5] = boost::math::constants::pi<double>();
+			v_min[0] = center_x - r2; v_min[1] = center_y - r2; v_min[2] = center_z - r2; v_min[3] = -boost::math::constants::pi<double>(); v_min[4] = -boost::math::constants::pi<double>(); v_min[5] = -boost::math::constants::pi<double>();
+			v_max[0] = center_x + r2; v_max[1] = center_y + r2; v_max[2] = center_z + r2; v_max[3] = boost::math::constants::pi<double>(); v_max[4] = boost::math::constants::pi<double>(); v_max[5] = boost::math::constants::pi<double>();
+
 			return Scaler(v_min, v_max, 6);
 		}
 
@@ -1136,6 +1224,8 @@ namespace APDL
 		
 		// double delta;
 		double delta_x, delta_y, delta_z;
+
+		SamplerSE3Euler_ball sampler_scaler; // only for scaler;
 	};
 	
 	class ContactSpaceSE3Quat2
@@ -1152,6 +1242,9 @@ namespace APDL
 			delta_x = delta_;
 			delta_y = delta_;
 			delta_z = delta_;
+
+			sampler_scaler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta_,
+									model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta_);
 		}
 
 		ContactSpaceSE3Quat2(C2A_Model* model1, C2A_Model* model2, double delta_x_, double delta_y_, double delta_z_) : collider(model1, model2)
@@ -1161,6 +1254,11 @@ namespace APDL
 			delta_x = delta_x_;
 			delta_y = delta_y_;
 			delta_z = delta_z_;
+
+			double delta = (std::max)((std::max)(delta_x, delta_y), delta_z);
+
+			sampler_scaler.setBound(model1->com[0], model1->com[1], model1->com[2], model1->radius + 0.5 * delta,
+									model2->com[0], model2->com[1], model2->com[2], model2->radius + 0.5 * delta);
 		}
 		
 		std::vector<ContactSpaceSampleData> uniform_sample(std::size_t n) const
@@ -1276,11 +1374,11 @@ namespace APDL
 
 		Scaler getScaler() const
 		{
-			double x_min, y_min, z_min, x_max, y_max, z_max;
-			sampler.getBound(x_min, x_max, y_min, y_max, z_min, z_max);
+			double center_x, center_y, center_z, r1, r2;
+			sampler_scaler.getBound(center_x, center_y, center_z, r1, r2);
 			DataVector v_min(7), v_max(7);
-			v_min[0] = x_min; v_min[1] = y_min; v_min[2] = z_min; v_min[3] = -1; v_min[4] = -1; v_min[5] = -1; v_min[6] = -1;
-			v_max[0] = x_max; v_max[1] = y_max; v_max[2] = z_max; v_min[3] = 1; v_min[4] = 1; v_min[5] = 1; v_min[6] = 1;
+			v_min[0] = center_x - r2; v_min[1] = center_y - r2; v_min[2] = center_z - r2; v_min[3] = -1; v_min[4] = -1; v_min[5] = -1; v_min[6] = -1;
+			v_max[0] = center_x + r2; v_max[1] = center_y + r2; v_max[2] = center_z + r2; v_max[3] = 1; v_max[4] = 1; v_max[5] = 1; v_max[6] = 1;
 			return Scaler(v_min, v_max, 7);
 		}
 
@@ -1301,6 +1399,8 @@ namespace APDL
 		AABB3D aabb1, aabb2;
 		
 		double delta_x, delta_y, delta_z;
+
+		SamplerSE3Quat_ball sampler_scaler; // only for scaler
 	};
 	
 	inline std::ofstream& asciiWriter(std::ofstream& os, const std::vector<ContactSpaceSampleData>& samples)

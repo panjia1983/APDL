@@ -199,6 +199,10 @@
 				RelativePath=".\snoptProblem.cc"
 				>
 			</File>
+			<File
+				RelativePath=".\stopwatch.cpp"
+				>
+			</File>
 			<Filter
 				Name="learning"
 				>
@@ -339,6 +343,10 @@
 			</File>
 			<File
 				RelativePath=".\snoptProblem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stopwatch.h"
 				>
 			</File>
 			<Filter

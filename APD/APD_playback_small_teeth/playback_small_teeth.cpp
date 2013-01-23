@@ -32,14 +32,7 @@ namespace APDL
 			inertia_weight(Q, Ix, Iy, Iz);
 			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = 1;
 			std::cout << Ix << " " << Iy << " " << Iz << std::endl;
-			if(use_euler)
-			{
-				distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
-			}
-			else
-			{
-				distance_weight[3] = 1; distance_weight[4] = Ix; distance_weight[5] = Iy; distance_weight[6] = Iz;
-			}
+			distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
 		}
 
 		std::vector<std::pair<C2A_Model*, Quaternion> > CSpace;
@@ -213,14 +206,7 @@ namespace APDL
 			inertia_weight(Q, Ix, Iy, Iz);
 			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = 1;
 			std::cout << Ix << " " << Iy << " " << Iz << std::endl;
-			if(use_euler)
-			{
-				distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
-			}
-			else
-			{
-				distance_weight[3] = 1; distance_weight[4] = Ix; distance_weight[5] = Iy; distance_weight[6] = Iz;
-			}
+			distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
 		}
 
 		ContactSpaceSE3Euler contactspace(P, Q, 0.05 * (P->radius + Q->radius));

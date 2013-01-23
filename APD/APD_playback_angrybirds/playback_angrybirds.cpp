@@ -730,7 +730,7 @@ namespace APDL
 			for(int j = 0; j < 3; ++j)
 				extended_models[i][j] = NULL;
 
-		int knn_k = 50;
+		int knn_k = 2; // 50;
 
 		learners[0][0]->collectSupportVectors(support_samples11);
 		ExtendedModel<ContactSpaceSE2, flann::HierarchicalClusteringIndex> extended_model11 = constructExtendedModelForModelDecisionBoundary<ContactSpaceSE2, SVMLearner, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>(*contactspaces[0][0], *learners[0][0], support_samples11, 0.01, knn_k);

@@ -8,6 +8,9 @@
 #include <APD/profile.h>
 
 #include <boost/timer.hpp>
+#include <APD/stopwatch.h>
+
+Stopwatch aTimer;
 
 namespace APDL
 {
@@ -32,14 +35,7 @@ namespace APDL
 			inertia_weight(Q, Ix, Iy, Iz);
 			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = 1;
 			std::cout << Ix << " " << Iy << " " << Iz << std::endl;
-			if(use_euler)
-			{
-				distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
-			}
-			else
-			{
-				distance_weight[3] = 1; distance_weight[4] = Ix; distance_weight[5] = Iy; distance_weight[6] = Iz;
-			}
+			distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
 		}
 
 		std::vector<std::pair<C2A_Model*, Quaternion> > CSpace;
@@ -81,7 +77,7 @@ namespace APDL
 
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon.ani";
+		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon_NoJump.ani";
 
 		frames = readAnimationFile(frame_file_name, use_euler);
 
@@ -197,7 +193,7 @@ namespace APDL
 
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon.ani";
+		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon_NoJump.ani";
 
 		bool use_euler = true;
 		frames = readAnimationFile(frame_file_name, use_euler);
@@ -227,7 +223,7 @@ namespace APDL
 	{
 		std::vector<std::vector<DataVector> > frames;
 
-		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon.ani";
+		std::string frame_file_name = "../data/models/CupSpoon/CupSpoon_NoJump.ani";
 
 		bool use_euler = true;
 		frames = readAnimationFile(frame_file_name, use_euler);
@@ -247,14 +243,7 @@ namespace APDL
 			inertia_weight(Q, Ix, Iy, Iz);
 			distance_weight[0] = 1; distance_weight[1] = 1; distance_weight[2] = 1;
 			std::cout << Ix << " " << Iy << " " << Iz << std::endl;
-			if(use_euler)
-			{
-				distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
-			}
-			else
-			{
-				distance_weight[3] = 1; distance_weight[4] = Ix; distance_weight[5] = Iy; distance_weight[6] = Iz;
-			}
+			distance_weight[3] = Ix; distance_weight[4] = Iy; distance_weight[5] = Iz;
 		}
 
 
@@ -361,11 +350,210 @@ namespace APDL
 		}
 
 	}
+
+
+
+
+
+
+	void generateSamples()
+	{
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
+		readObjFile(P, "../data/models/CupSpoon/Cup.obj");
+		readObjFile(Q, "../data/models/CupSpoon/Spoon.obj");
+
+		P->ComputeRadius();
+		Q->ComputeRadius();
+
+		ContactSpaceR3 contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+		std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
+
+		std::ofstream out("space_test_3d.txt");
+		asciiWriter(out, contactspace_samples);
+	}
+
+	void playback_exact_CSpace_R3()
+	{
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
+		readObjFile(P, "../data/models/CupSpoon/Cup.obj");
+		readObjFile(Q, "../data/models/CupSpoon/Spoon.obj");
+
+		P->ComputeRadius();
+		Q->ComputeRadius();
+
+		Collider3D collider(P, Q);
+
+		C2A_Model* CSpace;
+		readObjFile(CSpace, "../data/cupspoon.obj");
+
+		std::vector<ContactSpaceSampleData> contactspace_samples;
+		std::ifstream in("space_test_3d.txt");
+		asciiReader(in, contactspace_samples);
+
+		std::ofstream timing_file("timing_exact_R3.txt");
+		std::ofstream PD_file("PD_exact_R3.txt");
+
+		for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+		{
+			std::cout << i << std::endl;
+			DataVector q_col(6);
+			DataVector q(3);
+			for(std::size_t j = 0; j < 3; ++j)
+				q[j] = contactspace_samples[i].v[j];
+
+			for(std::size_t j = 0; j < 6; ++j)
+				q_col[j] = contactspace_samples[i].v[j];
+
+
+			boost::timer t;
+			//aTimer.Reset();
+			aTimer.Start();
+			std::pair<DataVector, double> pd_result;
+			if(!collider.isCollide(q_col)) 
+			{
+				pd_result.second = 0;
+			}
+			else
+			{
+				pd_result = Minkowski_Cspace_3D::Exact_PD_R3(q, CSpace);
+			}
+			aTimer.Stop();
+			PD_file << pd_result.second << " ";	
+			//timing_file << t.elapsed() << " ";
+			timing_file << aTimer.GetTime() * 1000 << " ";
+
+			
+			timing_file.flush();
+			PD_file.flush();
+		}
+	}
+
+	void playback_local_PD_R3()
+	{
+		std::ofstream timing_file("timing_local_PD_R3.txt");
+		std::ofstream PD_file("PD_local_R3.txt");
+
+		std::vector<C2A_Model*> P;
+		std::vector<C2A_Model*> Q;
+
+		readObjFiles(P, "../data/models/CupSpoon/cup_convex.obj");
+		readObjFiles(Q, "../data/models/CupSpoon/spoon_convex.obj");
+
+
+		std::vector<ContactSpaceSampleData> contactspace_samples;
+		std::ifstream in("space_test_3d.txt");
+		asciiReader(in, contactspace_samples);
+
+		for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+		{
+			std::cout << i << std::endl;
+			DataVector q_col(6);
+			DataVector q(3);
+			for(std::size_t j = 0; j < 3; ++j)
+				q[j] = contactspace_samples[i].v[j];
+
+			for(std::size_t j = 0; j < 6; ++j)
+				q_col[j] = contactspace_samples[i].v[j];
+
+			boost::timer t;
+			aTimer.Reset();
+			aTimer.Start();
+			double pd = Collider3D::PDt(P, Q, q_col);
+			PD_file << pd << " ";	
+			// timing_file << t.elapsed() << " ";
+			timing_file << aTimer.GetTime() * 1000 << " ";
+
+			
+			timing_file.flush();
+			PD_file.flush();
+		}
+	}
+
+	void playback_R3()
+	{
+		C2A_Model* P = NULL;
+		C2A_Model* Q = NULL;
+		readObjFile(P, "../data/models/CupSpoon/Cup.obj");
+		readObjFile(Q, "../data/models/CupSpoon/Spoon.obj");
+
+		P->ComputeRadius();
+		Q->ComputeRadius();
+
+		Collider3D collider(P, Q);
+
+		std::vector<ContactSpaceSampleData> contactspace_samples;
+		std::ifstream in("space_test_3d.txt");
+		asciiReader(in, contactspace_samples);
+
+		ContactSpaceR3 contactspace(P, Q, 0.05 * (P->radius + Q->radius));
+		std::ofstream scaler_file("scaler_3d_rotation_cupspoon.txt");
+		scaler_file << contactspace.getScaler() << std::endl;
+		std::vector<ContactSpaceSampleData> train_samples = contactspace.uniform_sample(100000);
+
+		SVMLearner learner;
+		learner.setDim(contactspace.active_data_dim());
+		learner.setC(20);
+		learner.setScaler(contactspace.getScaler());
+		learner.setUseScaler(true);
+		learner.setGamma(50); 
+
+		learner.learn(train_samples, contactspace.active_data_dim());
+		learner.save("model_R3.txt");
+
+		// flann::HierarchicalClusteringIndex<ContactSpaceSE3Euler::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceSE3Euler, flann::HierarchicalClusteringIndex, flann::HierarchicalClusteringIndexParams>();
+
+		std::vector<ContactSpaceSampleData> support_samples;
+		learner.collectSupportVectors(support_samples);
+		ExtendedModel<ContactSpaceR3, flann::Index> extended_model = 
+			constructExtendedModelForModelDecisionBoundary<ContactSpaceR3, SVMLearner, flann::Index, flann::KDTreeIndexParams>(contactspace, learner, support_samples, 0.01, 50);
+
+
+		std::ofstream timing_file("timing_APD_R3.txt");
+		std::ofstream PD_file("PD_APD_R3.txt");
+
+		for(std::size_t i = 0; i < contactspace_samples.size(); ++i)
+		{
+			std::cout << i << std::endl;
+			DataVector q_col(6);
+			DataVector q(3);
+			for(std::size_t j = 0; j < 3; ++j)
+				q[j] = contactspace_samples[i].v[j];
+
+			for(std::size_t j = 0; j < 6; ++j)
+				q_col[j] = contactspace_samples[i].v[j];
+
+			boost::timer t;
+			aTimer.Reset();
+			aTimer.Start();
+			if(!collider.isCollide(q_col)) 
+			{
+				PD_file << 0 << " ";
+			}
+			else
+			{
+				QueryResult pd_result = PD_query(learner, contactspace, extended_model.index, extended_model.samples, q);
+				PD_file << pd_result.PD << " ";
+			}
+			// timing_file << t.elapsed() << " ";
+			timing_file << aTimer.GetTime() * 1000 << " ";
+
+			
+			timing_file.flush();
+			PD_file.flush();
+		}
+	}
 }
 
 void main()
 {
 	// APDL::playback();
-	APDL::playback_local_PD();
+	// APDL::playback_local_PD();
 	// APDL::playback_exact_CSpace();
+	// APDL::generateSamples();
+	APDL::playback_exact_CSpace_R3();
+	// APDL::playback_local_PD_R3();
+	// APDL::playback_R3();
+
 }

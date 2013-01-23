@@ -82,7 +82,7 @@ namespace APDL
 			FilterParam fparam;
 			DecisionBoundaryHierarchialTreeESampler<SVMLearner, SVMEvaluator> decision_boundary_sampler(param, fparam, learner);
 
-			ActiveLearningParam aparam(100, 50, 50, 9);
+			ActiveLearningParam aparam(1000, 500, 500, 9);
 			aparam.debug = true;
 			aparam.debug_os = &active_learning_stat_file;
 			aparam.model_name = "model_2d_active";

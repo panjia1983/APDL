@@ -206,6 +206,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_small_teeth", "APD_playback_small_teeth\APD_playback_small_teeth.vcproj", "{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_rings", "APD_playback_rings\APD_playback_rings.vcproj", "{2B483719-905F-41E8-BCF2-FA4CAF59E97A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
