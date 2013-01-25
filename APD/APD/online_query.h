@@ -178,7 +178,7 @@ namespace APDL
 		index->knnSearch(queryset, indices, dists, 1, flann::SearchParams());
 
 		DataVector scaled_query(query);
-		DataVector scaled_init_guess(index_samples[initial_guess[0][0]]);
+		DataVector scaled_init_guess(index_samples[indices[0][0]]);
 		if(learner.scaler && learner.use_scaler)
 		{
 			scaled_query = learner.scaler->scale(scaled_query);

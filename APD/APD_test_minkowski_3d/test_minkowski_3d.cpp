@@ -52,7 +52,7 @@ namespace APDL
 			query2[4] = 0;
 			query2[5] = 0;
 			
-			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_3D::Exact_PD_SE3(query2, CSpace_SE3, 1);
+			std::pair<DataVector, double> PD_result2 = Minkowski_Cspace_3D::Exact_PD_SE3(query2, CSpace_SE3);
 			DataVector PD_point2 = PD_result2.first;
 			std::cout << "(" << PD_point2[0] << " " << PD_point2[1] << " " << PD_point2[2] << " "
 			          << PD_point2[3] << " " << PD_point2[4] << " " << PD_point2[5] << ") " << PD_result2.second << std::endl;
@@ -67,7 +67,7 @@ namespace APDL
 			query3[5] = 0;
 			query3[6] = 0;
 			
-			std::pair<DataVector, double> PD_result3 = Minkowski_Cspace_3D::Exact_PD_SE3(query3, CSpace_SE3, 1);
+			std::pair<DataVector, double> PD_result3 = Minkowski_Cspace_3D::Exact_PD_SE3(query3, CSpace_SE3);
 			DataVector PD_point3 = PD_result3.first;
 			std::cout << "(" << PD_point3[0] << " " << PD_point3[1] << " " << PD_point3[2] << " "
 			          << PD_point3[3] << " " << PD_point3[4] << " " << PD_point3[5] << " " << PD_point3[6] << ") " << PD_result3.second << std::endl;

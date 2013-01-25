@@ -552,6 +552,43 @@ namespace APDL
 			param.shrinking = model->param.shrinking;
 			param.probability = model->param.probability;
 
+			model->sv_indices =  (int*)malloc(model->l * sizeof(int));
+
+			for(int i = 0; i < model->l; ++i)
+				model->sv_indices[i] = i + 1;
+
+			problem.l = model->l;
+			if(problem.y) delete [] problem.y;
+			problem.y = new double[problem.l];
+			if(problem.x) delete [] problem.x;
+			problem.x = new svm_node* [problem.l];
+			if(problem.W) delete [] problem.W;
+			problem.W = new double[problem.l];
+			if(x_space) delete [] x_space;
+			x_space = new svm_node[(feature_dim + 1)* problem.l];
+
+			int n_class_0 = model->nSV[0];
+			for(std::size_t i = 0; i < problem.l; ++i)
+			{
+				svm_node* cur_x_space = x_space + (feature_dim + 1) * i;
+				for(std::size_t j = 0; j < feature_dim; ++j)
+				{
+					cur_x_space[j].index = j + 1;
+					cur_x_space[j].value = model->SV[i][j].value;
+				}
+
+				cur_x_space[feature_dim].index = -1;
+				
+				problem.x[i] = cur_x_space;
+
+				if(i < n_class_0) 
+					problem.y[i] = -1;
+				else 
+					problem.y[i] = 1;
+				problem.W[i] = 1;
+			}
+
+
 			hyperw_normsqr = svm_hyper_w_normsqr_twoclass(model);
 
 			use_scaler = use_scaler_;

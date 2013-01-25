@@ -1,214 +1,93 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD", "APD\APD.vcproj", "{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD", "APD\APD.vcxproj", "{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test", "APD_test\APD_test.vcproj", "{22606D6A-5D75-4846-809C-A2D653DDB657}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test", "APD_test\APD_test.vcxproj", "{22606D6A-5D75-4846-809C-A2D653DDB657}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_2d", "APD_test_minkowski_2d\APD_test_minkowski_2d.vcproj", "{EB3CFA1D-931F-4CF9-AB96-F226626CC40E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_2d", "APD_test_minkowski_2d\APD_test_minkowski_2d.vcxproj", "{EB3CFA1D-931F-4CF9-AB96-F226626CC40E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_3d", "APD_test_minkowski_3d\APD_test_minkowski_3d.vcproj", "{CE1D98AE-B404-4E55-BD43-2B39DEAA4248}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_minkowski_3d", "APD_test_minkowski_3d\APD_test_minkowski_3d.vcxproj", "{CE1D98AE-B404-4E55-BD43-2B39DEAA4248}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_GJK", "APD_test_GJK\APD_test_GJK.vcproj", "{D3EF1F53-F6A3-43CA-8DF8-F31B79996674}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_GJK", "APD_test_GJK\APD_test_GJK.vcxproj", "{D3EF1F53-F6A3-43CA-8DF8-F31B79996674}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_contactspace", "APD_test_contactspace\APD_test_contactspace.vcproj", "{8F552E2F-C3A2-498C-9496-82EAB3D3B2DD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_contactspace", "APD_test_contactspace\APD_test_contactspace.vcxproj", "{8F552E2F-C3A2-498C-9496-82EAB3D3B2DD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d", "APD_test_conlitron_learner_2d\APD_test_conlitron_learner_2d.vcproj", "{B6520072-C9B1-47A9-BE97-D11F5FD2B5F6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d", "APD_test_conlitron_learner_2d\APD_test_conlitron_learner_2d.vcxproj", "{B6520072-C9B1-47A9-BE97-D11F5FD2B5F6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d_rotation", "APD_test_conlitron_learner_2d_rotation\APD_test_conlitron_learner_2d_rotation.vcproj", "{41FD2426-5FA4-4931-B97D-2CCC4E4976F3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_2d_rotation", "APD_test_conlitron_learner_2d_rotation\APD_test_conlitron_learner_2d_rotation.vcxproj", "{41FD2426-5FA4-4931-B97D-2CCC4E4976F3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d_rotation", "APD_test_svm_learner_2d_rotation\APD_test_svm_learner_2d_rotation.vcproj", "{DAAEEFC3-72C1-4B7C-8595-64A2C491856C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d_rotation", "APD_test_svm_learner_2d_rotation\APD_test_svm_learner_2d_rotation.vcxproj", "{DAAEEFC3-72C1-4B7C-8595-64A2C491856C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d", "APD_test_svm_learner_2d\APD_test_svm_learner_2d.vcproj", "{0C593816-CBBF-41F9-BF98-FD2932CA39BD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_2d", "APD_test_svm_learner_2d\APD_test_svm_learner_2d.vcxproj", "{0C593816-CBBF-41F9-BF98-FD2932CA39BD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_boosting_learner_2d", "APD_test_boosting_learner_2d\APD_test_boosting_learner_2d.vcproj", "{072ED564-BBFA-4CEB-9FF8-0D47C2D47795}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_boosting_learner_2d", "APD_test_boosting_learner_2d\APD_test_boosting_learner_2d.vcxproj", "{072ED564-BBFA-4CEB-9FF8-0D47C2D47795}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_incremental_svm", "APD_test_incremental_svm\APD_test_incremental_svm.vcproj", "{0F7B391A-C9B6-44E8-824A-EE8310759CEC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_incremental_svm", "APD_test_incremental_svm\APD_test_incremental_svm.vcxproj", "{0F7B391A-C9B6-44E8-824A-EE8310759CEC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_KNN", "APD_test_KNN\APD_test_KNN.vcproj", "{3F9EFC2F-B07F-4CBE-98E4-B9AB44F712C9}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_KNN", "APD_test_KNN\APD_test_KNN.vcxproj", "{3F9EFC2F-B07F-4CBE-98E4-B9AB44F712C9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_conlitron", "APD_test_distance_to_decision_boundary_conlitron\APD_test_distance_to_decision_boundary_conlitron.vcproj", "{FDA30B73-F22C-42B2-A928-7A07838845CA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_conlitron", "APD_test_distance_to_decision_boundary_conlitron\APD_test_distance_to_decision_boundary_conlitron.vcxproj", "{FDA30B73-F22C-42B2-A928-7A07838845CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_boundary_sampler", "APD_test_svm_boundary_sampler\APD_test_svm_boundary_sampler.vcproj", "{0CF2EF2C-74EE-46ED-9498-DA4CA6A7BA2C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_boundary_sampler", "APD_test_svm_boundary_sampler\APD_test_svm_boundary_sampler.vcxproj", "{0CF2EF2C-74EE-46ED-9498-DA4CA6A7BA2C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_boundary_sampler", "APD_test_conlitron_boundary_sampler\APD_test_conlitron_boundary_sampler.vcproj", "{DA86A088-454A-4BF9-9F2A-E3F1595531E1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_boundary_sampler", "APD_test_conlitron_boundary_sampler\APD_test_conlitron_boundary_sampler.vcxproj", "{DA86A088-454A-4BF9-9F2A-E3F1595531E1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_angle_interpolation", "APD_test_angle_interpolation\APD_test_angle_interpolation.vcproj", "{C9060584-EB2A-40BE-A558-3E8405C35D49}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_angle_interpolation", "APD_test_angle_interpolation\APD_test_angle_interpolation.vcxproj", "{C9060584-EB2A-40BE-A558-3E8405C35D49}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_svm", "APD_test_distance_to_decision_boundary_svm\APD_test_distance_to_decision_boundary_svm.vcproj", "{B13E7C73-70CA-473E-A0BC-295BCA03663A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_distance_to_decision_boundary_svm", "APD_test_distance_to_decision_boundary_svm\APD_test_distance_to_decision_boundary_svm.vcxproj", "{B13E7C73-70CA-473E-A0BC-295BCA03663A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_ccd_collide", "APD_test_ccd_collide\APD_test_ccd_collide.vcproj", "{1B7950CD-9294-4D87-9D15-49D24621A32B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_ccd_collide", "APD_test_ccd_collide\APD_test_ccd_collide.vcxproj", "{1B7950CD-9294-4D87-9D15-49D24621A32B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d", "APD_test_svm_learner_3d\APD_test_svm_learner_3d.vcproj", "{062BF53A-CF19-4247-BA4D-7BFB3C986037}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d", "APD_test_svm_learner_3d\APD_test_svm_learner_3d.vcxproj", "{062BF53A-CF19-4247-BA4D-7BFB3C986037}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d", "APD_test_conlitron_learner_3d\APD_test_conlitron_learner_3d.vcproj", "{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d", "APD_test_conlitron_learner_3d\APD_test_conlitron_learner_3d.vcxproj", "{90A7E6CC-BB99-4CBA-A3CC-B8D5CA5E03EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d_rotation", "APD_test_conlitron_learner_3d_rotation\APD_test_conlitron_learner_3d_rotation.vcproj", "{12DDC8D5-7507-4C79-8D52-340DC1C918AD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_conlitron_learner_3d_rotation", "APD_test_conlitron_learner_3d_rotation\APD_test_conlitron_learner_3d_rotation.vcxproj", "{12DDC8D5-7507-4C79-8D52-340DC1C918AD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_2d", "APD_test_active_learning_svm_2d\APD_test_active_learning_svm_2d.vcproj", "{11F59F3C-2D08-4902-BA41-9049D25A7A93}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_2d", "APD_test_active_learning_svm_2d\APD_test_active_learning_svm_2d.vcxproj", "{11F59F3C-2D08-4902-BA41-9049D25A7A93}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_conlitron_2d", "APD_test_active_learning_conlitron_2d\APD_test_active_learning_conlitron_2d.vcproj", "{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_conlitron_2d", "APD_test_active_learning_conlitron_2d\APD_test_active_learning_conlitron_2d.vcxproj", "{26FBB4ED-66A1-47F7-81CA-A9C1D38EB46E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_3d", "APD_test_active_learning_svm_3d\APD_test_active_learning_svm_3d.vcproj", "{3A359010-9E8B-48AA-9EAF-B012A8D0E1BE}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_3d", "APD_test_active_learning_svm_3d\APD_test_active_learning_svm_3d.vcxproj", "{3A359010-9E8B-48AA-9EAF-B012A8D0E1BE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d_rotation", "APD_test_svm_learner_3d_rotation\APD_test_svm_learner_3d_rotation.vcproj", "{A99DD6D4-2E30-4FEE-B650-EB0662261E67}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_svm_learner_3d_rotation", "APD_test_svm_learner_3d_rotation\APD_test_svm_learner_3d_rotation.vcxproj", "{A99DD6D4-2E30-4FEE-B650-EB0662261E67}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_2d", "APD_test_online_query_svm_2d\APD_test_online_query_svm_2d.vcproj", "{47F91262-B0AC-41A2-8537-20F3CB4F548D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_2d", "APD_test_online_query_svm_2d\APD_test_online_query_svm_2d.vcxproj", "{47F91262-B0AC-41A2-8537-20F3CB4F548D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_2d", "APD_test_online_query_conlitron_2d\APD_test_online_query_conlitron_2d.vcproj", "{454664AC-AA72-4F5C-88AE-3C5E4FF101F2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_2d", "APD_test_online_query_conlitron_2d\APD_test_online_query_conlitron_2d.vcxproj", "{454664AC-AA72-4F5C-88AE-3C5E4FF101F2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_2d_rotation", "APD_test_online_query_svm_2d_rotation\APD_test_online_query_svm_2d_rotation.vcproj", "{B109AE3A-01D8-4699-B02E-E7978047FE90}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_2d_rotation", "APD_test_online_query_svm_2d_rotation\APD_test_online_query_svm_2d_rotation.vcxproj", "{B109AE3A-01D8-4699-B02E-E7978047FE90}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_3d", "APD_test_online_query_svm_3d\APD_test_online_query_svm_3d.vcproj", "{F31BB268-4C82-447B-95F2-374A1C35E33F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_3d", "APD_test_online_query_svm_3d\APD_test_online_query_svm_3d.vcxproj", "{F31BB268-4C82-447B-95F2-374A1C35E33F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_3d_rotation", "APD_test_online_query_svm_3d_rotation\APD_test_online_query_svm_3d_rotation.vcproj", "{07A3E2E9-A50B-4301-B367-D3A81F61343A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_svm_3d_rotation", "APD_test_online_query_svm_3d_rotation\APD_test_online_query_svm_3d_rotation.vcxproj", "{07A3E2E9-A50B-4301-B367-D3A81F61343A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_2d_rotation", "APD_test_online_query_conlitron_2d_rotation\APD_test_online_query_conlitron_2d_rotation.vcproj", "{6186C9B1-4F5E-49B9-ADEC-D67B9880A39A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_2d_rotation", "APD_test_online_query_conlitron_2d_rotation\APD_test_online_query_conlitron_2d_rotation.vcxproj", "{6186C9B1-4F5E-49B9-ADEC-D67B9880A39A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_3d", "APD_test_online_query_conlitron_3d\APD_test_online_query_conlitron_3d.vcproj", "{37539ADD-3789-4081-B6EF-8BE62A12F1F5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_3d", "APD_test_online_query_conlitron_3d\APD_test_online_query_conlitron_3d.vcxproj", "{37539ADD-3789-4081-B6EF-8BE62A12F1F5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_3d_rotation", "APD_test_online_query_conlitron_3d_rotation\APD_test_online_query_conlitron_3d_rotation.vcproj", "{BBCD4ACA-A263-48AD-9BAB-854004CC4CC9}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_online_query_conlitron_3d_rotation", "APD_test_online_query_conlitron_3d_rotation\APD_test_online_query_conlitron_3d_rotation.vcxproj", "{BBCD4ACA-A263-48AD-9BAB-854004CC4CC9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_2d_rotation", "APD_test_active_learning_svm_2d_rotation\APD_test_active_learning_svm_2d_rotation.vcproj", "{86A4DFE5-AA37-4B4A-8492-3C950D92D6B6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_2d_rotation", "APD_test_active_learning_svm_2d_rotation\APD_test_active_learning_svm_2d_rotation.vcxproj", "{86A4DFE5-AA37-4B4A-8492-3C950D92D6B6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_3d_rotation", "APD_test_active_learning_svm_3d_rotation\APD_test_active_learning_svm_3d_rotation.vcproj", "{F990532A-CCE5-4664-8D11-201959F33CF8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_active_learning_svm_3d_rotation", "APD_test_active_learning_svm_3d_rotation\APD_test_active_learning_svm_3d_rotation.vcxproj", "{F990532A-CCE5-4664-8D11-201959F33CF8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_teeth", "APD_playback_teeth\APD_playback_teeth.vcproj", "{8AE34926-0905-4B96-8A5A-002F1637F12D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_teeth", "APD_playback_teeth\APD_playback_teeth.vcxproj", "{8AE34926-0905-4B96-8A5A-002F1637F12D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_angrybirds", "APD_playback_angrybirds\APD_playback_angrybirds.vcproj", "{3710B47E-F21C-4BCE-9497-45F7DCB61A67}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_angrybirds", "APD_playback_angrybirds\APD_playback_angrybirds.vcxproj", "{3710B47E-F21C-4BCE-9497-45F7DCB61A67}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_spiders", "APD_playback_spiders\APD_playback_spiders.vcproj", "{2256F342-6B98-4840-AD87-82498C688368}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_spiders", "APD_playback_spiders\APD_playback_spiders.vcxproj", "{2256F342-6B98-4840-AD87-82498C688368}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_cupspoon", "APD_playback_cupspoon\APD_playback_cupspoon.vcproj", "{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_cupspoon", "APD_playback_cupspoon\APD_playback_cupspoon.vcxproj", "{F8D20C62-E5C7-40F8-976D-F1D9F5FA7B06}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_tool", "APD_playback_tool\APD_playback_tool.vcproj", "{2A2ACD50-0672-48D4-85F4-022CC52DF688}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_tool", "APD_playback_tool\APD_playback_tool.vcxproj", "{2A2ACD50-0672-48D4-85F4-022CC52DF688}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_small_teeth", "APD_playback_small_teeth\APD_playback_small_teeth.vcproj", "{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_small_teeth", "APD_playback_small_teeth\APD_playback_small_teeth.vcxproj", "{DB8AB9D1-6D55-4A0B-B395-7A63432211AE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_rings", "APD_playback_rings\APD_playback_rings.vcproj", "{2B483719-905F-41E8-BCF2-FA4CAF59E97A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E} = {3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_playback_rings", "APD_playback_rings\APD_playback_rings.vcxproj", "{2B483719-905F-41E8-BCF2-FA4CAF59E97A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "APD_test_carseat", "APD_test_carseat\APD_test_carseat.vcxproj", "{C3D76C4A-B642-4470-9237-8ABC91E10F1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -388,6 +267,10 @@ Global
 		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Debug|Win32.Build.0 = Debug|Win32
 		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Release|Win32.ActiveCfg = Release|Win32
 		{2B483719-905F-41E8-BCF2-FA4CAF59E97A}.Release|Win32.Build.0 = Release|Win32
+		{C3D76C4A-B642-4470-9237-8ABC91E10F1A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C3D76C4A-B642-4470-9237-8ABC91E10F1A}.Debug|Win32.Build.0 = Debug|Win32
+		{C3D76C4A-B642-4470-9237-8ABC91E10F1A}.Release|Win32.ActiveCfg = Release|Win32
+		{C3D76C4A-B642-4470-9237-8ABC91E10F1A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

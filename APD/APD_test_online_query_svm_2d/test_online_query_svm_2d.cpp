@@ -118,12 +118,115 @@ namespace APDL
 		}
 	}
 
+
+	void test_online_query_svm_load()
+	{
+		{
+			std::ifstream room_file("../data/rooms_star.dat");
+
+			if(!room_file.is_open())
+			{
+				std::cerr << "Failed to open the input file." << std::endl;
+				return;
+			}
+
+			Minkowski_Cspace_2D::Polygon_2 P, Q;
+
+			room_file >> P >> Q;
+			room_file.close();
+
+			Minkowski_Cspace_2D::Polygon_with_holes_2 cspace_R2 = Minkowski_Cspace_2D::Minkowski_Cobstacle_R2(P, Q);
+
+			Polygon p1 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(P);
+			Polygon p2 = toPolygon<Minkowski_Cspace_2D::Polygon_2, Minkowski_Cspace_2D::Kernel>(Q);
+
+			ContactSpaceR2 contactspace(p1, p2, 2);
+			// std::vector<ContactSpaceSampleData> contactspace_samples = contactspace.uniform_sample(10000);
+
+			// std::ofstream out("space_test_2d.txt");
+			// asciiWriter(out, contactspace_samples);
+
+			SVMLearner learner;
+			learner.load("model_2d.txt", "scalar_2d.txt", true, contactspace.active_data_dim());
+
+
+			std::cout << errorRatioOnGrid(contactspace, learner, 1000) << std::endl;
+
+
+			std::vector<ContactSpaceSampleData> query_samples = contactspace.uniform_sample(100);
+
+			//flann::Index<ContactSpaceR2::DistanceType>* query_index = learner.constructIndexOfSupportVectorsForQuery<ContactSpaceR2, flann::Index, flann::KDTreeIndexParams>();
+
+			//for(std::size_t i = 0; i < query_samples.size(); ++i)
+			//{
+			//	QueryResult apprx_PD = PD_query(learner, contactspace, query_index, query_samples[i].v);
+			//	QueryResult apprx_PD2 = PD_query2(learner, contactspace, query_index, query_samples[i].v);
+			//	std::pair<DataVector, double> exact_PD = Minkowski_Cspace_2D::Exact_PD_R2(query_samples[i].v, cspace_R2);
+
+			//	std::cout << apprx_PD.v[0] << " " << apprx_PD.v[1] << " " << apprx_PD.PD << std::endl;
+			//	std::cout << apprx_PD2.v[0] << " " << apprx_PD2.v[1] << " " << apprx_PD2.PD << std::endl;
+			//	std::cout << exact_PD.first[0] << " " << exact_PD.first[1] << " " << exact_PD.second << std::endl;
+			//	std::cout << std::endl;
+			//}
+
+			//delete query_index;
+
+
+			std::vector<ContactSpaceSampleData> support_samples;
+			learner.collectSupportVectors(support_samples);
+			ExtendedModel<ContactSpaceR2, flann::Index> extended_model = 
+				constructExtendedModelForModelDecisionBoundary<ContactSpaceR2, SVMLearner, flann::Index, flann::KDTreeIndexParams>(contactspace, learner, support_samples, 0.01, 10);
+
+			std::ofstream test_file("test.txt");
+
+
+			for(std::size_t i = 0; i < query_samples.size(); ++i)
+			{
+				tools::Profiler::Begin("svm approx query 1");
+				QueryResult apprx_PD = PD_query(learner, contactspace, extended_model.index, extended_model.samples, query_samples[i].v);
+				tools::Profiler::End("svm approx query 1");
+				tools::Profiler::Begin("svm approx query 2");
+				QueryResult apprx_PD2 = PD_query2(learner, contactspace, extended_model.index, extended_model.samples, query_samples[i].v);
+				tools::Profiler::End("svm approx query 2");
+				tools::Profiler::Begin("svm exact query");
+				std::pair<DataVector, double> exact_PD = Minkowski_Cspace_2D::Exact_PD_R2(query_samples[i].v, cspace_R2);
+				tools::Profiler::End("svm exact query");
+				test_file << query_samples[i].v[0] << " " << query_samples[i].v[1] << std::endl;
+				test_file << apprx_PD.v[0] << " " << apprx_PD.v[1] << " " << apprx_PD.PD << std::endl;
+				test_file << apprx_PD2.v[0] << " " << apprx_PD2.v[1] << " " << apprx_PD2.PD << std::endl;
+				test_file << exact_PD.first[0] << " " << exact_PD.first[1] << " " << exact_PD.second << std::endl;
+
+				std::pair<DataVector, double> exact_PD1 = Minkowski_Cspace_2D::Exact_PD_R2(apprx_PD.v, cspace_R2);
+				std::pair<DataVector, double> exact_PD2 = Minkowski_Cspace_2D::Exact_PD_R2(exact_PD.first, cspace_R2);
+				test_file << exact_PD1.second << " " << exact_PD2.second << std::endl;
+
+				//if(exact_PD1.second > 0.001) 
+				//	std::cout << exact_PD1.second << " " << apprx_PD.col << std::endl;
+				std::cout << "(" << (apprx_PD.PD - exact_PD.second) / exact_PD.second << ", " << apprx_PD.PD - exact_PD.second << ")";
+
+				DataVector v1(3), v2(3);
+				v1[0] = apprx_PD.v[0]; v1[1] = apprx_PD.v[1];
+				v2[0] = exact_PD.first[0]; v2[1] = exact_PD.first[1];
+
+				Collider2D::CollisionResult result = contactspace.collider.collide(v1);
+				for(std::size_t j = 0; j < result.contacts.size(); ++j)
+					test_file << result.contacts[j].penetration_depth << " ";
+				test_file << std::endl;
+
+				test_file << std::endl;
+			}
+			std::cout << std::endl;
+		}
+	}
+
 }
 
 void main()
 {
 	APDL::tools::Profiler::Start();
-	APDL::test_online_query_svm();
+	// APDL::test_online_query_svm();
+	APDL::test_online_query_svm_load();
+
 	APDL::tools::Profiler::Stop();
 
 	APDL::tools::Profiler::Status();

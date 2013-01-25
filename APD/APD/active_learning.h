@@ -208,13 +208,6 @@ namespace APDL
 
 			tools::Profiler::End(param.model_name + "_iteration");
 
-			SVMLearner* plearner = dynamic_cast<SVMLearner*>(&learner);
-			if(plearner) 
-			{
-				//plearner->setC(plearner->param.C + 1);
-				//plearner->setGamma(plearner->param.gamma + 2);
-			}
-
 			if(param.debug && param.debug_os)
 			{
 				*(param.debug_os) << samples.size() << " " << empiricalErrorRatio(samples, learner) << " " << errorRatioOnGrid(contactspace, learner, param.num_grid) << " ";
@@ -294,13 +287,6 @@ namespace APDL
 
 			learner.learn(samples, contactspace.active_data_dim());
 			tools::Profiler::End(param.model_name + "_iteration");
-
-			SVMLearner* plearner = dynamic_cast<SVMLearner*>(&learner);
-			if(plearner) 
-			{
-				// plearner->setC(plearner->param.C + 5);
-				// plearner->setGamma(plearner->param.gamma + 1);
-			}
 
 			if(param.debug && param.debug_os)
 			{
