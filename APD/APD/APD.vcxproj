@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3F43FB2F-C38E-46E0-B408-79E17A2A4C2E}</ProjectGuid>
+    <RootNamespace>APD</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_44;../../include/;../../include/PQP;../../include/C2A;../../include/CLAPACK;C:\Program Files\CGAL-4.1\include;C:\Program Files\CGAL-4.1\auxiliary\gmp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;CGAL_USE_MPFR;CGAL_USE_GMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_51;../../include/;../../include/pthreads;../../include/RAPID;../../include/modelgraph;../../include/mathtool;../../include/libm3d;../../include/PQP;../../include/C2A;../../include/CLAPACK;C:\Program Files\CGAL-4.1\include;C:\Program Files\CGAL-4.1\auxiliary\gmp\include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="2d_collision.cpp" />
+    <ClCompile Include="contact_space.cpp" />
+    <ClCompile Include="contact_space_learning.cpp" />
+    <ClCompile Include="decision_boundary_distance.cpp" />
+    <ClCompile Include="decision_boundary_sampler.cpp" />
+    <ClCompile Include="distance_proxy.cpp" />
+    <ClCompile Include="math_utility.cpp" />
+    <ClCompile Include="mesh_io.cpp" />
+    <ClCompile Include="profile.cpp" />
+    <ClCompile Include="sampler.cpp" />
+    <ClCompile Include="snfilewrapper.c" />
+    <ClCompile Include="snoptProblem.cc" />
+    <ClCompile Include="stopwatch.cpp" />
+    <ClCompile Include="learning\incsvm.cpp" />
+    <ClCompile Include="learning\incsvm_test.cpp" />
+    <ClCompile Include="learning\svm.cpp" />
+    <ClCompile Include="hash\char_bit_cnt.cpp" />
+    <ClCompile Include="hash\embedding.cpp" />
+    <ClCompile Include="hash\multiprobeLSH.cpp" />
+    <ClCompile Include="hash\timer.cpp" />
+    <ClCompile Include="ccd\ccd.c" />
+    <ClCompile Include="ccd\mpr.c" />
+    <ClCompile Include="ccd\polytope.c" />
+    <ClCompile Include="ccd\support.c" />
+    <ClCompile Include="ccd\vec3.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="2d_collision.h" />
+    <ClInclude Include="active_learning.h" />
+    <ClInclude Include="collider.h" />
+    <ClInclude Include="contact_space.h" />
+    <ClInclude Include="contact_space_learning.h" />
+    <ClInclude Include="data_vector.h" />
+    <ClInclude Include="decision_boundary_distance.h" />
+    <ClInclude Include="decision_boundary_evaluate.h" />
+    <ClInclude Include="decision_boundary_sampler.h" />
+    <ClInclude Include="distance_proxy.h" />
+    <ClInclude Include="libm3d_wrapper.h" />
+    <ClInclude Include="math_utility.h" />
+    <ClInclude Include="mesh_io.h" />
+    <ClInclude Include="minkowski_cspace.h" />
+    <ClInclude Include="online_query.h" />
+    <ClInclude Include="PQP_extension.h" />
+    <ClInclude Include="profile.h" />
+    <ClInclude Include="sampler.h" />
+    <ClInclude Include="snoptProblem.h" />
+    <ClInclude Include="stopwatch.h" />
+    <ClInclude Include="learning\incsvm.h" />
+    <ClInclude Include="learning\spatial_tree.h" />
+    <ClInclude Include="learning\svm.h" />
+    <ClInclude Include="hash\archive.h" />
+    <ClInclude Include="hash\bruteforce.h" />
+    <ClInclude Include="hash\common.h" />
+    <ClInclude Include="hash\composite.h" />
+    <ClInclude Include="hash\cuckoo.hpp" />
+    <ClInclude Include="hash\dataset.h" />
+    <ClInclude Include="hash\embedding.h" />
+    <ClInclude Include="hash\eval.h" />
+    <ClInclude Include="hash\hash.h" />
+    <ClInclude Include="hash\hash_table.h" />
+    <ClInclude Include="hash\LSH.h" />
+    <ClInclude Include="hash\LSH_index.h" />
+    <ClInclude Include="hash\LSHforest.h" />
+    <ClInclude Include="hash\metric.h" />
+    <ClInclude Include="hash\multiprobeLSH.h" />
+    <ClInclude Include="hash\timer.h" />
+    <ClInclude Include="hash\topk.h" />
+    <ClInclude Include="ccd\alloc.h" />
+    <ClInclude Include="ccd\ccd.h" />
+    <ClInclude Include="ccd\compiler.h" />
+    <ClInclude Include="ccd\dbg.h" />
+    <ClInclude Include="ccd\list.h" />
+    <ClInclude Include="ccd\polytope.h" />
+    <ClInclude Include="ccd\quat.h" />
+    <ClInclude Include="ccd\simplex.h" />
+    <ClInclude Include="ccd\support.h" />
+    <ClInclude Include="ccd\vec3.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\learning">
+      <UniqueIdentifier>{a994c0cd-2c61-48a5-86e2-77827df7837c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\hash">
+      <UniqueIdentifier>{239039e1-3146-4b35-b63f-66fa3053781f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ccd">
+      <UniqueIdentifier>{be5a9d73-35aa-4c3f-9985-1f141345279a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\learning">
+      <UniqueIdentifier>{dd9629ee-0b71-434c-a291-b64097e0e13d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\hash">
+      <UniqueIdentifier>{9f63d54a-9ada-4756-8855-44ac3cfbad8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ccd">
+      <UniqueIdentifier>{4b585545-0526-4a8b-82c5-17459f312fd3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="2d_collision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="contact_space.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="contact_space_learning.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="decision_boundary_distance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="decision_boundary_sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="distance_proxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="math_utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="snfilewrapper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="snoptProblem.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stopwatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="learning\incsvm.cpp">
+      <Filter>Source Files\learning</Filter>
+    </ClCompile>
+    <ClCompile Include="learning\incsvm_test.cpp">
+      <Filter>Source Files\learning</Filter>
+    </ClCompile>
+    <ClCompile Include="learning\svm.cpp">
+      <Filter>Source Files\learning</Filter>
+    </ClCompile>
+    <ClCompile Include="hash\char_bit_cnt.cpp">
+      <Filter>Source Files\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="hash\embedding.cpp">
+      <Filter>Source Files\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="hash\multiprobeLSH.cpp">
+      <Filter>Source Files\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="hash\timer.cpp">
+      <Filter>Source Files\hash</Filter>
+    </ClCompile>
+    <ClCompile Include="ccd\ccd.c">
+      <Filter>Source Files\ccd</Filter>
+    </ClCompile>
+    <ClCompile Include="ccd\mpr.c">
+      <Filter>Source Files\ccd</Filter>
+    </ClCompile>
+    <ClCompile Include="ccd\polytope.c">
+      <Filter>Source Files\ccd</Filter>
+    </ClCompile>
+    <ClCompile Include="ccd\support.c">
+      <Filter>Source Files\ccd</Filter>
+    </ClCompile>
+    <ClCompile Include="ccd\vec3.c">
+      <Filter>Source Files\ccd</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="2d_collision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="active_learning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="collider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="contact_space.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="contact_space_learning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="data_vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="decision_boundary_distance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="decision_boundary_evaluate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="decision_boundary_sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="distance_proxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="libm3d_wrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math_utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="minkowski_cspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="online_query.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PQP_extension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="snoptProblem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stopwatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="learning\incsvm.h">
+      <Filter>Header Files\learning</Filter>
+    </ClInclude>
+    <ClInclude Include="learning\spatial_tree.h">
+      <Filter>Header Files\learning</Filter>
+    </ClInclude>
+    <ClInclude Include="learning\svm.h">
+      <Filter>Header Files\learning</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\archive.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\bruteforce.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\common.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\composite.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\cuckoo.hpp">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\dataset.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\embedding.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\eval.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\hash.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\hash_table.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\LSH.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\LSH_index.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\LSHforest.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\metric.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\multiprobeLSH.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\timer.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="hash\topk.h">
+      <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\alloc.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\ccd.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\compiler.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\dbg.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\list.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\polytope.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\quat.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\simplex.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\support.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+    <ClInclude Include="ccd\vec3.h">
+      <Filter>Header Files\ccd</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
